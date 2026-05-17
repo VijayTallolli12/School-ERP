@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('student_documents', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('school_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->string('type', 80);
+            $table->string('title');
+            $table->string('file_path');
+            $table->string('mime_type', 120)->nullable();
+            $table->unsignedBigInteger('size')->nullable();
+            $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['school_id', 'student_id', 'type']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('student_documents');
+    }
+};
