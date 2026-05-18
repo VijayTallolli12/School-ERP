@@ -69,6 +69,7 @@ use App\Modules\Timetable\Repositories\TimetableRepository;
 use App\Modules\Timetable\Repositories\TimetableRepositoryInterface;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -105,6 +106,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
         view()->addNamespace('Reports', app_path('Modules/Reports/Views'));
 
         Gate::before(function ($user, string $ability) {
