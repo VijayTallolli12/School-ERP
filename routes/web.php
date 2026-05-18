@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\Storage;
 Route::get('/', function () {
     return auth()->check()
         ? redirect()->route('admin.dashboard')
@@ -11,6 +11,17 @@ Route::get('/', function () {
 require __DIR__.'/modules/auth.php';
 require __DIR__.'/modules/reports.php';
 
+
+Route::get('/debug-upload', function () {
+    $files = Storage::disk('public')->files('settings/schools');
+
+    return [
+        'disk_root' => storage_path('app/public'),
+        'files' => $files,
+        'storage_exists' => file_exists(public_path('storage')),
+        'storage_link' => is_link(public_path('storage')),
+    ];
+});
 Route::middleware(['auth', 'school'])
     ->prefix('admin')
     ->as('admin.')
