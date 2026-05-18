@@ -15,6 +15,14 @@ php scripts/railway-preflight.php
 log "clearing cached Laravel config"
 php artisan config:clear --no-interaction
 
+log "linking public storage"
+php artisan storage:link --force --no-interaction
+
+if [ ! -d public/storage ]; then
+    log "public storage link was not created"
+    exit 1
+fi
+
 log "waiting for MySQL"
 php scripts/railway-wait-for-db.php
 
@@ -28,10 +36,6 @@ log "seeding completed"
 
 log "verifying required tables"
 php scripts/railway-verify-tables.php users migrations roles permissions
-
-log "creating storage symlink"
-php artisan storage:link --force --no-interaction
-log "storage symlink created"
 
 log "caching Laravel config"
 php artisan config:cache --no-interaction

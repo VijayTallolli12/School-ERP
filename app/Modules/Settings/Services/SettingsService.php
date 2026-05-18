@@ -6,7 +6,9 @@ use App\Models\School;
 use App\Modules\Settings\Repositories\SettingsRepositoryInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class SettingsService
 {
@@ -92,10 +94,40 @@ class SettingsService
 
     private function storeImage(UploadedFile $file, string $directory, ?string $oldPath = null): string
     {
+        $disk = Storage::disk('public');
+
+        if (! $disk->exists($directory)) {
+            if (! $disk->makeDirectory($directory)) {
+                Log::error('Settings image upload failed: could not create directory.', [
+                    'directory' => $directory,
+                    'disk_root' => config('filesystems.disks.public.root'),
+                ]);
+
+                throw new RuntimeException('The storage directory could not be created. Please check filesystem permissions.');
+            }
+
+            Log::info('Created storage directory.', ['directory' => $directory]);
+        }
+
         $path = $file->store($directory, 'public');
 
-        if ($oldPath && Storage::disk('public')->exists($oldPath)) {
-            Storage::disk('public')->delete($oldPath);
+        if (! is_string($path) || $path === '') {
+            Log::error('Settings image upload failed.', [
+                'directory' => $directory,
+                'original_name' => $file->getClientOriginalName(),
+                'disk' => 'public',
+            ]);
+
+            throw new RuntimeException('The image could not be saved. Please check the public storage disk.');
+        }
+
+        Log::info('Settings image uploaded.', [
+            'path' => $path,
+            'disk' => 'public',
+        ]);
+
+        if ($oldPath && $disk->exists($oldPath)) {
+            $disk->delete($oldPath);
         }
 
         return $path;
