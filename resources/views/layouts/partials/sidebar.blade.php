@@ -1,4 +1,4 @@
-<aside class="app-sidebar bg-dark shadow" data-bs-theme="dark">
+<aside class="app-sidebar bg-white">
     <div class="sidebar-brand">
         <a href="{{ route('admin.dashboard') }}" class="brand-link d-flex align-items-center gap-2 text-decoration-none">
             @if($logo = setting('school_logo'))

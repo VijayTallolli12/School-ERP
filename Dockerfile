@@ -14,7 +14,8 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN npm install && npm run build
 
-RUN mkdir -p storage/framework/{sessions,views,cache} \
+RUN mkdir -p storage/app/public storage/framework/{sessions,views,cache} \
+    && mkdir -p public/storage \
     && chmod -R 777 storage bootstrap/cache \
     && chmod +x scripts/railway-start.sh
 

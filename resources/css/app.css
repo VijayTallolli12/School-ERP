@@ -256,12 +256,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     vertical-align: middle;
 }
 
-/* Sidebar: bolder icon for active/hover */
-.app-sidebar .nav-sidebar .nav-link.active .ti,
-.app-sidebar .nav-sidebar .nav-link:hover .ti {
-    -webkit-text-stroke: 0.3px currentColor;
-}
-
 /* Sidebar submenu icons */
 .app-sidebar .nav-treeview .nav-icon .ti {
     font-size: inherit;
@@ -678,26 +672,29 @@ select.form-select {
     padding: 0.75rem 1.125rem;
 }
 
-/* --- SIDEBAR (AdminLTE overrides) --- */
+/* --- SIDEBAR (Enterprise white theme) --- */
 .app-sidebar {
     transition: margin-left var(--erp-transition), width var(--erp-transition);
+    border-right: 1px solid #e2e8f0;
+    box-shadow: 1px 0 4px rgba(0,0,0,.03);
 }
 
-/* Custom scrollbar for sidebar */
+/* Custom scrollbar for sidebar — light theme */
 .app-sidebar::-webkit-scrollbar { width: 5px; }
 .app-sidebar::-webkit-scrollbar-track { background: transparent; }
 .app-sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,.12);
+    background: #cbd5e1;
     border-radius: 10px;
 }
-.app-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.22); }
+.app-sidebar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 /* Firefox scrollbar */
-.app-sidebar { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.12) transparent; }
+.app-sidebar { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
 
 .app-sidebar .sidebar-brand {
-    padding: 0.85rem 1.125rem;
-    border-bottom: 1px solid rgba(255,255,255,.06);
+    padding: 1rem 1.125rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
 }
 
 /* Brand link with larger logo and better spacing */
@@ -712,7 +709,7 @@ select.form-select {
     height: 38px !important;
     object-fit: cover;
     border-radius: 0.5rem;
-    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
     flex-shrink: 0;
 }
 
@@ -721,37 +718,41 @@ select.form-select {
     font-weight: 650;
     letter-spacing: -0.01em;
     line-height: 1.2;
+    color: #1e293b;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
+/* Sidebar nav links */
 .app-sidebar .nav-sidebar .nav-link {
-    border-radius: 0.375rem;
-    margin: 1px 0.5rem;
-    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    margin: 1px 0.625rem;
+    padding: 0.55rem 0.8rem;
     font-size: 0.875rem;
-    transition: all 0.25s ease;
+    color: #475569;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .app-sidebar .nav-sidebar .nav-link.active {
-    background: rgba(255,255,255,.14);
+    background: rgba(37,99,235,.08);
     font-weight: 600;
-    box-shadow: inset 3px 0 0 rgba(255,255,255,.85);
-    color: #fff;
+    color: #2563eb;
+    box-shadow: inset 3px 0 0 #2563eb;
 }
 
 .app-sidebar .nav-sidebar .nav-link:hover:not(.active) {
-    background: rgba(255,255,255,.07);
-    transform: translateX(2px);
+    background: rgba(0,0,0,.04);
+    color: #1e293b;
 }
 
 .app-sidebar .nav-sidebar .nav-icon {
     font-size: 1.05rem;
     width: 1.5rem;
     text-align: center;
-    opacity: .88;
-    transition: opacity 0.25s ease;
+    opacity: .7;
+    transition: opacity 0.2s ease, color 0.2s ease;
 }
 
 .app-sidebar .nav-sidebar .nav-link.active .nav-icon,
@@ -760,12 +761,12 @@ select.form-select {
 }
 
 .app-sidebar .nav-header {
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: 0.68rem;
+    font-weight: 650;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 0.85rem 1.25rem 0.45rem;
-    opacity: .4;
+    letter-spacing: 0.07em;
+    padding: 1rem 1.25rem 0.5rem;
+    color: #94a3b8;
 }
 
 /* Submenu slide animation */
@@ -777,20 +778,29 @@ select.form-select {
 .app-sidebar .nav-treeview .nav-link {
     padding-left: 2.5rem;
     font-size: 0.82rem;
+    color: #64748b;
+}
+
+.app-sidebar .nav-treeview .nav-link.active {
+    color: #2563eb;
+    background: rgba(37,99,235,.06);
+    box-shadow: inset 3px 0 0 #2563eb;
 }
 
 .app-sidebar .nav-treeview .nav-icon {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
+    opacity: .6;
 }
 
 .app-sidebar .nav-treeview .nav-link:hover {
-    transform: translateX(3px);
+    background: rgba(0,0,0,.03);
 }
 
 /* --- NAVBAR --- */
 .app-header {
-    border-bottom: 1px solid rgba(0,0,0,.05);
-    box-shadow: 0 1px 3px rgba(0,0,0,.03);
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0,0,0,.03);
+    background: #ffffff;
 }
 
 .app-header .nav-link {
@@ -803,16 +813,16 @@ select.form-select {
 }
 
 .app-header .dropdown-menu {
-    border: 1px solid rgba(0,0,0,.06);
-    border-radius: var(--erp-card-radius);
-    box-shadow: 0 10px 40px rgba(0,0,0,.08);
+    border: 1px solid #e2e8f0;
+    border-radius: 0.625rem;
+    box-shadow: 0 12px 40px rgba(0,0,0,.08);
     padding: 0.375rem;
 }
 
 .app-header .dropdown-item {
-    border-radius: 0.325rem;
+    border-radius: 0.375rem;
     font-size: 0.85rem;
-    padding: 0.45rem 0.75rem;
+    padding: 0.5rem 0.75rem;
     transition: all var(--erp-transition);
 }
 
@@ -898,11 +908,11 @@ select.form-select {
 
 /* --- FOOTER --- */
 .app-footer {
-    border-top: 1px solid rgba(0,0,0,.04);
+    border-top: 1px solid #e2e8f0;
     font-size: 0.8rem;
     color: #94a3b8;
-    padding: 0.65rem 1rem;
-    background: transparent;
+    padding: 0.75rem 1.25rem;
+    background: #ffffff;
 }
 
 /* --- AUTH PAGES --- */
@@ -911,14 +921,14 @@ select.form-select {
     display: grid;
     place-items: center;
     background:
-        linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0c4a6e 100%);
+        linear-gradient(160deg, #f1f5f9 0%, #e2e8f0 50%, #f8fafc 100%);
 }
 
 .auth-page::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232563eb' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     pointer-events: none;
 }
 
@@ -1064,14 +1074,15 @@ select.form-select {
 
 /* --- WELCOME SECTION --- */
 .erp-welcome {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: var(--erp-card-radius);
-    padding: 1.5rem 1.75rem;
+    padding: 1.35rem 1.75rem;
     margin-bottom: 1.25rem;
-    color: #fff;
+    color: #1e293b;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    box-shadow: var(--erp-card-shadow);
 }
 
 .erp-welcome::after {
@@ -1082,7 +1093,7 @@ select.form-select {
     width: 160px;
     height: 160px;
     border-radius: 50%;
-    background: rgba(255,255,255,.04);
+    background: rgba(37,99,235,.03);
     pointer-events: none;
 }
 
@@ -1093,26 +1104,28 @@ select.form-select {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,.12);
+    background: rgba(37,99,235,.1);
+    color: #2563eb;
     font-size: 1.2rem;
     flex-shrink: 0;
 }
 
 .erp-welcome .welcome-title {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 650;
     letter-spacing: -0.01em;
+    color: #1e293b;
 }
 
 .erp-welcome .welcome-subtitle {
     font-size: 0.85rem;
-    opacity: .7;
+    color: #64748b;
     margin-top: 0.15rem;
 }
 
 .erp-welcome .welcome-meta {
     font-size: 0.78rem;
-    opacity: .55;
+    color: #94a3b8;
 }
 
 /* Metric zero-state pill */

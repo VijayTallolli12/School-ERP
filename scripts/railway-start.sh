@@ -18,13 +18,20 @@ php artisan config:clear --no-interaction
 log "waiting for MySQL"
 php scripts/railway-wait-for-db.php
 
-log "migration started: php artisan migrate:fresh --seed --force"
-php artisan migrate:fresh --seed --force --no-interaction -vvv
+log "running migrations: php artisan migrate --force"
+php artisan migrate --force --no-interaction -vvv
 log "migration completed"
+
+log "running seeders: php artisan db:seed --force"
+php artisan db:seed --force --no-interaction -vvv
 log "seeding completed"
 
 log "verifying required tables"
 php scripts/railway-verify-tables.php users migrations roles permissions
+
+log "creating storage symlink"
+php artisan storage:link --force --no-interaction
+log "storage symlink created"
 
 log "caching Laravel config"
 php artisan config:cache --no-interaction

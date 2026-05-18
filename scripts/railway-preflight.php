@@ -4,6 +4,7 @@ require __DIR__.'/railway-env.php';
 
 $required = [
     'APP_KEY',
+    'APP_URL',
     'DB_DATABASE',
     'DB_USERNAME',
     'DB_PASSWORD',
