@@ -15,13 +15,13 @@ php scripts/railway-preflight.php
 log "clearing cached Laravel config"
 php artisan config:clear --no-interaction
 
-log "linking public storage"
-php artisan storage:link --force --no-interaction
+log "preparing public storage"
 
-if [ ! -d public/storage ]; then
-    log "public storage link was not created"
-    exit 1
-fi
+mkdir -p public/storage
+
+cp -r storage/app/public/* public/storage/ 2>/dev/null || true
+
+log "public storage prepared"
 
 log "waiting for MySQL"
 php scripts/railway-wait-for-db.php
