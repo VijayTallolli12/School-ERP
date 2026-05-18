@@ -24,10 +24,12 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $faker = \Faker\Factory::create();
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->optional()->phoneNumber(),
+            'name' => $faker->name(),
+            'email' => $faker->unique()->safeEmail(),
+            'phone' => $faker->optional()->phoneNumber(),
             'status' => 'active',
             'is_super_admin' => false,
             'force_password_change' => false,
