@@ -15,9 +15,11 @@
     $attendanceSettings = data_get($academicSettings, 'attendance', []);
     $emailSettings = data_get($settings, 'email', []);
     $paymentSettings = data_get($settings, 'payment', []);
-    $logoUrl = $school->logo_path ? asset('storage/'.$school->logo_path) : null;
+    $logoUrl = $school->logo_path ? Storage::url($school->logo_path) : null;
+    //$logoUrl = $school->logo_path ? asset('storage/'.$school->logo_path) : null;
     $faviconPath = data_get($schoolSettings, 'favicon_path');
-    $faviconUrl = $faviconPath ? asset('storage/'.$faviconPath) : null;
+    $faviconUrl = $faviconPath ? Storage::url($faviconPath) : null;
+    //$faviconUrl = $faviconPath ? asset('storage/'.$faviconPath) : null;
 @endphp
 
 @section('content')
