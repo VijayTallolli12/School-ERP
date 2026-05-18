@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             AcademicStructureSeeder::class,
             TeacherSeeder::class,
-            StudentSeeder::class,
+            //StudentSeeder::class,
             ParentSeeder::class,
             TimetableSeeder::class,
             AttendanceSeeder::class,
