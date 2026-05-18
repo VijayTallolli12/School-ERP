@@ -6,7 +6,7 @@ use App\Models\School;
 use App\Modules\Students\Models\Student;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use function fake;
+
 /** @extends Factory<Student> */
 class StudentFactory extends Factory
 {
@@ -17,15 +17,42 @@ class StudentFactory extends Factory
         return [
             'uuid' => (string) Str::uuid(),
             'school_id' => School::factory(),
-            'admission_no' => strtoupper(fake()->unique()->bothify('ADM####')),
-            'admission_date' => fake()->dateTimeBetween('-2 years', 'now')->format('Y-m-d'),
-            'first_name' => fake()->firstName(),
+
+            'admission_no' => strtoupper(
+                $this->faker->unique()->bothify('ADM####')
+            ),
+
+            'admission_date' => $this->faker
+                ->dateTimeBetween('-2 years', 'now')
+                ->format('Y-m-d'),
+
+            'first_name' => $this->faker->firstName(),
+
             'middle_name' => null,
-            'last_name' => fake()->lastName(),
-            'date_of_birth' => fake()->dateTimeBetween('-17 years', '-4 years')->format('Y-m-d'),
-            'gender' => fake()->randomElement(['male', 'female']),
-            'blood_group' => fake()->optional()->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'O+', 'O-']),
+
+            'last_name' => $this->faker->lastName(),
+
+            'date_of_birth' => $this->faker
+                ->dateTimeBetween('-17 years', '-4 years')
+                ->format('Y-m-d'),
+
+            'gender' => $this->faker
+                ->randomElement(['male', 'female']),
+
+            'blood_group' => $this->faker
+                ->optional()
+                ->randomElement([
+                    'A+',
+                    'A-',
+                    'B+',
+                    'B-',
+                    'AB+',
+                    'O+',
+                    'O-'
+                ]),
+
             'nationality' => 'Indian',
+
             'status' => 'active',
         ];
     }
