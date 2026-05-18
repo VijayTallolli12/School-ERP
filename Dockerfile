@@ -15,8 +15,9 @@ RUN composer install --no-dev --optimize-autoloader
 RUN npm install && npm run build
 
 RUN mkdir -p storage/framework/{sessions,views,cache} \
-    && chmod -R 777 storage bootstrap/cache
+    && chmod -R 777 storage bootstrap/cache \
+    && chmod +x scripts/railway-start.sh
 
 EXPOSE 8080
 
-CMD php artisan serve --host=0.0.0.0 --port=8080
+CMD ["bash", "scripts/railway-start.sh"]
