@@ -18,13 +18,13 @@ class DatabaseSeeder extends Seeder
             SchoolSeeder::class,
             PermissionSeeder::class,
             AdminUserSeeder::class,
-            AcademicStructureSeeder::class,
+            //AcademicStructureSeeder::class,
             //TeacherSeeder::class,
             //StudentSeeder::class,
             //ParentSeeder::class,
-            TimetableSeeder::class,
-            AttendanceSeeder::class,
-            FeeCategorySeeder::class,
+            //TimetableSeeder::class,
+            //AttendanceSeeder::class,
+            //FeeCategorySeeder::class,
         ]);
     }
 }
