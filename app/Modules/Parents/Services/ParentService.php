@@ -3,6 +3,7 @@
 namespace App\Modules\Parents\Services;
 
 use App\Core\Tenant\SchoolContext;
+use App\Models\AcademicYear;
 use App\Models\User;
 use App\Modules\Parents\Models\Guardian;
 use App\Modules\Parents\Repositories\ParentRepositoryInterface;
@@ -26,14 +27,14 @@ class ParentService
                     'name' => $data['first_name'] . ' ' . $data['last_name'],
                     'email' => $data['email'],
                     'password' => Hash::make('password'), // Default password
-                    'school_id' => $this->schoolContext->getSchoolId(),
+                    'school_id' => $this->schoolContext->id(),
                 ]);
 
                 $user->assignRole('Parent');
                 $data['user_id'] = $user->id;
             }
 
-            $data['school_id'] = $this->schoolContext->getSchoolId();
+            $data['school_id'] = $this->schoolContext->id();
             $data['created_by'] = auth()->id();
 
             $parent = $this->repository->create($data);
@@ -122,7 +123,7 @@ class ParentService
         $studentIds = $students->pluck('id')->toArray();
         
         $attendanceRecords = \App\Modules\Attendance\Models\Attendance::whereIn('student_id', $studentIds)
-            ->where('academic_year_id', $this->schoolContext->getAcademicYearId())
+            ->where('academic_year_id', $this->activeAcademicYearId())
             ->get();
 
         $total = $attendanceRecords->count();
@@ -145,7 +146,7 @@ class ParentService
         
         $studentFees = \App\Modules\Fees\Models\StudentFee::with('items')
             ->whereIn('student_id', $studentIds)
-            ->where('academic_year_id', $this->schoolContext->getAcademicYearId())
+            ->where('academic_year_id', $this->activeAcademicYearId())
             ->get();
 
         $total = 0;
@@ -174,7 +175,7 @@ class ParentService
         $results = \App\Modules\Exams\Models\ExamResult::with('exam')
             ->whereIn('student_id', $studentIds)
             ->whereHas('exam', function ($query) {
-                $query->where('academic_year_id', $this->schoolContext->getAcademicYearId())
+                $query->where('academic_year_id', $this->activeAcademicYearId())
                       ->where('is_published', true);
             })
             ->get();
@@ -196,5 +197,13 @@ class ParentService
             'total_marks' => $totalMarks,
             'obtained_marks' => $obtainedMarks,
         ];
+    }
+
+    private function activeAcademicYearId(): ?int
+    {
+        return AcademicYear::query()
+            ->where('school_id', $this->schoolContext->id())
+            ->where('status', 'active')
+            ->value('id');
     }
 }
