@@ -10,7 +10,7 @@ class AssignClassSubjectRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('academics.create');
+        return $this->user()->can('academics.create') || $this->user()->can('academics.update');
     }
 
     public function rules(): array
@@ -26,7 +26,8 @@ class AssignClassSubjectRequest extends FormRequest
                 Rule::unique('class_subjects')->where(fn ($query) => $query
                     ->where('school_id', $schoolId)
                     ->where('academic_year_id', $this->input('academic_year_id'))
-                    ->where('class_id', $this->input('class_id'))),
+                    ->where('class_id', $this->input('class_id')))
+                    ->ignore($this->route('classSubject')?->id),
             ],
             'teacher_id' => ['nullable', 'exists:users,id'],
             'weekly_periods' => ['nullable', 'integer', 'min:0', 'max:80'],

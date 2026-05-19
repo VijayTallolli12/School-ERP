@@ -41,5 +41,7 @@ Route::prefix('academics')
 
         Route::get('class-subjects/data', [AcademicController::class, 'classSubjectsData'])->name('class-subjects.data');
         Route::post('class-subjects', [AcademicController::class, 'assignSubject'])->middleware('permission:academics.create')->name('class-subjects.store');
+        Route::get('class-subjects/{classSubject}', [AcademicController::class, 'showClassSubject'])->name('class-subjects.show');
+        Route::put('class-subjects/{classSubject}', [AcademicController::class, 'updateClassSubject'])->middleware('permission:academics.update')->name('class-subjects.update');
         Route::delete('class-subjects/{classSubject}', [AcademicController::class, 'destroyClassSubject'])->middleware('permission:academics.delete')->name('class-subjects.destroy');
     });

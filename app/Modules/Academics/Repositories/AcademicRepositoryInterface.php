@@ -47,4 +47,6 @@ interface AcademicRepositoryInterface
     public function deleteClassSection(ClassSection $classSection): void;
 
     public function createClassSubject(array $data): ClassSubject;
+
+    public function updateClassSubject(ClassSubject $classSubject, array $data): ClassSubject;
 }

@@ -16,7 +16,7 @@ class StoreParentRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:guardians,email', 'unique:users,email'],
+            'email' => ['required', 'email', 'unique:parents,email', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:20'],
             'occupation' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],

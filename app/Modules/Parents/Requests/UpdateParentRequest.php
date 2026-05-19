@@ -19,7 +19,7 @@ class UpdateParentRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', Rule::unique('guardians')->ignore($parent), Rule::unique('users')->ignore($parent->user_id ?? null)],
+            'email' => ['required', 'email', Rule::unique('parents')->ignore($parent), Rule::unique('users')->ignore($parent->user_id ?? null)],
             'phone' => ['nullable', 'string', 'max:20'],
             'occupation' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],

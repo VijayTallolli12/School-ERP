@@ -12,6 +12,7 @@ class TimetableRepository implements TimetableRepositoryInterface
     public function query(): Builder
     {
         return TimetableSlot::query()
+            ->select('timetable_slots.*')
             ->with(['academicYear', 'classSection.schoolClass', 'classSection.section', 'subject', 'teacher']);
     }
 

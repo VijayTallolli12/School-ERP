@@ -39,7 +39,10 @@ class AcademicRepository implements AcademicRepositoryInterface
 
     public function classSubjects(): Builder
     {
-        return ClassSubject::query()->with(['academicYear', 'schoolClass', 'subject', 'teacher'])->latest('class_subjects.created_at');
+        return ClassSubject::query()
+            ->select('class_subjects.*')
+            ->with(['academicYear', 'schoolClass', 'subject', 'teacher'])
+            ->latest('class_subjects.created_at');
     }
 
     public function createAcademicYear(array $data): AcademicYear
@@ -110,5 +113,12 @@ class AcademicRepository implements AcademicRepositoryInterface
     public function createClassSubject(array $data): ClassSubject
     {
         return ClassSubject::query()->create($data);
+    }
+
+    public function updateClassSubject(ClassSubject $classSubject, array $data): ClassSubject
+    {
+        $classSubject->fill($data)->save();
+
+        return $classSubject->refresh();
     }
 }

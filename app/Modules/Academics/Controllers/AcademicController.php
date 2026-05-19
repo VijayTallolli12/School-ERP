@@ -226,9 +226,27 @@ class AcademicController extends Controller
         return $this->jsonCreated('Subject assigned successfully.', $this->service->assignSubject($request->validated()));
     }
 
+    public function showClassSubject(ClassSubject $classSubject): JsonResponse
+    {
+        return $this->jsonData([
+            'id' => $classSubject->id,
+            'academic_year_id' => $classSubject->academic_year_id,
+            'class_id' => $classSubject->class_id,
+            'subject_id' => $classSubject->subject_id,
+            'teacher_id' => $classSubject->teacher_id,
+            'weekly_periods' => $classSubject->weekly_periods,
+            'status' => $classSubject->status,
+        ]);
+    }
+
+    public function updateClassSubject(AssignClassSubjectRequest $request, ClassSubject $classSubject): JsonResponse
+    {
+        return $this->jsonCreated('Class subject updated successfully.', $this->service->updateClassSubject($classSubject, $request->validated()));
+    }
+
     public function destroyClassSubject(ClassSubject $classSubject): JsonResponse
     {
-        $classSubject->delete();
+        $this->service->deleteClassSubject($classSubject);
 
         return $this->jsonMessage('Class subject removed successfully.');
     }

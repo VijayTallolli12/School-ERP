@@ -197,7 +197,7 @@
     <div class="modal fade" id="classSubjectModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <form class="modal-content ajax-form academic-form" method="POST" action="{{ route('admin.academics.class-subjects.store') }}">
-                @csrf
+                @csrf <input type="hidden" name="_method" value="POST">
                 <div class="modal-header"><h5 class="modal-title">Assign Subject</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
                 <div class="modal-body row g-3">
                     <div class="col-md-6"><label class="form-label required">Academic Year</label><select class="form-select" name="academic_year_id" required>@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected($year->is_active)>{{ $year->name }}</option>@endforeach</select></div>
@@ -233,17 +233,18 @@
                     {data:'id'}, {data:'name'}, {data:'code'}, {data:'type_label', name:'type'}, {data:'credit_hours'}, {data:'status'}, {data:'class_subjects_count', searchable:false}, {data:'actions', orderable:false, searchable:false}
                 ]}),
                 classSubjects: $('#classSubjectsTable').DataTable({processing: true, serverSide: true, responsive: true, ajax: '{{ route('admin.academics.class-subjects.data') }}', columns: [
-                    {data:'id'}, {data:'academic_year', name:'academicYear.name'}, {data:'class_name', name:'schoolClass.name'}, {data:'subject_name', name:'subject.name'}, {data:'teacher_name', orderable:false}, {data:'weekly_periods'}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
+                    {data:'id', name:'class_subjects.id'}, {data:'academic_year', name:'academicYear.name'}, {data:'class_name', name:'schoolClass.name'}, {data:'subject_name', name:'subject.name'}, {data:'teacher_name', orderable:false}, {data:'weekly_periods', name:'class_subjects.weekly_periods'}, {data:'status', name:'class_subjects.status'}, {data:'actions', orderable:false, searchable:false}
                 ]})
             };
 
+            const classSubjectStoreUrl = '{{ route('admin.academics.class-subjects.store') }}';
             const config = {
                 'academic-year': {modal: '#yearModal', store: '{{ route('admin.academics.academic-years.store') }}', table: tables.years},
                 class: {modal: '#classModal', store: '{{ route('admin.academics.classes.store') }}', table: tables.classes},
                 section: {modal: '#sectionModal', store: '{{ route('admin.academics.sections.store') }}', table: tables.sections},
                 'class-section': {modal: '#classSectionModal', store: '{{ route('admin.academics.class-sections.store') }}', table: tables.classSections},
                 subject: {modal: '#subjectModal', store: '{{ route('admin.academics.subjects.store') }}', table: tables.subjects},
-                'class-subject': {modal: '#classSubjectModal', store: '{{ route('admin.academics.class-subjects.store') }}', table: tables.classSubjects}
+                'class-subject': {modal: '#classSubjectModal', store: classSubjectStoreUrl, table: tables.classSubjects}
             };
 
             $('.open-modal').on('click', function () {

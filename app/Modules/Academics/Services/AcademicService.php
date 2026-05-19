@@ -10,6 +10,7 @@ use App\Modules\Academics\Models\SchoolClass;
 use App\Modules\Academics\Models\Section;
 use App\Modules\Academics\Models\Subject;
 use App\Modules\Academics\Repositories\AcademicRepositoryInterface;
+use App\Modules\Teachers\Models\Teacher;
 use Illuminate\Support\Facades\DB;
 
 class AcademicService
@@ -127,10 +128,167 @@ class AcademicService
 
     public function assignSubject(array $data): ClassSubject
     {
-        $data['school_id'] = app(SchoolContext::class)->id();
-        $classSubject = $this->academics->createClassSubject($data);
-        activity()->causedBy(auth()->user())->performedOn($classSubject)->event('created')->log('Subject assigned to class');
+        return DB::transaction(function () use ($data): ClassSubject {
+            $data['school_id'] = app(SchoolContext::class)->id();
+            $classSubject = $this->academics->createClassSubject($data);
+            $this->syncTeacherPivots($classSubject);
+            activity()->causedBy(auth()->user())->performedOn($classSubject)->event('created')->log('Subject assigned to class');
 
-        return $classSubject;
+            return $classSubject;
+        });
+    }
+
+    public function updateClassSubject(ClassSubject $classSubject, array $data): ClassSubject
+    {
+        return DB::transaction(function () use ($classSubject, $data): ClassSubject {
+            $oldTeacherId = $classSubject->teacher_id;
+            $oldClassId = $classSubject->class_id;
+            $oldSubjectId = $classSubject->subject_id;
+
+            $classSubject = $this->academics->updateClassSubject($classSubject, $data);
+
+            // If teacher changed or class/subject changed, clean up old teacher pivots
+            if ($oldTeacherId && ($oldTeacherId !== $classSubject->teacher_id || $oldClassId !== $classSubject->class_id || $oldSubjectId !== $classSubject->subject_id)) {
+                $this->detachOldTeacherPivot($oldTeacherId, $oldSubjectId, $oldClassId);
+            }
+
+            $this->syncTeacherPivots($classSubject);
+            activity()->causedBy(auth()->user())->performedOn($classSubject)->event('updated')->log('Class subject updated');
+
+            return $classSubject;
+        });
+    }
+
+    public function deleteClassSubject(ClassSubject $classSubject): void
+    {
+        DB::transaction(function () use ($classSubject): void {
+            $this->cleanupTeacherPivots($classSubject);
+            $classSubject->delete();
+            activity()->causedBy(auth()->user())->performedOn($classSubject)->event('deleted')->log('Class subject removed');
+        });
+    }
+
+    /**
+     * Sync teacher_subject and teacher_class_section pivots from a ClassSubject record.
+     * ClassSubject->teacher_id is a user_id — resolve to Teacher model via the teachers table.
+     */
+    private function syncTeacherPivots(ClassSubject $classSubject): void
+    {
+        if (! $classSubject->teacher_id) {
+            return;
+        }
+
+        $teacher = Teacher::query()->where('user_id', $classSubject->teacher_id)->first();
+        if (! $teacher) {
+            return;
+        }
+
+        $schoolId = app(SchoolContext::class)->id();
+
+        // Sync teacher_subject pivot (without detaching other subjects)
+        $teacher->subjects()->syncWithoutDetaching([
+            $classSubject->subject_id => ['school_id' => $schoolId],
+        ]);
+
+        // Find the class_section matching this class to sync teacher_class_section pivot
+        $classSection = \App\Modules\Academics\Models\ClassSection::query()
+            ->where('class_id', $classSubject->class_id)
+            ->first();
+
+        if ($classSection) {
+            $teacher->classSections()->syncWithoutDetaching([
+                $classSection->id => ['school_id' => $schoolId, 'is_class_teacher' => false],
+            ]);
+        }
+    }
+
+    /**
+     * Clean up teacher pivots when a ClassSubject is deleted.
+     * Only remove if no other class_subject exists for the same teacher+subject or teacher+class.
+     */
+    private function cleanupTeacherPivots(ClassSubject $classSubject): void
+    {
+        if (! $classSubject->teacher_id) {
+            return;
+        }
+
+        $teacher = Teacher::query()->where('user_id', $classSubject->teacher_id)->first();
+        if (! $teacher) {
+            return;
+        }
+
+        // Detach subject only if no other active class_subject links this teacher to this subject
+        $otherSubjectCount = ClassSubject::query()
+            ->where('teacher_id', $classSubject->teacher_id)
+            ->where('subject_id', $classSubject->subject_id)
+            ->whereKeyNot($classSubject->id)
+            ->count();
+
+        if ($otherSubjectCount === 0) {
+            $teacher->subjects()->detach($classSubject->subject_id);
+        }
+
+        // Detach class_section only if no other active class_subject links this teacher to this class
+        $otherClassCount = ClassSubject::query()
+            ->where('teacher_id', $classSubject->teacher_id)
+            ->where('class_id', $classSubject->class_id)
+            ->whereKeyNot($classSubject->id)
+            ->count();
+
+        if ($otherClassCount === 0) {
+            $classSection = \App\Modules\Academics\Models\ClassSection::query()
+                ->where('class_id', $classSubject->class_id)
+                ->first();
+
+            if ($classSection) {
+                $teacher->classSections()->detach($classSection->id);
+            }
+        }
+    }
+
+    /**
+     * Detach old teacher pivots when a ClassSubject's teacher, subject, or class changes during update.
+     * Only remove if no other class_subject still links the old teacher to the old subject/class.
+     */
+    private function detachOldTeacherPivot(string|int|null $oldTeacherId, string|int|null $oldSubjectId, string|int|null $oldClassId): void
+    {
+        if (! $oldTeacherId) {
+            return;
+        }
+
+        $teacher = Teacher::query()->where('user_id', $oldTeacherId)->first();
+        if (! $teacher) {
+            return;
+        }
+
+        // Detach subject only if no other class_subject links this teacher to this subject
+        if ($oldSubjectId) {
+            $otherSubjectCount = ClassSubject::query()
+                ->where('teacher_id', $oldTeacherId)
+                ->where('subject_id', $oldSubjectId)
+                ->count();
+
+            if ($otherSubjectCount === 0) {
+                $teacher->subjects()->detach($oldSubjectId);
+            }
+        }
+
+        // Detach class_section only if no other class_subject links this teacher to this class
+        if ($oldClassId) {
+            $otherClassCount = ClassSubject::query()
+                ->where('teacher_id', $oldTeacherId)
+                ->where('class_id', $oldClassId)
+                ->count();
+
+            if ($otherClassCount === 0) {
+                $classSection = \App\Modules\Academics\Models\ClassSection::query()
+                    ->where('class_id', $oldClassId)
+                    ->first();
+
+                if ($classSection) {
+                    $teacher->classSections()->detach($classSection->id);
+                }
+            }
+        }
     }
 }
