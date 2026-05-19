@@ -182,10 +182,6 @@
                                 <label class="form-check-label" for="createTeacherUserSwitch">Create login account for teacher</label>
                             </div>
                             <div class="row g-3 teacher-account-fields">
-                                <div class="col-md-6">
-                                    <label class="form-label">Account Email</label>
-                                    <input class="form-control" type="email" name="email" maxlength="255">
-                                </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Password</label>
                                     <input class="form-control" type="password" name="password">

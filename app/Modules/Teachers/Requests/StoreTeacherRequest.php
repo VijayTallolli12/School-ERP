@@ -29,7 +29,7 @@ class StoreTeacherRequest extends FormRequest
             'experience_years' => ['nullable', 'integer', 'min:0', 'max:60'],
             'joining_date' => ['nullable', 'date'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->whereNull('deleted_at')],
             'address' => ['nullable', 'string', 'max:2000'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'status' => ['required', Rule::in(['active', 'inactive', 'probation', 'retired'])],

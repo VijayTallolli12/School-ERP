@@ -30,9 +30,9 @@ log "running migrations: php artisan migrate --force"
 php artisan migrate --force --no-interaction -vvv
 log "migration completed"
 
-log "running seeders: php artisan db:seed --force"
-php artisan db:seed --force --no-interaction -vvv
-log "seeding completed"
+#log "running seeders: php artisan db:seed --force"
+#php artisan db:seed --force --no-interaction -vvv
+#log "seeding completed"
 
 log "verifying required tables"
 php scripts/railway-verify-tables.php users migrations roles permissions

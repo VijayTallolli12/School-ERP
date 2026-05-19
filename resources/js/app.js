@@ -124,7 +124,7 @@ window.App = {
             error(xhr) {
                 if (xhr.status === 422) {
                     App.handleValidation($form, xhr.responseJSON?.errors);
-                    App.toast('error', xhr.responseJSON?.message || 'Please check the form.');
+                    App.toast('error', 'Please correct the highlighted errors below.');
                     return;
                 }
 
