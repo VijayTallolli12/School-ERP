@@ -15,25 +15,27 @@ return new class extends Migration
      * This migration adds:
      *   UNIQUE (school_id, academic_year_id, class_section_id)
      *
-     * On a fresh database, MySQL may tie the FK constraint index to the
-     * original unique, so we do NOT drop it — we only add the new superset.
-     * Both indexes coexist safely; the new one is the authoritative constraint.
+     * The index is explicitly named 'fs_school_year_section_unique' because the
+     * auto-generated name (fee_structures_school_id_academic_year_id_class_section_id_unique)
+     * is 66 characters — exceeding MySQL's 64-character identifier limit.
      */
     public function up(): void
     {
         Schema::table('fee_structures', function (Blueprint $table): void {
-            $table->unique(['school_id', 'academic_year_id', 'class_section_id']);
+            $table->unique(
+                ['school_id', 'academic_year_id', 'class_section_id'],
+                'fs_school_year_section_unique'
+            );
         });
     }
 
     /**
      * Rollback: remove the composite unique index added by this migration.
-     * The original (academic_year_id, class_section_id) unique is untouched.
      */
     public function down(): void
     {
         Schema::table('fee_structures', function (Blueprint $table): void {
-            $table->dropUnique('fee_structures_school_id_academic_year_id_class_section_id_unique');
+            $table->dropUnique('fs_school_year_section_unique');
         });
     }
 };
