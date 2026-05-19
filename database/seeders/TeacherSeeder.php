@@ -65,11 +65,17 @@ class TeacherSeeder extends Seeder
                 'employee_id' => $data['employee_id'],
             ], array_merge($data, ['school_id' => $school->id]));
 
-            $teacher->subjects()->sync($subjects->take(2)->pluck('id')->all());
+            $teacher->subjects()->sync(
+                $subjects->take(2)
+                    ->pluck('id')
+                    ->mapWithKeys(fn (int $id): array => [$id => ['school_id' => $school->id]])
+                    ->all()
+            );
             $teacher->classSections()->sync([
                 $classSections->first()->id => [
-                    'is_class_teacher' => true
-                ]
+                    'is_class_teacher' => true,
+                    'school_id' => $school->id,
+                ],
             ]);
         }
     }

@@ -71,9 +71,19 @@ class Guardian extends Model
         return $this->students()->wherePivot('is_primary', true);
     }
 
+    /**
+     * Get notifications targeting this guardian.
+     *
+     * Returns notifications where target_parents is null (all guardians)
+     * OR where target_parents JSON array contains this guardian's ID.
+     */
     public function notifications(): HasMany
     {
-        return $this->hasMany(ParentNotification::class);
+        return $this->hasMany(ParentNotification::class, 'school_id', 'school_id')
+            ->where(function ($query) {
+                $query->whereNull('target_parents')
+                    ->orWhereJsonContains('target_parents', $this->id);
+            });
     }
 
     protected static function newFactory(): Factory

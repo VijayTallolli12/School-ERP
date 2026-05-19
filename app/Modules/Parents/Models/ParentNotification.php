@@ -6,7 +6,6 @@ use App\Core\Tenant\BelongsToSchool;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ParentNotification extends Model
 {
@@ -40,10 +39,19 @@ class ParentNotification extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function parents(): BelongsToMany
+    /**
+     * Get the guardians targeted by this notification.
+     *
+     * If target_parents is null, the notification targets all guardians in the school.
+     * Otherwise, returns the specific guardians whose IDs are stored in the JSON column.
+     */
+    public function parents()
     {
-        return $this->belongsToMany(Parent::class, 'parent_notification_parent')
-            ->withTimestamps();
+        if (empty($this->target_parents)) {
+            return Guardian::query()->whereRaw('1 = 0');
+        }
+
+        return Guardian::whereIn('id', $this->target_parents);
     }
 
     public function isSent(): bool

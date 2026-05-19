@@ -126,7 +126,7 @@ class ParentController extends Controller
 
     public function dashboard(): View
     {
-        $parent = auth()->user()->parent;
+        $parent = auth()->user()->guardian;
 
         if (!$parent) {
             abort(403, 'Parent profile not found.');
@@ -139,7 +139,7 @@ class ParentController extends Controller
 
     public function attendance(): View
     {
-        $parent = auth()->user()->parent;
+        $parent = auth()->user()->guardian;
 
         return view('modules.parents.attendance', [
             'students' => $parent->students,
@@ -148,7 +148,7 @@ class ParentController extends Controller
 
     public function fees(): View
     {
-        $parent = auth()->user()->parent;
+        $parent = auth()->user()->guardian;
 
         return view('modules.parents.fees', [
             'students' => $parent->students,
@@ -157,7 +157,7 @@ class ParentController extends Controller
 
     public function examResults(): View
     {
-        $parent = auth()->user()->parent;
+        $parent = auth()->user()->guardian;
 
         return view('modules.parents.exam_results', [
             'students' => $parent->students,
@@ -166,7 +166,7 @@ class ParentController extends Controller
 
     public function timetable(): View
     {
-        $parent = auth()->user()->parent;
+        $parent = auth()->user()->guardian;
 
         return view('modules.parents.timetable', [
             'students' => $parent->students,
@@ -175,7 +175,7 @@ class ParentController extends Controller
 
     public function notifications(): View
     {
-        $parent = auth()->user()->parent;
+        $parent = auth()->user()->guardian;
 
         return view('modules.parents.notifications', [
             'notifications' => $parent->notifications()->latest()->paginate(20),

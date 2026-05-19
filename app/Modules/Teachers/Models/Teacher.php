@@ -65,12 +65,14 @@ class Teacher extends Model
 
     public function subjects(): BelongsToMany
     {
-        return $this->belongsToMany(Subject::class, 'teacher_subject', 'teacher_id', 'subject_id');
+        return $this->belongsToMany(Subject::class, 'teacher_subject', 'teacher_id', 'subject_id')
+            ->using(TeacherSubjectPivot::class);
     }
 
     public function classSections(): BelongsToMany
     {
         return $this->belongsToMany(ClassSection::class, 'teacher_class_section', 'teacher_id', 'class_section_id')
+            ->using(TeacherClassSectionPivot::class)
             ->withPivot('is_class_teacher');
     }
 

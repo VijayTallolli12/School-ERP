@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -93,7 +94,11 @@ class User extends Authenticatable
         return $this->currentSchool ?: $this->schools()->wherePivot('status', 'active')->first();
     }
 
-    public function parent(): BelongsTo
+    /**
+     * Get the guardian record associated with this user.
+     * A user with the "Parent" role can have exactly one Guardian record.
+     */
+    public function guardian(): HasOne
     {
         return $this->hasOne(\App\Modules\Parents\Models\Guardian::class);
     }
