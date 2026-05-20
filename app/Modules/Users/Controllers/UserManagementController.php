@@ -104,7 +104,7 @@ class UserManagementController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'password' => $request->password,
+            'password' => Hash::make($request->password),
             'status' => $request->status,
             'current_school_id' => $request->school_id,
             'force_password_change' => false,
@@ -243,7 +243,7 @@ class UserManagementController extends Controller
     public function resetPassword(ResetPasswordRequest $request, User $user): JsonResponse
     {
         $user->update([
-            'password' => $request->password,
+            'password' => Hash::make($request->password),
             'force_password_change' => false,
         ]);
 

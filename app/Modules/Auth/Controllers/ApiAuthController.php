@@ -11,6 +11,7 @@ use App\Core\Tenant\SchoolContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,9 +22,27 @@ class ApiAuthController extends ApiBaseController
 
     public function login(ApiLoginRequest $request): JsonResponse
     {
-        $user = User::query()->where('email', $request->string('email'))->first();
+        $email = $request->string('email')->toString();
+        $password = $request->string('password')->toString();
 
-        if (! $user || ! Hash::check($request->string('password')->toString(), $user->password)) {
+        $user = User::query()->where('email', $email)->first();
+
+        // Temporary debug logging — remove after confirming the fix
+        Log::debug('API Login attempt', [
+            'email'           => $email,
+            'user_found'      => $user !== null,
+            'stored_hash'     => $user?->password,
+            'hash_algo_info'  => $user ? password_get_info($user->password) : null,
+            'hash_check_pass' => $user ? Hash::check($password, $user->password) : false,
+            'hash_driver'     => config('hashing.driver'),
+        ]);
+
+        if (! $user || ! Hash::check($password, $user->password)) {
+            Log::warning('API Login failed — credentials mismatch', [
+                'email'  => $email,
+                'reason' => $user ? 'password mismatch' : 'user not found',
+            ]);
+
             $this->loginActivityService->recordFailure($request, 'Invalid API credentials');
 
             throw ValidationException::withMessages([
@@ -46,6 +65,11 @@ class ApiAuthController extends ApiBaseController
             $request->input('device_name', 'school-erp-api'),
             $abilities ?: ['dashboard.view']
         );
+
+        Log::debug('API Login success', [
+            'email'    => $email,
+            'token_id' => $token->accessToken->id,
+        ]);
 
         $this->loginActivityService->recordSuccess($request, $user);
 

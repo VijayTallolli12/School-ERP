@@ -61,7 +61,6 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'is_super_admin' => 'boolean',
             'force_password_change' => 'boolean',
-            'password' => 'hashed',
         ];
     }
 
