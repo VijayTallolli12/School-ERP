@@ -5,7 +5,7 @@
 
 @section("content")
     <div class="mb-3">
-        <a href="{{ route('reports.exams.index') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back to Exam Reports</a>
+        <a href="{{ route('reports.exams.index') }}" class="btn btn-outline-secondary"><i class="ti ti-arrow-left me-1"></i> Back to Exam Reports</a>
     </div>
 
     <div class="row mb-3">

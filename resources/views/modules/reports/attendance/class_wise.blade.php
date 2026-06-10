@@ -11,7 +11,7 @@
             </div>
             <div class="col-md-6 text-end">
                 <a href="{{ route('reports.attendance.index') }}" class="btn btn-outline-secondary me-2">
-                    <i class="ti-back-left me-2"></i>Back
+                    <i class="ti ti-back-left me-2"></i>Back
                 </a>
             </div>
         </div>
@@ -39,10 +39,25 @@
                 <div class="col-md-6">
                     <label class="form-label">&nbsp;</label>
                     <button type="submit" class="btn btn-primary py-2 w-100">
-                        <i class="ti-filter me-1"></i> Generate Report
+                        <i class="ti ti-filter me-1"></i> Generate Report
                     </button>
                 </div>
             </form>
+            @if (!empty($report['class_summary']))
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <a href="{{ route('reports.attendance.class_wise.export.excel', request()->query()) }}" class="btn btn-success me-2">
+                            <i class="ti ti-file-type-xls me-1"></i> Export Excel
+                        </a>
+                        <a href="{{ route('reports.attendance.class_wise.export.pdf', request()->query()) }}" class="btn btn-danger me-2">
+                            <i class="ti ti-file-type-pdf me-1"></i> Export PDF
+                        </a>
+                        <a href="{{ route('reports.attendance.class_wise.print', request()->query()) }}" class="btn btn-warning" target="_blank">
+                            <i class="ti ti-printer me-1"></i> Print
+                        </a>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -131,7 +146,7 @@
                         <div class="col-md-3">
                             <div class="d-flex align-items-center">
                                 <div class="fs-32 text-success me-3">
-                                    <i class="ti-check"></i>
+                                    <i class="ti ti-check"></i>
                                 </div>
                                 <div>
                                     <p class="text-muted mb-1">Total Present</p>
@@ -142,7 +157,7 @@
                         <div class="col-md-3">
                             <div class="d-flex align-items-center">
                                 <div class="fs-32 text-danger me-3">
-                                    <i class="ti-close"></i>
+                                    <i class="ti ti-close"></i>
                                 </div>
                                 <div>
                                     <p class="text-muted mb-1">Total Absent</p>
@@ -153,7 +168,7 @@
                         <div class="col-md-3">
                             <div class="d-flex align-items-center">
                                 <div class="fs-32 text-warning me-3">
-                                    <i class="ti-time"></i>
+                                    <i class="ti ti-time"></i>
                                 </div>
                                 <div>
                                     <p class="text-muted mb-1">Total Late</p>
@@ -164,7 +179,7 @@
                         <div class="col-md-3">
                             <div class="d-flex align-items-center">
                                 <div class="fs-32 text-info me-3">
-                                    <i class="ti-clipboard"></i>
+                                    <i class="ti ti-clipboard"></i>
                                 </div>
                                 <div>
                                     <p class="text-muted mb-1">Total Leave</p>
@@ -192,9 +207,9 @@
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             $('#filterForm').on('submit', function(e) {
                 e.preventDefault();
                 this.submit();
@@ -206,4 +221,4 @@
             });
         });
     </script>
-@endsection
+@endpush

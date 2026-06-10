@@ -23,6 +23,8 @@ interface TimetableRepositoryInterface
 
     public function findClassSectionConflicts(array $data, ?int $ignoreId = null): Builder;
 
+    public function findRoomConflicts(array $data, ?int $ignoreId = null): Builder;
+
     public function getForClassSchedule(int $classSectionId, int $academicYearId): Builder;
 
     public function getForTeacherSchedule(int $teacherId, int $academicYearId): Builder;

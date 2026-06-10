@@ -174,13 +174,57 @@
                         </div>
 
                         <div class="tab-pane fade" id="studentGuardian">
-                            <div class="d-flex align-items-center mb-3">
-                                <h6 class="mb-0 fw-semibold">Guardians</h6>
-                                <button type="button" class="btn btn-outline-primary btn-sm ms-auto" id="addGuardian">
-                                    <i class="ti ti-plus me-1"></i> Add Guardian
-                                </button>
+                            <!-- Toggle: Existing Parent vs New Guardian -->
+                            <div class="mb-4">
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="guardian_mode" id="modeExisting" value="existing" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="modeExisting">
+                                        <i class="ti ti-user-check me-1"></i> Link Existing Parent
+                                    </label>
+                                    <input type="radio" class="btn-check" name="guardian_mode" id="modeNew" value="new" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary" for="modeNew">
+                                        <i class="ti ti-user-plus me-1"></i> Create New Guardian
+                                    </label>
+                                </div>
                             </div>
-                            <div id="guardianRows" class="vstack gap-3">
+
+                            <!-- Existing Parent Selection -->
+                            <div id="existingParentSection" class="d-none">
+                                <div class="border rounded p-3 bg-body">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label required">Select Parent</label>
+                                            <select class="form-select" name="parent_id" id="parentSelect">
+                                                <option value="">— Select Parent —</option>
+                                                @foreach($parents as $parent)
+                                                    <option value="{{ $parent->id }}">{{ $parent->full_name }} ({{ $parent->email }})</option>
+                                                @endforeach
+                                            </select>
+                                            <div class="form-text">Link this student to an existing parent account. Guardian details will be taken from the parent record.</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Relationship to Student</label>
+                                            <select class="form-select" name="relationship">
+                                                <option value="father">Father</option>
+                                                <option value="mother">Mother</option>
+                                                <option value="guardian">Guardian</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- New Guardian Creation -->
+                            <div id="newGuardianSection">
+                                <div class="d-flex align-items-center mb-3">
+                                    <h6 class="mb-0 fw-semibold">Guardians</h6>
+                                    <button type="button" class="btn btn-outline-primary btn-sm ms-auto" id="addGuardian">
+                                        <i class="ti ti-plus me-1"></i> Add Guardian
+                                    </button>
+                                </div>
+                                <div id="guardianRows" class="vstack gap-3">
+                                </div>
                             </div>
                         </div>
 
@@ -208,7 +252,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Student</button>
+                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Student</button>
                 </div>
             </form>
         </div>
@@ -351,10 +395,33 @@
                 });
             }
 
+            // Guardian mode toggle
+            const existingParentSection = $('#existingParentSection');
+            const newGuardianSection = $('#newGuardianSection');
+            const parentSelect = $('#parentSelect');
+
+            $('input[name="guardian_mode"]').on('change', function () {
+                if ($(this).val() === 'existing') {
+                    existingParentSection.removeClass('d-none');
+                    newGuardianSection.addClass('d-none');
+                    parentSelect.prop('required', true);
+                    // Clear guardian fields so they aren't submitted
+                    guardianRows.empty();
+                } else {
+                    existingParentSection.addClass('d-none');
+                    newGuardianSection.removeClass('d-none');
+                    parentSelect.prop('required', false);
+                    parentSelect.val('');
+                    setGuardianRows();
+                }
+            });
+
             setGuardianRows();
 
             $('#createStudent').on('click', () => {
                 form[0].reset();
+                // Reset guardian mode to default
+                $('#modeNew').prop('checked', true).trigger('change');
                 setGuardianRows();
                 $('#studentMethod').val('POST');
                 form.attr('action', '{{ route('admin.students.store') }}');
@@ -395,7 +462,18 @@
                         }
                     });
 
-                    setGuardianRows(response.data.guardians);
+                    // Determine guardian mode based on student data
+                    if (response.data.parent_id) {
+                        $('#modeExisting').prop('checked', true).trigger('change');
+                        parentSelect.val(response.data.parent_id);
+                        if (response.data.relationship) {
+                            form.find('select[name="relationship"]').val(response.data.relationship);
+                        }
+                    } else {
+                        $('#modeNew').prop('checked', true).trigger('change');
+                        setGuardianRows(response.data.guardians);
+                    }
+
                     $('#createUserSwitch').prop('checked', false);
                     modal.show();
                 });

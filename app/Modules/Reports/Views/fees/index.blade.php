@@ -55,6 +55,10 @@
                             <h5 class="mb-1">Collection Summary</h5>
                             <p class="mb-1">Get an aggregated view of fee demands, payments, and balances summarized by class and section.</p>
                         </a>
+                        <a href="{{ route('reports.fees.defaulters') }}" class="list-group-item list-group-item-action">
+                            <h5 class="mb-1">Fee Defaulters</h5>
+                            <p class="mb-1">Identify defaulters with outstanding balances, overdue days, and parent contact details.</p>
+                        </a>
                     </div>
                 </div>
             </div>

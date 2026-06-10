@@ -132,6 +132,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     transform: translateY(-1px);
 }
 
+.card.transition-shadow {
+    transition: all 0.3s ease;
+}
+
 .card.card-flat {
     box-shadow: none;
     border-color: rgba(0,0,0,.04);
@@ -356,6 +360,45 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 .btn:not(.btn-link):not([disabled]):not(.disabled):hover {
     transform: translateY(-1px);
+}
+
+/* --- EXAM RESULTS TOOLBAR --- */
+.exam-results-toolbar {
+    flex-shrink: 0;
+}
+
+.exam-results-toolbar .btn {
+    padding: 0.5rem 1.125rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.exam-results-toolbar .btn i,
+.exam-results-toolbar .btn .ti {
+    font-size: 0.95em;
+}
+
+@media (max-width: 767.98px) {
+    .card-header .exam-results-toolbar {
+        width: 100%;
+    }
+
+    .card-header .exam-results-toolbar .btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .card-header .exam-results-toolbar {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .card-header .exam-results-toolbar .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* Card hover lift */
@@ -1137,9 +1180,11 @@ select.form-select {
 
 /* --- UTILITY --- */
 .cursor-pointer { cursor: pointer; }
-.fs-32 { font-size: 2rem; }
-.fs-40 { font-size: 2.5rem; }
+.fs-13 { font-size: 0.8125rem; }
 
+.fs-32 { font-size: 2rem; }
+
+.fs-40 { font-size: 2.5rem; }
 .text-uppercase-sm {
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -1248,5 +1293,71 @@ select.form-select {
 
     .breadcrumb {
         font-size: 0.75rem;
+    }
+
+    div.dataTables_wrapper div.dataTables_filter input {
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 360px) {
+    .app-content-header h3 {
+        font-size: 1rem;
+    }
+
+    .nav-tabs .nav-link {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.72rem;
+    }
+
+    .table thead th {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.35rem;
+    }
+
+    .table tbody td {
+        font-size: 0.72rem;
+        padding: 0.3rem 0.35rem;
+    }
+
+    .btn-sm {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+    }
+
+    .card .card-body {
+        padding: 0.625rem;
+    }
+
+    .erp-stat-card {
+        padding: 0.75rem;
+    }
+
+    .erp-stat-card .stat-info h4 {
+        font-size: 1.1rem;
+    }
+
+    .erp-stat-card .stat-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+
+    div.dataTables_wrapper div.dataTables_filter input {
+        min-width: 80px;
+        max-width: 120px;
+    }
+
+    div.dataTables_wrapper div.dataTables_length select {
+        max-width: 80px;
+    }
+
+    .modal-dialog {
+        margin: 0.25rem;
+    }
+
+    .table-actions .btn {
+        padding: 0.18rem 0.35rem;
+        font-size: 0.7rem;
     }
 }

@@ -63,6 +63,14 @@
                             <h5 class="mb-1">Student Result Summary</h5>
                             <p class="mb-1">Get an overall report card summary for a specific student.</p>
                         </a>
+                        <a href="{{ route('reports.exams.top_performers') }}" class="list-group-item list-group-item-action">
+                            <h5 class="mb-1">Top Performers</h5>
+                            <p class="mb-1">View ranked list of top performing students based on exam percentages.</p>
+                        </a>
+                        <a href="{{ route('reports.exams.pass_fail_analysis') }}" class="list-group-item list-group-item-action">
+                            <h5 class="mb-1">Pass/Fail Analysis</h5>
+                            <p class="mb-1">Analyze pass/fail rates across classes and subjects with student-level breakdown.</p>
+                        </a>
                     </div>
                 </div>
             </div>

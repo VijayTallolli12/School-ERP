@@ -32,4 +32,14 @@ class ExamReportService
     {
         return $this->repository->studentSummary($studentId, $academicYearId);
     }
+
+    public function topPerformers(?int $academicYearId, ?int $examId, ?int $classSectionId, ?int $subjectId, int $topN = 10): array
+    {
+        return $this->repository->topPerformers($academicYearId, $examId, $classSectionId, $subjectId, $topN);
+    }
+
+    public function passFailAnalysis(?int $academicYearId, ?int $examId, ?int $classSectionId, ?int $subjectId, ?string $fromDate, ?string $toDate): array
+    {
+        return $this->repository->passFailAnalysis($academicYearId, $examId, $classSectionId, $subjectId, $fromDate, $toDate);
+    }
 }

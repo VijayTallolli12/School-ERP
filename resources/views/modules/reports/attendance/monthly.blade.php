@@ -11,7 +11,7 @@
             </div>
             <div class="col-md-6 text-end">
                 <a href="{{ route('reports.attendance.index') }}" class="btn btn-outline-secondary me-2">
-                    <i class="ti-back-left me-2"></i>Back
+                    <i class="ti ti-back-left me-2"></i>Back
                 </a>
             </div>
         </div>
@@ -49,10 +49,25 @@
                 <div class="col-md-4">
                     <label class="form-label">&nbsp;</label>
                     <button type="submit" class="btn btn-primary py-2 w-100">
-                        <i class="ti-filter me-1"></i> Generate Report
+                        <i class="ti ti-filter me-1"></i> Generate Report
                     </button>
                 </div>
             </form>
+            @if (!empty($report))
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <a href="{{ route('reports.attendance.monthly.export.excel', request()->query()) }}" class="btn btn-success me-2">
+                            <i class="ti ti-file-type-xls me-1"></i> Export Excel
+                        </a>
+                        <a href="{{ route('reports.attendance.monthly.export.pdf', request()->query()) }}" class="btn btn-danger me-2">
+                            <i class="ti ti-file-type-pdf me-1"></i> Export PDF
+                        </a>
+                        <a href="{{ route('reports.attendance.monthly.print', request()->query()) }}" class="btn btn-warning" target="_blank">
+                            <i class="ti ti-printer me-1"></i> Print
+                        </a>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -69,7 +84,7 @@
                             <div class="col-md-3">
                                 <div class="d-flex align-items-center">
                                     <div class="fs-32 text-success me-3">
-                                        <i class="ti-check"></i>
+                                        <i class="ti ti-check"></i>
                                     </div>
                                     <div>
                                         <p class="text-muted mb-1">Present</p>
@@ -80,7 +95,7 @@
                             <div class="col-md-3">
                                 <div class="d-flex align-items-center">
                                     <div class="fs-32 text-danger me-3">
-                                        <i class="ti-close"></i>
+                                        <i class="ti ti-close"></i>
                                     </div>
                                     <div>
                                         <p class="text-muted mb-1">Absent</p>
@@ -91,7 +106,7 @@
                             <div class="col-md-3">
                                 <div class="d-flex align-items-center">
                                     <div class="fs-32 text-warning me-3">
-                                        <i class="ti-time"></i>
+                                        <i class="ti ti-time"></i>
                                     </div>
                                     <div>
                                         <p class="text-muted mb-1">Late</p>
@@ -102,7 +117,7 @@
                             <div class="col-md-3">
                                 <div class="d-flex align-items-center">
                                     <div class="fs-32 text-info me-3">
-                                        <i class="ti-clipboard"></i>
+                                        <i class="ti ti-clipboard"></i>
                                     </div>
                                     <div>
                                         <p class="text-muted mb-1">Leave</p>
@@ -151,7 +166,7 @@
                                     <td class="text-center">
                                         <span class="badge bg-info">{{ $student['leave'] }}</span>
                                     </td>
-                                    <td class="text-center font-weight-bold">{{ $student['total'] }}</td>
+                                    <td class="text-center fw-bold">{{ $student['total'] }}</td>
                                     <td class="text-center">
                                         <strong>{{ $student['total'] > 0 ? round(($student['present'] / $student['total']) * 100, 1) : 0 }}%</strong>
                                     </td>
@@ -168,18 +183,18 @@
         </div>
     @else
         <div class="alert alert-info" role="alert">
-            <i class="ti-info-alt me-2"></i>Please select a class section to generate the report
+            <i class="ti ti-info-alt me-2"></i>Please select a class section to generate the report
         </div>
     @endif
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             $('#filterForm').on('submit', function(e) {
                 e.preventDefault();
                 this.submit();
             });
         });
     </script>
-@endsection
+@endpush

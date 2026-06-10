@@ -13,7 +13,7 @@
     <div class="card">
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title mb-0">Teacher Attendance</h3>
-            @can('teachers.create')
+            @can('attendance.create')
                 <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#attendanceModal" id="createAttendance">
                     <i class="ti ti-plus me-1"></i> Mark Attendance
                 </button>

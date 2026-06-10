@@ -210,7 +210,10 @@ window.App = {
      * Initialize Bootstrap tooltips on a parent element.
      */
     initTooltips(parent = document) {
-        $(parent).find('[data-bs-toggle="tooltip"]').tooltip();
+        const root = parent || document;
+        root.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+            new bootstrap.Tooltip(el);
+        });
     },
 
     /**

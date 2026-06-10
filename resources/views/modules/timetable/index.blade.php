@@ -13,9 +13,26 @@
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title fw-semibold mb-0">Timetable Slots</h3>
             @can('timetable.create')
-                <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#timetableModal" id="createTimetable">
-                    <i class="ti ti-plus me-1"></i> Add Slot
-                </button>
+                <div class="btn-group ms-auto">
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#timetableModal" id="createTimetable">
+                        <i class="ti ti-plus me-1"></i> Add Slot
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="visually-hidden">Toggle</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#duplicateDayModal">
+                                <i class="ti ti-copy me-2"></i> Duplicate Day
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#copyTimetableModal">
+                                <i class="ti ti-transfer me-2"></i> Copy Between Classes
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             @endcan
         </div>
 
@@ -253,6 +270,123 @@
 @endpush
 
 @push('modals')
+    <div class="modal fade" id="duplicateDayModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <form class="modal-content" id="duplicateDayForm" method="POST" action="{{ route('admin.timetable.duplicate-day') }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="ti ti-copy me-2"></i> Duplicate Day Schedule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Copy all timetable slots from one day to another for the same class section.</p>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label required">Academic Year</label>
+                            <select class="form-select" name="academic_year_id" id="dupAcademicYear" required>
+                                <option value="">Select</option>
+                                @foreach($academicYears as $year)
+                                    <option value="{{ $year->id }}">{{ $year->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label required">Class / Section</label>
+                            <select class="form-select" name="class_section_id" id="dupClassSection" required>
+                                <option value="">Select</option>
+                                @foreach($classSections as $classSection)
+                                    <option value="{{ $classSection->id }}">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label required">Source Day</label>
+                            <select class="form-select" name="source_day" id="dupSourceDay" required>
+                                <option value="">Select</option>
+                                @foreach($days as $key => $day)
+                                    <option value="{{ $key }}">{{ $day }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label required">Target Day</label>
+                            <select class="form-select" name="target_day" id="dupTargetDay" required>
+                                <option value="">Select</option>
+                                @foreach($days as $key => $day)
+                                    <option value="{{ $key }}">{{ $day }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="duplicateDayBtn">
+                        <i class="ti ti-copy me-1"></i> Duplicate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="copyTimetableModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <form class="modal-content" id="copyTimetableForm" method="POST" action="{{ route('admin.timetable.copy-class') }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="ti ti-transfer me-2"></i> Copy Timetable Between Classes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Copy all timetable slots from one class section to another. Conflicting slots will be skipped.</p>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label required">Academic Year</label>
+                            <select class="form-select" name="academic_year_id" id="copyAcademicYear" required>
+                                <option value="">Select</option>
+                                @foreach($academicYears as $year)
+                                    <option value="{{ $year->id }}">{{ $year->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label required">Source Class / Section</label>
+                            <select class="form-select" name="source_class_section_id" id="copySourceClass" required>
+                                <option value="">Select</option>
+                                @foreach($classSections as $classSection)
+                                    <option value="{{ $classSection->id }}">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label required">Target Class / Section</label>
+                            <select class="form-select" name="target_class_section_id" id="copyTargetClass" required>
+                                <option value="">Select</option>
+                                @foreach($classSections as $classSection)
+                                    <option value="{{ $classSection->id }}">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="adjust_room_names" value="1" id="copyAdjustRoom">
+                                <label class="form-check-label" for="copyAdjustRoom">
+                                    Append "(copied)" to room names to avoid conflicts
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="copyTimetableBtn">
+                        <i class="ti ti-transfer me-1"></i> Copy Timetable
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="modal fade" id="timetablePreviewModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-xl">
             <div class="modal-content">
@@ -301,14 +435,15 @@
                     },
                 },
                 columns: [
+                    {data: 'id', name: 'id', visible: false, searchable: false, orderable: false},
                     {data: 'academic_year', name: 'academicYear.name'},
                     {data: 'class_section', name: 'class_section', orderable: false, searchable: false},
-                    {data: 'day', name: 'timetable_slots.day_of_week'},
-                    {data: 'period_number', name: 'timetable_slots.period_number'},
+                    {data: 'day', name: 'day_of_week'},
+                    {data: 'period_number', name: 'period_number'},
                     {data: 'time_range', name: 'start_time', orderable: false, searchable: false},
                     {data: 'subject', name: 'subject.name'},
                     {data: 'teacher', name: 'teacher.first_name'},
-                    {data: 'room', name: 'timetable_slots.room'},
+                    {data: 'room', name: 'room'},
                     {data: 'status_label', name: 'status', orderable: false, searchable: false},
                     {data: 'actions', name: 'actions', orderable: false, searchable: false},
                 ],
@@ -327,29 +462,45 @@
                 timetableForm.find('.invalid-feedback.dynamic').remove();
             });
 
-            $('#timetableTable').on('click', '.edit-slot', function () {
-                $.get($(this).data('url'), (response) => {
-                    timetableForm[0].reset();
-                    timetableForm.find('.is-invalid').removeClass('is-invalid');
-                    timetableForm.find('.invalid-feedback.dynamic').remove();
-                    timetableForm.attr('action', $(this).data('update-url'));
-                    $('#timetableMethod').val('PUT');
-                    $('#timetableModalTitle').text('Edit Timetable Slot');
+            $(document).on('click', '.edit-slot', function () {
+                const $btn = $(this);
+                const slotId = $btn.attr('data-id');
+                const url = $btn.attr('data-url');
 
-                    Object.entries(response.data).forEach(([key, value]) => {
-                        const input = timetableForm.find(`[name="${key}"]`);
-                        if (input.length) {
-                            input.val(value);
-                        }
-                    });
+                console.log('=== Timetable Edit === slotId:', slotId, 'url:', url);
 
-                    timetableModal.show();
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (response) {
+                        console.log('=== Timetable Edit RESPONSE ===', JSON.stringify(response));
+
+                        timetableForm[0].reset();
+                        timetableForm.find('.is-invalid').removeClass('is-invalid');
+                        timetableForm.find('.invalid-feedback.dynamic').remove();
+                        timetableForm.attr('action', $btn.attr('data-update-url'));
+                        $('#timetableMethod').val('PUT');
+                        $('#timetableModalTitle').text('Edit Timetable Slot');
+
+                        Object.entries(response.data).forEach(([key, value]) => {
+                            const input = timetableForm.find(`[name="${key}"]`);
+                            if (input.length && value != null) {
+                                input.val(value);
+                            }
+                        });
+
+                        timetableModal.show();
+                    },
+                    error: function (xhr) {
+                        console.error('[Timetable] Edit failed:', xhr.responseJSON || xhr);
+                        App.toast.error('Failed to load timetable slot data.');
+                    },
                 });
             });
 
-            $('#timetableTable').on('click', '.delete-slot', function () {
+            $(document).on('click', '.delete-slot', function () {
                 App.confirmDelete({
-                    url: $(this).data('url'),
+                    url: $(this).attr('data-url'),
                     onSuccess: () => timetableTable.ajax.reload(null, false),
                 });
             });
@@ -597,6 +748,96 @@
                 url.searchParams.set('academic_year_id', year);
                 url.searchParams.set('teacher_id', teacherId);
                 window.open(url.toString(), '_blank');
+            });
+
+            // Reset modal form state when hidden
+            $('#timetableModal').on('hidden.bs.modal', function () {
+                timetableForm[0].reset();
+                timetableForm.find('.is-invalid').removeClass('is-invalid');
+                timetableForm.find('.invalid-feedback.dynamic').remove();
+            });
+
+            // === Duplicate Day ===
+            const duplicateDayForm = $('#duplicateDayForm');
+            const duplicateDayBtn = $('#duplicateDayBtn');
+            const dupModal = new bootstrap.Modal('#duplicateDayModal');
+
+            duplicateDayForm.on('submit', function (e) {
+                e.preventDefault();
+                duplicateDayBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Duplicating...');
+
+                $.ajax({
+                    url: this.action,
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        dupModal.hide();
+                        if (response.success) {
+                            App.toast.success(response.message);
+                        } else {
+                            App.toast.warning(response.message);
+                        }
+                        timetableTable.ajax.reload(null, false);
+
+                        if (response.data?.errors?.length) {
+                            console.warn('Skipped slots:', response.data.errors);
+                        }
+                    },
+                    error: function (xhr) {
+                        const msg = xhr.responseJSON?.message || 'Failed to duplicate day schedule.';
+                        App.toast.error(msg);
+                    },
+                    complete: function () {
+                        duplicateDayBtn.prop('disabled', false).html('<i class="ti ti-copy me-1"></i> Duplicate');
+                    },
+                });
+            });
+
+            // === Copy Timetable ===
+            const copyTimetableForm = $('#copyTimetableForm');
+            const copyTimetableBtn = $('#copyTimetableBtn');
+            const copyModal = new bootstrap.Modal('#copyTimetableModal');
+
+            copyTimetableForm.on('submit', function (e) {
+                e.preventDefault();
+                copyTimetableBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Copying...');
+
+                $.ajax({
+                    url: this.action,
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        copyModal.hide();
+                        if (response.success) {
+                            App.toast.success(response.message);
+                        } else {
+                            App.toast.warning(response.message);
+                        }
+                        timetableTable.ajax.reload(null, false);
+
+                        if (response.data?.errors?.length) {
+                            console.warn('Skipped slots:', response.data.errors);
+                        }
+                    },
+                    error: function (xhr) {
+                        const msg = xhr.responseJSON?.message || 'Failed to copy timetable.';
+                        App.toast.error(msg);
+                    },
+                    complete: function () {
+                        copyTimetableBtn.prop('disabled', false).html('<i class="ti ti-transfer me-1"></i> Copy Timetable');
+                    },
+                });
+            });
+
+            // Reset modal forms on hidden
+            $('#duplicateDayModal').on('hidden.bs.modal', function () {
+                this.querySelector('form').reset();
+                $(this).find('.is-invalid').removeClass('is-invalid');
+            });
+
+            $('#copyTimetableModal').on('hidden.bs.modal', function () {
+                this.querySelector('form').reset();
+                $(this).find('.is-invalid').removeClass('is-invalid');
             });
         });
     </script>

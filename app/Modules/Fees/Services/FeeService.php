@@ -165,18 +165,20 @@ class FeeService
                 })
                 ->pluck('id');
 
+            // Batch check existing assignments to avoid N+1
+            $existingIds = StudentFee::query()
+                ->whereIn('student_id', $studentIds)
+                ->where('academic_year_id', $data['academic_year_id'])
+                ->pluck('student_id')
+                ->toArray();
+
+            $existingSet = array_flip($existingIds);
             $assigned = 0;
             $skipped = 0;
 
             foreach ($studentIds as $studentId) {
-                $exists = StudentFee::query()
-                    ->where('student_id', $studentId)
-                    ->where('academic_year_id', $data['academic_year_id'])
-                    ->exists();
-
-                if ($exists) {
+                if (isset($existingSet[$studentId])) {
                     $skipped++;
-
                     continue;
                 }
 
@@ -410,6 +412,13 @@ class FeeService
             $q->whereHas('studentFee', fn ($sq) => $sq->where('academic_year_id', $academicYearId));
         }
 
+        // Filter items with balance at the SQL level using HAVING
+        $q->havingRaw('COALESCE(paid_sum, 0) < student_fee_items.amount');
+
+        if ($overdueOnly) {
+            $q->whereDate('due_date', '<', now());
+        }
+
         $rows = $q->orderBy('due_date')->limit(10000)->get();
 
         $out = [];
@@ -422,10 +431,6 @@ class FeeService
             }
 
             $isOverdue = $item->due_date && $item->due_date->isPast();
-
-            if ($overdueOnly && ! $isOverdue) {
-                continue;
-            }
 
             $student = $item->studentFee?->student;
 
@@ -450,69 +455,64 @@ class FeeService
      */
     public function classWiseFeeReport(int $academicYearId): array
     {
-        $items = StudentFeeItem::query()
-            ->whereHas('studentFee', fn ($q) => $q->where('academic_year_id', $academicYearId))
-            ->with([
-                'feeCategory',
-                'studentFee.student.sessions' => fn ($q) => $q->where('academic_year_id', $academicYearId)->where('status', 'active'),
-                'studentFee.student.sessions.classSection.schoolClass',
-                'studentFee.student.sessions.classSection.section',
+        // Use SQL aggregation with GROUP BY instead of loading 20K rows into PHP
+        $rows = StudentFeeItem::query()
+            ->select([
+                'class_section.id',
+                DB::raw("CONCAT(school_classes.name, ' - ', sections.name) as class_label"),
+                DB::raw('SUM(student_fee_items.amount) as total_due'),
+                DB::raw('COALESCE(SUM(fpi.paid_amount), 0) as total_paid'),
             ])
-            ->withSum(['paymentItems as paid_sum' => fn ($sq) => $sq->whereHas('feePayment')], 'amount')
-            ->limit(20000)
+            ->join('student_fees', 'student_fee_items.student_fee_id', '=', 'student_fees.id')
+            ->join('students', 'student_fees.student_id', '=', 'students.id')
+            ->leftJoin('student_sessions', function ($join) use ($academicYearId) {
+                $join->on('students.id', '=', 'student_sessions.student_id')
+                    ->where('student_sessions.academic_year_id', '=', $academicYearId)
+                    ->where('student_sessions.status', '=', 'active');
+            })
+            ->leftJoin('class_section', 'student_sessions.class_section_id', '=', 'class_section.id')
+            ->leftJoin('school_classes', 'class_section.class_id', '=', 'school_classes.id')
+            ->leftJoin('sections', 'class_section.section_id', '=', 'sections.id')
+            ->leftJoin(DB::raw('(SELECT student_fee_item_id, SUM(amount) as paid_amount FROM fee_payment_items WHERE EXISTS (SELECT 1 FROM fee_payments WHERE fee_payments.id = fee_payment_items.fee_payment_id) GROUP BY student_fee_item_id) as fpi'), 'student_fee_items.id', '=', 'fpi.student_fee_item_id')
+            ->where('student_fees.academic_year_id', $academicYearId)
+            ->groupBy('class_section.id', 'school_classes.name', 'sections.name')
             ->get();
 
         $groups = [];
-
-        foreach ($items as $item) {
-            $session = $item->studentFee?->student?->sessions->first();
-            $classLabel = $session && $session->classSection
-                ? $session->classSection->schoolClass->name.' - '.$session->classSection->section->name
-                : 'Unassigned';
-
-            $key = $classLabel;
-            if (! isset($groups[$key])) {
-                $groups[$key] = [
-                    'class_section' => $classLabel,
-                    'total_due' => 0.0,
-                    'total_paid' => 0.0,
-                    'balance' => 0.0,
-                ];
-            }
-
-            $paid = (float) ($item->paid_sum ?? 0);
-            $due = (float) $item->amount;
+        foreach ($rows as $row) {
+            $classLabel = $row->class_label ?? 'Unassigned';
+            $due = (float) $row->total_due;
+            $paid = (float) ($row->total_paid ?? 0);
             $balance = max(0, $due - $paid);
 
-            $groups[$key]['total_due'] += $due;
-            $groups[$key]['total_paid'] += $paid;
-            $groups[$key]['balance'] += $balance;
+            $groups[] = [
+                'class_section' => $classLabel,
+                'total_due' => $due,
+                'total_paid' => $paid,
+                'balance' => $balance,
+            ];
         }
 
-        return array_values($groups);
+        return $groups;
     }
 
     public function dashboardFeeStats(): array
     {
         $totalCollected = FeePayment::query()->sum('amount');
-
-        $pending = 0.0;
-        StudentFeeItem::query()
-            ->withSum(['paymentItems as paid_sum' => fn ($sq) => $sq->whereHas('feePayment')], 'amount')
-            ->chunkById(500, function ($chunk) use (&$pending): void {
-                foreach ($chunk as $item) {
-                    $pending += max(0, (float) $item->amount - (float) ($item->paid_sum ?? 0));
-                }
-            });
-
         $monthly = FeePayment::query()
             ->whereYear('paid_on', now()->year)
             ->whereMonth('paid_on', now()->month)
             ->sum('amount');
 
+        // Replace chunkById loop with a single aggregate subquery for pending fees
+        $pending = (float) StudentFeeItem::query()
+            ->leftJoin(DB::raw('(SELECT student_fee_item_id, SUM(amount) as paid_sum FROM fee_payment_items WHERE EXISTS (SELECT 1 FROM fee_payments WHERE fee_payments.id = fee_payment_items.fee_payment_id) GROUP BY student_fee_item_id) as fpi'), 'student_fee_items.id', '=', 'fpi.student_fee_item_id')
+            ->selectRaw('COALESCE(SUM(student_fee_items.amount - COALESCE(fpi.paid_sum, 0)), 0) as total_pending')
+            ->value('total_pending');
+
         return [
             'total_collected' => (float) $totalCollected,
-            'pending_fees' => (float) $pending,
+            'pending_fees' => max(0, (float) $pending),
             'monthly_collection' => (float) $monthly,
         ];
     }

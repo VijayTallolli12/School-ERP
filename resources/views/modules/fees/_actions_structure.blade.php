@@ -1,6 +1,6 @@
 <div class="btn-group btn-group-sm">
     @can('fees.update')
-        <button type="button" class="btn btn-outline-secondary edit-fee-structure" data-url="{{ route('admin.fees.structures.show', $row) }}" data-update-url="{{ route('admin.fees.structures.update', $row) }}">
+        <button type="button" class="btn btn-outline-primary edit-fee-structure" data-url="{{ route('admin.fees.structures.show', $row) }}" data-update-url="{{ route('admin.fees.structures.update', $row) }}">
             <i class="ti ti-pencil"></i>
         </button>
     @endcan

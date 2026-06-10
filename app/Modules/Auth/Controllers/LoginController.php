@@ -34,6 +34,12 @@ class LoginController extends Controller
 
         $this->loginActivityService->recordSuccess($request, $request->user());
 
+        $user = $request->user();
+
+        if ($user->hasRole('Parent')) {
+            return redirect()->intended(route('parent-portal.dashboard'));
+        }
+
         return redirect()->intended(route('admin.dashboard'));
     }
 

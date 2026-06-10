@@ -9,4 +9,5 @@ interface TeacherReportRepositoryInterface
     public function attendance(array $filters = []): array;
     public function subjectAllocation(array $filters = []): array;
     public function classTeacherMapping(array $filters = []): array;
+    public function workload(array $filters = []): array;
 }

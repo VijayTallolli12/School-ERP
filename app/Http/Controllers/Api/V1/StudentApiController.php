@@ -14,6 +14,7 @@ use App\Modules\Fees\Models\StudentFee;
 use App\Modules\Fees\Repositories\FeeRepositoryInterface;
 use App\Modules\Students\Models\Student;
 use App\Modules\Students\Repositories\StudentRepositoryInterface;
+use App\Modules\Timetable\Models\TimetableSlot;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -80,6 +81,16 @@ class StudentApiController extends ApiBaseController
             return $this->notFound('Student not found.');
         }
 
+        $user = request()->user();
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin')) {
+            $guardian = $user->guardian;
+
+            if (! $guardian || ! $guardian->students()->where('students.id', $student->id)->exists()) {
+                return $this->forbidden('You are not authorized to view this student.');
+            }
+        }
+
         return $this->success(new StudentResource($student), 'Student retrieved.');
     }
 
@@ -89,6 +100,16 @@ class StudentApiController extends ApiBaseController
 
         if (! $student) {
             return $this->notFound('Student not found.');
+        }
+
+        $user = request()->user();
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin')) {
+            $guardian = $user->guardian;
+
+            if (! $guardian || ! $guardian->students()->where('students.id', $student->id)->exists()) {
+                return $this->forbidden('You are not authorized to view this student.');
+            }
         }
 
         $request->validate([
@@ -133,6 +154,16 @@ class StudentApiController extends ApiBaseController
             return $this->notFound('Student not found.');
         }
 
+        $user = request()->user();
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin')) {
+            $guardian = $user->guardian;
+
+            if (! $guardian || ! $guardian->students()->where('students.id', $student->id)->exists()) {
+                return $this->forbidden('You are not authorized to view this student.');
+            }
+        }
+
         $studentFees = StudentFee::query()
             ->where('student_id', $student->id)
             ->with(['academicYear', 'items.feeCategory', 'items.paymentItems'])
@@ -151,6 +182,16 @@ class StudentApiController extends ApiBaseController
 
         if (! $student) {
             return $this->notFound('Student not found.');
+        }
+
+        $user = request()->user();
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin')) {
+            $guardian = $user->guardian;
+
+            if (! $guardian || ! $guardian->students()->where('students.id', $student->id)->exists()) {
+                return $this->forbidden('You are not authorized to view this student.');
+            }
         }
 
         $results = ExamResult::query()
@@ -174,13 +215,23 @@ class StudentApiController extends ApiBaseController
             return $this->notFound('Student not found.');
         }
 
+        $user = request()->user();
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin')) {
+            $guardian = $user->guardian;
+
+            if (! $guardian || ! $guardian->students()->where('students.id', $student->id)->exists()) {
+                return $this->forbidden('You are not authorized to view this student.');
+            }
+        }
+
         $currentSession = $student->currentSession->first();
 
         if (! $currentSession) {
             return $this->success(['timetable' => []], 'No active session found.');
         }
 
-        $slots = \App\Modules\Timetable\Models\TimetableSlot::query()
+        $slots = TimetableSlot::query()
             ->where('class_section_id', $currentSession->class_section_id)
             ->where('academic_year_id', $currentSession->academic_year_id)
             ->with(['subject:id,name,code', 'teacher.user:id,name'])

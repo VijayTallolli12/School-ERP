@@ -127,6 +127,139 @@ class ExamReportController extends Controller
         return view("Reports::exams.student_summary", $data);
     }
 
+    public function topPerformers(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = $this->reportService->topPerformers(
+                $request->get('academic_year_id'),
+                $request->get('exam_id'),
+                $request->get('class_section_id'),
+                $request->get('subject_id'),
+                (int) ($request->get('top_n', 10))
+            );
+            return DataTables::of($data['ranked'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+
+        $shared = $this->getSharedData();
+
+        // Fetch exams with subject+class label for dropdown
+        $schoolId = auth()->user()->school_id ?? null;
+        $examsWithLabel = Exam::with(['subject', 'classSection.schoolClass', 'classSection.section'])
+            ->when($schoolId, fn($q) => $q->where('school_id', $schoolId))
+            ->get()
+            ->map(fn($e) => [
+                'id' => $e->id,
+                'label' => $e->exam_name . ' (' . ($e->subject?->name ?? 'N/A') . ') - ' . ($e->classSection?->display_name ?? 'N/A'),
+            ]);
+
+        return view("Reports::exams.top_performers", array_merge($shared, [
+            'examsWithLabel' => $examsWithLabel,
+        ]));
+    }
+
+    public function getTopPerformersData(Request $request): array
+    {
+        return $this->reportService->topPerformers(
+            $request->get('academic_year_id'),
+            $request->get('exam_id'),
+            $request->get('class_section_id'),
+            $request->get('subject_id'),
+            (int) ($request->get('top_n', 10))
+        );
+    }
+
+    public function passFailAnalysis(Request $request)
+    {
+        $shared = $this->getSharedData();
+        $data = $this->reportService->passFailAnalysis(
+            $request->get('academic_year_id'),
+            $request->get('exam_id'),
+            $request->get('class_section_id'),
+            $request->get('subject_id'),
+            $request->get('from_date'),
+            $request->get('to_date')
+        );
+
+        $schoolId = auth()->user()->school_id ?? null;
+        $examsWithLabel = Exam::with(['subject', 'classSection.schoolClass', 'classSection.section'])
+            ->when($schoolId, fn($q) => $q->where('school_id', $schoolId))
+            ->get()
+            ->map(fn($e) => [
+                'id' => $e->id,
+                'label' => $e->exam_name . ' (' . ($e->subject?->name ?? 'N/A') . ') - ' . ($e->classSection?->display_name ?? 'N/A'),
+            ]);
+
+        return view("Reports::exams.pass_fail_analysis", array_merge($shared, [
+            'analysis' => $data,
+            'examsWithLabel' => $examsWithLabel,
+            'filters' => $request->only(['academic_year_id', 'exam_id', 'class_section_id', 'subject_id', 'from_date', 'to_date']),
+        ]));
+    }
+
+    public function getPassFailData(Request $request): array
+    {
+        return $this->reportService->passFailAnalysis(
+            $request->get('academic_year_id'),
+            $request->get('exam_id'),
+            $request->get('class_section_id'),
+            $request->get('subject_id'),
+            $request->get('from_date'),
+            $request->get('to_date')
+        );
+    }
+
+    public function exportPassFailPdf(Request $request)
+    {
+        $data = $this->getPassFailData($request);
+        $title = 'Pass/Fail Analysis Report';
+
+        return Pdf::loadView('Reports::exams.pass_fail_analysis_pdf', compact('data', 'title'))
+            ->setPaper('a4', 'landscape')
+            ->download("pass_fail_analysis_" . now()->format('Ymd_His') . ".pdf");
+    }
+
+    public function exportPassFailExcel(Request $request)
+    {
+        $data = $this->getPassFailData($request);
+        return Excel::download(new ExamReportExport($data['studentAnalysis'], 'pass_fail_analysis'), "pass_fail_analysis_" . now()->format('Ymd_His') . ".xlsx");
+    }
+
+    public function printPassFail(Request $request)
+    {
+        $data = $this->getPassFailData($request);
+        $title = 'Pass/Fail Analysis Report';
+
+        return view('Reports::exams.pass_fail_analysis_print', compact('data', 'title'));
+    }
+
+    public function exportTopPerformersPdf(Request $request)
+    {
+        $data = $this->getTopPerformersData($request);
+        $title = 'Top Performers Report';
+        $topN = (int) ($request->get('top_n', 10));
+
+        return Pdf::loadView('Reports::exams.top_performers_pdf', compact('data', 'title', 'topN'))
+            ->setPaper('a4', 'landscape')
+            ->download("top_performers_" . now()->format('Ymd_His') . ".pdf");
+    }
+
+    public function exportTopPerformersExcel(Request $request)
+    {
+        $data = $this->getTopPerformersData($request);
+        return Excel::download(new ExamReportExport($data['ranked'], 'top_performers'), "top_performers_" . now()->format('Ymd_His') . ".xlsx");
+    }
+
+    public function printTopPerformers(Request $request)
+    {
+        $data = $this->getTopPerformersData($request);
+        $title = 'Top Performers Report';
+        $topN = (int) ($request->get('top_n', 10));
+
+        return view('Reports::exams.top_performers_print', compact('data', 'title', 'topN'));
+    }
+
     protected function getReportData($type, Request $request)
     {
         switch ($type) {

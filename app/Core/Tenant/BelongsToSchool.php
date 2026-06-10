@@ -5,6 +5,7 @@ namespace App\Core\Tenant;
 use App\Models\School;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 
 trait BelongsToSchool
 {
@@ -17,13 +18,24 @@ trait BelongsToSchool
         });
 
         static::addGlobalScope('school', function (Builder $builder): void {
-            $user = auth()->user();
             $schoolId = app(SchoolContext::class)->id();
 
-            if ($schoolId && (! $user || ! $user->isSuperAdmin())) {
+            if ($schoolId && ! self::isSuperAdminCached()) {
                 $builder->where($builder->getModel()->getTable().'.school_id', $schoolId);
             }
         });
+    }
+
+    private static function isSuperAdminCached(): bool
+    {
+        static $superAdmin = null;
+
+        if ($superAdmin === null) {
+            $user = Auth::user();
+            $superAdmin = $user && $user->isSuperAdmin();
+        }
+
+        return $superAdmin;
     }
 
     public function school(): BelongsTo

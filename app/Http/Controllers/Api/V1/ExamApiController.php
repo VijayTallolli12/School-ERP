@@ -68,6 +68,16 @@ class ExamApiController extends ApiBaseController
             return $this->notFound('Exam not found.');
         }
 
+        $user = request()->user();
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Principal') && ! $user->hasRole('Teacher')) {
+            $student = \App\Modules\Students\Models\Student::query()->where('user_id', $user->id)->first();
+
+            if (! $student || $exam->class_section_id !== $student->currentSession->first()?->class_section_id) {
+                return $this->forbidden('You are not authorized to view this exam.');
+            }
+        }
+
         return $this->success(new ExamResource($exam), 'Exam retrieved.');
     }
 
@@ -77,6 +87,12 @@ class ExamApiController extends ApiBaseController
 
         if (! $exam) {
             return $this->notFound('Exam not found.');
+        }
+
+        $user = request()->user();
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Principal') && ! $user->hasRole('Teacher')) {
+            return $this->forbidden('You are not authorized to view exam results.');
         }
 
         $results = ExamResult::query()

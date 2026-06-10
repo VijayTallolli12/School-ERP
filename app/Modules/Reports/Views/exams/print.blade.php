@@ -14,7 +14,7 @@
 @endpush
 
 @section("content")
-    <div class="text-right mb-3 no-print">
+    <div class="text-end mb-3 no-print">
         <button onclick="window.print()" class="btn btn-primary">Print Document</button>
         <button onclick="window.close()" class="btn btn-secondary">Close</button>
     </div>
@@ -92,8 +92,8 @@
                                 <td>{{ $row['class_section'] }}</td>
                                 <td>{{ $row['exam_name'] }}</td>
                                 <td>{{ $row['total_students'] }}</td>
-                                <td class="text-success font-weight-bold">{{ $row['passed'] }}</td>
-                                <td class="text-danger font-weight-bold">{{ $row['failed'] }}</td>
+                                <td class="text-success fw-bold">{{ $row['passed'] }}</td>
+                                <td class="text-danger fw-bold">{{ $row['failed'] }}</td>
                                 <td>{{ $row['average_marks'] }}</td>
                                 <td>{{ $row['pass_percentage'] }}</td>
                                 <td>{{ $row['average_percentage'] }}</td>
@@ -102,8 +102,8 @@
                                 <td>{{ $row['class_section'] }}</td>
                                 <td>{{ $row['exam_name'] }}</td>
                                 <td>{{ $row['total_students'] }}</td>
-                                <td class="text-success font-weight-bold">{{ $row['highest_marks'] }}</td>
-                                <td class="text-danger font-weight-bold">{{ $row['lowest_marks'] }}</td>
+                                <td class="text-success fw-bold">{{ $row['highest_marks'] }}</td>
+                                <td class="text-danger fw-bold">{{ $row['lowest_marks'] }}</td>
                                 <td>{{ $row['average_marks'] }}</td>
                                 <td>{{ $row['pass_percentage'] }}</td>
                             @elseif($type === 'student_summary')
@@ -133,7 +133,7 @@
 
 @push('scripts')
 <script>
-    $(document).ready(function() {
+    document.addEventListener('DOMContentLoaded', function() {
         window.print();
     });
 </script>

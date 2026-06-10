@@ -18,7 +18,7 @@ class UpdateStudentRequest extends FormRequest
         $schoolId = app(SchoolContext::class)->id();
         $student = $this->route('student');
 
-        return [
+        $rules = [
             'admission_no' => ['required', 'string', 'max:50', Rule::unique('students')->ignore($student?->id)->where('school_id', $schoolId)],
             'admission_date' => ['nullable', 'date'],
             'first_name' => ['required', 'string', 'max:100'],
@@ -42,21 +42,31 @@ class UpdateStudentRequest extends FormRequest
             'class_section_id' => ['required', Rule::exists('class_section', 'id')->where('school_id', $schoolId)],
             'roll_no' => ['nullable', 'string', 'max:30'],
 
-            'guardians' => ['nullable', 'array', 'min:1'],
-            'guardians.*.id' => ['nullable', 'integer', Rule::exists('student_guardians', 'id')->where('student_id', $student?->id)],
-            'guardians.*.name' => ['required_with:guardians', 'string', 'max:150'],
-            'guardians.*.relation' => ['required_with:guardians', 'string', 'max:50'],
-            'guardians.*.phone' => ['required_with:guardians', 'string', 'max:30'],
-            'guardians.*.email' => ['nullable', 'email', 'max:255'],
-            'guardians.*.occupation' => ['nullable', 'string', 'max:120'],
-            'guardians.*.is_primary' => ['nullable', 'boolean'],
-            'guardians.*.can_pickup' => ['nullable', 'boolean'],
-
-            'guardian_name' => ['required_without:guardians', 'string', 'max:150'],
-            'guardian_relation' => ['required_without:guardians', 'string', 'max:50'],
-            'guardian_phone' => ['required_without:guardians', 'string', 'max:30'],
-            'guardian_email' => ['nullable', 'email', 'max:255'],
-            'guardian_occupation' => ['nullable', 'string', 'max:120'],
+            // Option A: Link to an existing parent (no guardian data needed)
+            'parent_id' => ['nullable', 'integer', Rule::exists('parents', 'id')->where('school_id', $schoolId)],
         ];
+
+        // If no existing parent selected, require guardian information
+        if (!$this->filled('parent_id')) {
+            $rules = array_merge($rules, [
+                'guardians' => ['nullable', 'array', 'min:1'],
+                'guardians.*.id' => ['nullable', 'integer', Rule::exists('student_guardians', 'id')->where('student_id', $student?->id)],
+                'guardians.*.name' => ['required_with:guardians', 'string', 'max:150'],
+                'guardians.*.relation' => ['required_with:guardians', 'string', 'max:50'],
+                'guardians.*.phone' => ['required_with:guardians', 'string', 'max:30'],
+                'guardians.*.email' => ['nullable', 'email', 'max:255'],
+                'guardians.*.occupation' => ['nullable', 'string', 'max:120'],
+                'guardians.*.is_primary' => ['nullable', 'boolean'],
+                'guardians.*.can_pickup' => ['nullable', 'boolean'],
+
+                'guardian_name' => ['required_without:guardians', 'string', 'max:150'],
+                'guardian_relation' => ['required_without:guardians', 'string', 'max:50'],
+                'guardian_phone' => ['required_without:guardians', 'string', 'max:30'],
+                'guardian_email' => ['nullable', 'email', 'max:255'],
+                'guardian_occupation' => ['nullable', 'string', 'max:120'],
+            ]);
+        }
+
+        return $rules;
     }
 }

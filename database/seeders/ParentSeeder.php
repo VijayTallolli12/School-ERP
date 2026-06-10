@@ -8,6 +8,7 @@ use App\Modules\Parents\Models\Guardian;
 use App\Modules\Students\Models\Student;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
+use Spatie\Permission\PermissionRegistrar;
 
 class ParentSeeder extends Seeder
 {
@@ -56,6 +57,12 @@ class ParentSeeder extends Seeder
                         'email' => $parentData['email'],
                         'current_school_id' => $school->id,
                     ]);
+                }
+
+                // Assign Parent role with team context
+                app(PermissionRegistrar::class)->setPermissionsTeamId($school->id);
+                if (!$user->hasRole('Parent')) {
+                    $user->assignRole('Parent');
                 }
 
                 $parentData['user_id'] = $user->id;

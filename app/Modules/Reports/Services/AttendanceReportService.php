@@ -40,4 +40,14 @@ class AttendanceReportService
     {
         return $this->repository->todaySummary();
     }
+
+    public function dailyTrendData(array $filters = []): array
+    {
+        return $this->repository->dailyTrendData($filters);
+    }
+
+    public function classWiseSummary(array $filters = []): array
+    {
+        return $this->repository->classWiseSummary($filters);
+    }
 }

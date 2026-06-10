@@ -16,13 +16,12 @@ class StudentListExport implements FromCollection, WithHeadings
 
     public function collection()
     {
-        return $this->data->map(function ($student) {
-            $session = $student->sessions->first();
+        return $this->data->map(function ($row) {
             return [
-                'Full Name' => $student->user->first_name . ' ' . $student->user->last_name,
-                'Admission No' => $student->admission_no,
-                'Class & Section' => $session ? $session->classSection->schoolClass->name . ' - ' . $session->classSection->section->name : '',
-                'Guardian' => $student->guardians->pluck('user.first_name')->join(', '),
+                'Full Name' => $row->full_name,
+                'Admission No' => $row->admission_no,
+                'Class & Section' => $row->class_section,
+                'Guardian' => $row->guardian,
             ];
         });
     }

@@ -44,25 +44,39 @@ class TimetableController extends Controller
 
     public function data(): JsonResponse
     {
-        $query = $this->timetable->filterQuery($this->timetable->query(), request()->only([
-            'academic_year_id',
-            'class_section_id',
-            'teacher_id',
-            'day_of_week',
-            'status',
-        ]));
+        try {
+            $query = $this->timetable->filterQuery($this->timetable->query(), request()->only([
+                'academic_year_id',
+                'class_section_id',
+                'teacher_id',
+                'day_of_week',
+                'status',
+            ]));
 
-        return DataTables::eloquent($query)
-            ->addColumn('academic_year', fn (TimetableSlot $slot) => $slot->academicYear?->name ?? '-')
-            ->addColumn('class_section', fn (TimetableSlot $slot) => $slot->classSection?->schoolClass->name.' - '.$slot->classSection?->section->name)
-            ->addColumn('subject', fn (TimetableSlot $slot) => $slot->subject?->name ?? '-')
-            ->addColumn('teacher', fn (TimetableSlot $slot) => $slot->teacher?->full_name ?? '-')
-            ->addColumn('day', fn (TimetableSlot $slot) => e($slot->day_name))
-            ->addColumn('time_range', fn (TimetableSlot $slot) => e($slot->time_range))
-            ->addColumn('status_label', fn (TimetableSlot $slot) => '<span class="badge bg-'.($slot->status === 'active' ? 'success' : 'secondary').'">'.e(ucfirst($slot->status)).'</span>')
-            ->addColumn('actions', fn (TimetableSlot $slot) => view('modules.timetable._actions', compact('slot'))->render())
-            ->rawColumns(['status_label', 'actions'])
-            ->toJson();
+            return DataTables::eloquent($query)
+                ->addColumn('academic_year', fn (TimetableSlot $slot) => $slot->academicYear?->name ?? '-')
+                ->addColumn('class_section', fn (TimetableSlot $slot) => $slot->classSection?->schoolClass->name.' - '.$slot->classSection?->section->name)
+                ->addColumn('subject', fn (TimetableSlot $slot) => $slot->subject?->name ?? '-')
+                ->addColumn('teacher', fn (TimetableSlot $slot) => $slot->teacher?->full_name ?? '-')
+                ->addColumn('day', fn (TimetableSlot $slot) => e($slot->day_name))
+                ->addColumn('time_range', fn (TimetableSlot $slot) => e($slot->time_range))
+                ->addColumn('status_label', fn (TimetableSlot $slot) => '<span class="badge bg-'.($slot->status === 'active' ? 'success' : 'secondary').'">'.e(ucfirst($slot->status)).'</span>')
+                ->addColumn('actions', fn (TimetableSlot $row) => view('modules.timetable._actions', ['timetableSlot' => $row])->render())
+                ->rawColumns(['status_label', 'actions'])
+                ->toJson();
+        } catch (\Throwable $e) {
+            logger()->error('Timetable DataTable error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'data' => [],
+                'draw' => (int) request('draw', 0),
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+            ]);
+        }
     }
 
     public function store(StoreTimetableSlotRequest $request): JsonResponse
@@ -80,6 +94,12 @@ class TimetableController extends Controller
     {
         $this->authorize('view', $timetableSlot);
 
+        logger()->debug('TimetableController@show', [
+            'requested_id' => request()->route('timetableSlot'),
+            'resolved_id' => $timetableSlot->id,
+            'period_label' => $timetableSlot->period_label,
+        ]);
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -91,8 +111,8 @@ class TimetableController extends Controller
                 'day_of_week' => $timetableSlot->day_of_week,
                 'period_number' => $timetableSlot->period_number,
                 'period_label' => $timetableSlot->period_label,
-                'start_time' => $timetableSlot->start_time,
-                'end_time' => $timetableSlot->end_time,
+                'start_time' => $timetableSlot->start_time ? date('H:i', strtotime($timetableSlot->start_time)) : null,
+                'end_time' => $timetableSlot->end_time ? date('H:i', strtotime($timetableSlot->end_time)) : null,
                 'room' => $timetableSlot->room,
                 'status' => $timetableSlot->status,
             ],
@@ -204,5 +224,41 @@ class TimetableController extends Controller
             ->groupBy('day_name');
 
         return view('modules.timetable.print.teacher_schedule', compact('teacher', 'academicYear', 'schedule'));
+    }
+
+    public function duplicateDay(): JsonResponse
+    {
+        $data = request()->validate([
+            'source_day' => 'required|integer|between:1,6',
+            'target_day' => 'required|integer|between:1,6',
+            'class_section_id' => 'required|exists:class_section,id',
+            'academic_year_id' => 'required|exists:academic_years,id',
+        ]);
+
+        $result = $this->service->duplicateDay($data);
+
+        return response()->json([
+            'success' => $result['created'] > 0,
+            'message' => $result['message'],
+            'data' => $result,
+        ]);
+    }
+
+    public function copyClass(): JsonResponse
+    {
+        $data = request()->validate([
+            'source_class_section_id' => 'required|exists:class_section,id',
+            'target_class_section_id' => 'required|exists:class_section,id|different:source_class_section_id',
+            'academic_year_id' => 'required|exists:academic_years,id',
+            'adjust_room_names' => 'nullable|boolean',
+        ]);
+
+        $result = $this->service->copyTimetable($data);
+
+        return response()->json([
+            'success' => $result['created'] > 0,
+            'message' => $result['message'],
+            'data' => $result,
+        ]);
     }
 }

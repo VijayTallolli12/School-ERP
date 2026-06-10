@@ -18,6 +18,8 @@ class ClassSection extends Model
 
     protected $table = 'class_section';
 
+    protected $appends = ['display_name'];
+
     protected $fillable = [
         'school_id',
         'class_id',
@@ -25,6 +27,14 @@ class ClassSection extends Model
         'class_teacher_id',
         'status',
     ];
+
+    public function getDisplayNameAttribute(): string
+    {
+        if ($this->relationLoaded('schoolClass') && $this->relationLoaded('section')) {
+            return ($this->schoolClass->name ?? '') . ' - ' . ($this->section->name ?? '');
+        }
+        return 'Class #' . $this->class_id . ' - Section #' . $this->section_id;
+    }
 
     public function schoolClass(): BelongsTo
     {

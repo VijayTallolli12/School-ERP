@@ -5,11 +5,13 @@ namespace App\Modules\Students\Models;
 use App\Core\Tenant\BelongsToSchool;
 use App\Models\User;
 use App\Modules\Fees\Models\StudentFee;
+use App\Modules\Parents\Models\Guardian;
 use Database\Factories\StudentFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -68,6 +70,13 @@ class Student extends Model
     public function guardians(): HasMany
     {
         return $this->hasMany(StudentGuardian::class);
+    }
+
+    public function parents(): BelongsToMany
+    {
+        return $this->belongsToMany(Guardian::class, 'parent_student', 'student_id', 'parent_id')
+            ->withPivot('relationship', 'is_primary')
+            ->withTimestamps();
     }
 
     public function documents(): HasMany

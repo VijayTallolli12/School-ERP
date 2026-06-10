@@ -43,12 +43,19 @@
 
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex align-items-center">
-                    <h3 class="card-title fw-semibold mb-0">Exam Results</h3>
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <h3 class="card-title fw-semibold mb-0">
+                        <i class="ti ti-clipboard-list text-primary me-1"></i> Exam Results
+                    </h3>
                     @can('exams.update')
-                        <button class="btn btn-success btn-sm ms-auto" id="addResultButton" disabled>
-                            <i class="ti ti-plus me-1"></i> Add Result
-                        </button>
+                        <div class="d-flex align-items-center gap-3 exam-results-toolbar">
+                            <a class="btn btn-primary" id="bulkEntryButton" disabled>
+                                <i class="ti ti-table me-1"></i> Bulk Entry
+                            </a>
+                            <button class="btn btn-outline-primary" id="addResultButton" disabled>
+                                <i class="ti ti-plus me-1"></i> Add Result
+                            </button>
+                        </div>
                     @endcan
                 </div>
                 <div class="card-body">
@@ -164,6 +171,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Publish</label>
                             <div class="form-check form-switch mt-2">
+                                <input type="hidden" name="is_published" value="0">
                                 <input class="form-check-input" type="checkbox" name="is_published" value="1" id="examPublishedSwitch">
                                 <label class="form-check-label" for="examPublishedSwitch">Publish exam results immediately</label>
                             </div>
@@ -228,6 +236,7 @@
             const resultForm = $('#resultForm');
             const selectedExam = $('#selectedExam');
             const addResultButton = $('#addResultButton');
+            const bulkEntryButton = $('#bulkEntryButton');
             const selectedExamSummary = $('#selectedExamSummary');
 
             const examsTable = $('#examsTable').DataTable({
@@ -274,6 +283,7 @@
             const loadExamDetails = (examId) => {
                 if (!examId) {
                     addResultButton.prop('disabled', true);
+                    bulkEntryButton.prop('disabled', true);
                     selectedExamSummary.html('<div class="border rounded p-3 bg-body text-secondary">Select an exam to view or add results.</div>');
                     resultsTable.clear().draw();
                     return;
@@ -292,6 +302,7 @@
                         </div>
                     `);
                     addResultButton.prop('disabled', false);
+                    bulkEntryButton.prop('disabled', false).attr('href', `{{ url('admin/exams') }}/${exam.id}/results/bulk`);
                     $('#resultExamId').val(exam.id);
                     loadResultStudents(exam.class_section_id);
                     resultsTable.ajax.reload();
@@ -334,6 +345,7 @@
                     $('#examModalTitle').text('Edit Exam');
 
                     Object.entries(response.data).forEach(([key, value]) => {
+                        if (key === 'is_published') return;
                         const input = examForm.find(`[name="${key}"]`);
                         if (input.length) {
                             input.val(value);

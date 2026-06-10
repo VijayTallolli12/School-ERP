@@ -17,7 +17,7 @@ class ParentPolicy
 
     public function view(User $user, Guardian $parent): bool
     {
-        return $user->can('parents.view') && $user->school_id === $parent->school_id;
+        return $user->can('parents.view') && $user->current_school_id === $parent->school_id;
     }
 
     public function create(User $user): bool
@@ -27,21 +27,21 @@ class ParentPolicy
 
     public function update(User $user, Guardian $parent): bool
     {
-        return $user->can('parents.update') && $user->school_id === $parent->school_id;
+        return $user->can('parents.update') && $user->current_school_id === $parent->school_id;
     }
 
     public function delete(User $user, Guardian $parent): bool
     {
-        return $user->can('parents.delete') && $user->school_id === $parent->school_id;
+        return $user->can('parents.delete') && $user->current_school_id === $parent->school_id;
     }
 
     public function restore(User $user, Guardian $parent): bool
     {
-        return $user->can('parents.delete') && $user->school_id === $parent->school_id;
+        return $user->can('parents.delete') && $user->current_school_id === $parent->school_id;
     }
 
     public function forceDelete(User $user, Guardian $parent): bool
     {
-        return $user->can('parents.delete') && $user->school_id === $parent->school_id;
+        return $user->can('parents.delete') && $user->current_school_id === $parent->school_id;
     }
 }

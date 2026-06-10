@@ -14,7 +14,7 @@
 @endpush
 
 @section("content")
-    <div class="text-right mb-3 no-print">
+    <div class="text-end mb-3 no-print">
         <button onclick="window.print()" class="btn btn-primary">Print Document</button>
         <button onclick="window.close()" class="btn btn-secondary">Close</button>
     </div>
@@ -74,7 +74,7 @@
                                 <td>{{ $row['category'] }}</td>
                                 <td>{{ number_format($row['amount'], 2) }}</td>
                                 <td>{{ number_format($row['paid'], 2) }}</td>
-                                <td class="text-danger font-weight-bold">{{ number_format($row['balance'], 2) }}</td>
+                                <td class="text-danger fw-bold">{{ number_format($row['balance'], 2) }}</td>
                                 <td>{{ $row['due_date'] }}</td>
                                 @if($type === 'pending')
                                     <td>
@@ -89,7 +89,7 @@
                                 <td>{{ $row['class_section'] }}</td>
                                 <td>{{ number_format($row['total_due'], 2) }}</td>
                                 <td>{{ number_format($row['total_paid'], 2) }}</td>
-                                <td class="{{ $row['balance'] > 0 ? 'text-danger' : 'text-success' }} font-weight-bold">
+                                <td class="{{ $row['balance'] > 0 ? 'text-danger' : 'text-success' }} fw-bold">
                                     {{ number_format($row['balance'], 2) }}
                                 </td>
                             @endif
@@ -103,7 +103,7 @@
 
 @push('scripts')
 <script>
-    $(document).ready(function() {
+    document.addEventListener('DOMContentLoaded', function() {
         window.print();
     });
 </script>

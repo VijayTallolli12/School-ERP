@@ -5,6 +5,7 @@ namespace App\Modules\Reports\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Modules\Reports\Services\TeacherReportService;
+use App\Models\AcademicYear;
 use App\Modules\Teachers\Models\Teacher;
 use App\Modules\Teachers\Models\TeacherAttendance;
 use App\Modules\Academics\Models\Subject;
@@ -107,6 +108,49 @@ class TeacherReportController extends Controller
         }
 
         return view("Reports::teachers.class_teacher_mapping", $this->getSharedData());
+    }
+
+    public function workload(Request $request)
+    {
+        if ($request->ajax()) {
+            $filters = $request->only(['academic_year_id', 'teacher_id', 'subject_id', 'class_section_id']);
+            $data = $this->reportService->workload($filters);
+            return DataTables::of($data['rows'])
+                ->addIndexColumn()
+                ->make(true);
+        }
+
+        $schoolId = auth()->user()->school_id;
+        $academicYears = AcademicYear::when($schoolId, fn($q) => $q->where('school_id', $schoolId))->get();
+
+        $initialData = $this->reportService->workload($request->only(['academic_year_id', 'teacher_id', 'subject_id', 'class_section_id']));
+        $summary = $initialData['summary'];
+        $chartData = $initialData['chartData'];
+
+        return view("modules.reports.teachers.workload", array_merge(
+            $this->getSharedData(),
+            compact('academicYears', 'summary', 'chartData')
+        ));
+    }
+
+    public function exportWorkload(Request $request, $type)
+    {
+        $filters = $request->only(['academic_year_id', 'teacher_id', 'subject_id', 'class_section_id']);
+        $data = $this->reportService->workload($filters);
+        $rows = $data['rows'];
+        $summary = $data['summary'];
+        $chartData = $data['chartData'];
+
+        if ($type === 'excel') {
+            return Excel::download(new TeacherReportExport($rows, 'workload'), 'teacher_workload_report.xlsx');
+        } elseif ($type === 'pdf') {
+            $title = 'Teacher Workload Report';
+            $pdf = Pdf::loadView('modules.reports.teachers.exports.workload_pdf', compact('rows', 'summary', 'chartData', 'title'));
+            return $pdf->setPaper('a4', 'landscape')->download('teacher_workload_report.pdf');
+        } elseif ($type === 'print') {
+            $title = 'Teacher Workload Report';
+            return view('modules.reports.teachers.exports.workload_print', compact('rows', 'summary', 'chartData', 'title'));
+        }
     }
 
     protected function getReportData($type, Request $request)

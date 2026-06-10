@@ -5,6 +5,7 @@ namespace App\Modules\Students\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
 use App\Modules\Academics\Models\ClassSection;
+use App\Modules\Parents\Models\Guardian;
 use App\Modules\Students\Models\Student;
 use App\Modules\Students\Repositories\StudentRepositoryInterface;
 use App\Modules\Students\Requests\StoreStudentRequest;
@@ -22,6 +23,21 @@ class StudentController extends Controller
 
     public function index()
     {
+        /** @var \App\Modules\Parents\Models\Guardian[] $parents */
+        $parents = Guardian::query()
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name', 'email', 'phone']);
+
+        logger()->debug('StudentController@index — parents dropdown', [
+            'count' => $parents->count(),
+            'school_context_id' => app(\App\Core\Tenant\SchoolContext::class)->id(),
+            'auth_user_school_id' => auth()->user()->current_school_id,
+            'auth_user_id' => auth()->id(),
+            'parent_ids' => $parents->pluck('id')->toArray(),
+            'parent_names' => $parents->pluck('first_name')->toArray(),
+            'sql' => $parents->toQuery()->toSql(),
+        ]);
+
         return view('modules.students.index', [
             'academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(),
             'classSections' => ClassSection::query()
@@ -29,6 +45,7 @@ class StudentController extends Controller
                 ->where('status', 'active')
                 ->get()
                 ->sortBy(fn (ClassSection $classSection) => $classSection->schoolClass->sort_order.'-'.$classSection->section->name),
+            'parents' => $parents,
         ]);
     }
 
@@ -45,7 +62,14 @@ class StudentController extends Controller
 
                 return e($session->classSection->schoolClass->name.' - '.$session->classSection->section->name);
             })
-            ->addColumn('guardian', fn (Student $student) => e($student->guardians->firstWhere('is_primary', true)?->name ?? '-'))
+            ->addColumn('guardian', function (Student $student): string {
+                $primaryGuardian = $student->guardians->firstWhere('is_primary', true);
+                if ($primaryGuardian?->name) {
+                    return e($primaryGuardian->name);
+                }
+                $primaryParent = $student->parents->first();
+                return e($primaryParent?->full_name ?? '-');
+            })
             ->addColumn('actions', fn (Student $student) => view('modules.students._actions', compact('student'))->render())
             ->rawColumns(['actions'])
             ->toJson();
@@ -66,6 +90,7 @@ class StudentController extends Controller
     {
         $student->load([
             'guardians',
+            'parents',
             'sessions.academicYear',
             'sessions.classSection.schoolClass',
             'sessions.classSection.section',
@@ -73,6 +98,7 @@ class StudentController extends Controller
 
         $session = $student->sessions->firstWhere('status', 'active') ?? $student->sessions->first();
         $guardian = $student->guardians->firstWhere('is_primary', true);
+        $primaryParent = $student->parents->first();
 
         return response()->json([
             'success' => true,
@@ -98,11 +124,13 @@ class StudentController extends Controller
                 'academic_year_id' => $session?->academic_year_id,
                 'class_section_id' => $session?->class_section_id,
                 'roll_no' => $session?->roll_no,
-                'guardian_name' => $guardian?->name,
-                'guardian_relation' => $guardian?->relation,
-                'guardian_phone' => $guardian?->phone,
-                'guardian_email' => $guardian?->email,
-                'guardian_occupation' => $guardian?->occupation,
+                'parent_id' => $primaryParent?->id,
+                'relationship' => $primaryParent?->pivot?->relationship ?? 'guardian',
+                'guardian_name' => $guardian?->name ?? $primaryParent?->full_name,
+                'guardian_relation' => $guardian?->relation ?? $primaryParent?->pivot?->relationship ?? 'guardian',
+                'guardian_phone' => $guardian?->phone ?? $primaryParent?->phone,
+                'guardian_email' => $guardian?->email ?? $primaryParent?->email,
+                'guardian_occupation' => $guardian?->occupation ?? $primaryParent?->occupation,
                 'guardians' => $student->guardians
                     ->sortByDesc('is_primary')
                     ->values()

@@ -47,6 +47,126 @@ class TimetableService
         $this->timetable->delete($slot);
     }
 
+    public function duplicateDay(array $data): array
+    {
+        $sourceSlots = $this->timetable->query()
+            ->where('class_section_id', $data['class_section_id'])
+            ->where('academic_year_id', $data['academic_year_id'])
+            ->where('day_of_week', $data['source_day'])
+            ->get();
+
+        if ($sourceSlots->isEmpty()) {
+            return ['created' => 0, 'skipped' => 0, 'errors' => [], 'message' => 'No slots found on the source day.'];
+        }
+
+        $created = 0;
+        $skipped = 0;
+        $errors = [];
+
+        $targetDay = (int) $data['target_day'];
+        $classSectionId = (int) $data['class_section_id'];
+        $academicYearId = (int) $data['academic_year_id'];
+
+        foreach ($sourceSlots as $slot) {
+            $slotData = [
+                'teacher_id' => $slot->teacher_id,
+                'class_section_id' => $classSectionId,
+                'subject_id' => $slot->subject_id,
+                'academic_year_id' => $academicYearId,
+                'day_of_week' => $targetDay,
+                'period_number' => $slot->period_number,
+                'period_label' => $slot->period_label,
+                'start_time' => $slot->start_time,
+                'end_time' => $slot->end_time,
+                'room' => $slot->room,
+                'status' => $slot->status,
+            ];
+
+            $conflict = $this->checkConflicts($slotData);
+            if ($conflict) {
+                $skipped++;
+                $errors[] = "{$slotData['period_label']}: {$conflict}";
+                continue;
+            }
+
+            $this->timetable->create([
+                ...$slotData,
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
+            ]);
+            $created++;
+        }
+
+        return [
+            'created' => $created,
+            'skipped' => $skipped,
+            'errors' => $errors,
+            'message' => "Duplicated {$created} slot(s). Skipped {$skipped} due to conflicts.",
+        ];
+    }
+
+    public function copyTimetable(array $data): array
+    {
+        $sourceSlots = $this->timetable->query()
+            ->where('class_section_id', $data['source_class_section_id'])
+            ->where('academic_year_id', $data['academic_year_id'])
+            ->get();
+
+        if ($sourceSlots->isEmpty()) {
+            return ['created' => 0, 'skipped' => 0, 'errors' => [], 'message' => 'No slots found in the source class.'];
+        }
+
+        $created = 0;
+        $skipped = 0;
+        $errors = [];
+        $adjustRoom = ! empty($data['adjust_room_names']);
+
+        $targetClassSectionId = (int) $data['target_class_section_id'];
+        $academicYearId = (int) $data['academic_year_id'];
+
+        foreach ($sourceSlots as $slot) {
+            $room = $slot->room;
+            if ($adjustRoom && $room) {
+                $room = $room . ' (copied)';
+            }
+
+            $slotData = [
+                'teacher_id' => $slot->teacher_id,
+                'class_section_id' => $targetClassSectionId,
+                'subject_id' => $slot->subject_id,
+                'academic_year_id' => $academicYearId,
+                'day_of_week' => $slot->day_of_week,
+                'period_number' => $slot->period_number,
+                'period_label' => $slot->period_label,
+                'start_time' => $slot->start_time,
+                'end_time' => $slot->end_time,
+                'room' => $room,
+                'status' => $slot->status,
+            ];
+
+            $conflict = $this->checkConflicts($slotData);
+            if ($conflict) {
+                $skipped++;
+                $errors[] = "{$slotData['period_label']} (Day {$slotData['day_of_week']}): {$conflict}";
+                continue;
+            }
+
+            $this->timetable->create([
+                ...$slotData,
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
+            ]);
+            $created++;
+        }
+
+        return [
+            'created' => $created,
+            'skipped' => $skipped,
+            'errors' => $errors,
+            'message' => "Copied {$created} slot(s). Skipped {$skipped} due to conflicts.",
+        ];
+    }
+
     public function activeAcademicYear(): ?AcademicYear
     {
         return AcademicYear::query()
@@ -100,18 +220,36 @@ class TimetableService
 
     private function validateConflicts(array $data, ?int $ignoreId = null): void
     {
-        $teacherConflict = $this->timetable->findTeacherConflicts($data, $ignoreId)->exists();
-        if ($teacherConflict) {
-            throw ValidationException::withMessages([
-                'teacher_id' => ['Selected teacher is already assigned to another period at this time.'],
-            ]);
+        $conflict = $this->checkConflicts($data, $ignoreId);
+        if ($conflict) {
+            $messages = [];
+
+            if (str_contains($conflict, 'teacher')) {
+                $messages['teacher_id'] = [$conflict];
+            } elseif (str_contains($conflict, 'room')) {
+                $messages['room'] = [$conflict];
+            } else {
+                $messages['class_section_id'] = [$conflict];
+            }
+
+            throw ValidationException::withMessages($messages);
+        }
+    }
+
+    private function checkConflicts(array $data, ?int $ignoreId = null): ?string
+    {
+        if ($this->timetable->findTeacherConflicts($data, $ignoreId)->exists()) {
+            return 'This teacher is already assigned to another class during this time slot.';
         }
 
-        $classConflict = $this->timetable->findClassSectionConflicts($data, $ignoreId)->exists();
-        if ($classConflict) {
-            throw ValidationException::withMessages([
-                'class_section_id' => ['This class section already has a conflicting period at the selected time.'],
-            ]);
+        if ($this->timetable->findClassSectionConflicts($data, $ignoreId)->exists()) {
+            return 'This class section already has a period scheduled during this time.';
         }
+
+        if ($this->timetable->findRoomConflicts($data, $ignoreId)->exists()) {
+            return 'This room is already booked for another class during this time slot.';
+        }
+
+        return null;
     }
 }

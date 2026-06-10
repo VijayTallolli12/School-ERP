@@ -57,6 +57,52 @@
         @endforeach
     </div>
 
+    @if($absentToday)
+        <div class="row g-3 mt-2">
+            <div class="col-12">
+                <h5 class="fw-semibold text-secondary mb-0">Today's Attendance</h5>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="erp-stat-card">
+                    <div class="stat-info">
+                        <h4 @class(['text-zero' => $absentToday['absent'] == 0])>{{ $absentToday['absent'] }}</h4>
+                        <p>Absent Today</p>
+                    </div>
+                    <div class="stat-icon danger">
+                        <i class="ti ti-user-x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="erp-stat-card">
+                    <div class="stat-info">
+                        <h4>{{ $absentToday['percentage'] }}%</h4>
+                        <p>Attendance Rate</p>
+                    </div>
+                    <div class="stat-icon primary">
+                        <i class="ti ti-percentage"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="erp-stat-card">
+                    <div class="stat-info">
+                        <h4>{{ $absentToday['present'] }}</h4>
+                        <p>Present Today</p>
+                    </div>
+                    <div class="stat-icon success">
+                        <i class="ti ti-user-check"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3 d-flex align-items-center">
+                <a href="{{ route('reports.attendance.absent_students') }}" class="btn btn-outline-danger w-100">
+                    <i class="ti ti-eye me-1"></i> View Details
+                </a>
+            </div>
+        </div>
+    @endif
+
     @if($feeStats)
         <div class="row g-3 mt-2">
             <div class="col-12">
@@ -93,7 +139,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-4 d-flex flex-column gap-3">
             <div class="card">
                 <div class="card-header d-flex align-items-center">
                     <h3 class="card-title mb-0">Recent Logins</h3>
@@ -114,6 +160,101 @@
                     </div>
                 </div>
             </div>
+
+            @if ($upcomingEvents)
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h3 class="card-title mb-0">Upcoming Events</h3>
+                        @can('academic_calendar.view')
+                            <a href="{{ route('admin.calendar.index') }}" class="btn btn-sm btn-outline-primary ms-auto">
+                                <i class="ti ti-calendar me-1"></i> View All
+                            </a>
+                        @endcan
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @forelse ($upcomingEvents as $event)
+                                <div class="list-group-item px-3 py-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge {{ $event->event_type_badge }}" style="width:8px;height:8px;padding:0;border-radius:50%"></span>
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="fw-semibold small text-truncate">{{ $event->title }}</div>
+                                            <div class="small text-secondary">
+                                                {{ $event->start_date->format('d M') }}
+                                                @if ($event->end_date && $event->end_date->format('Y-m-d') !== $event->start_date->format('Y-m-d'))
+                                                    - {{ $event->end_date->format('d M') }}
+                                                @endif
+                                                @if ($event->location)
+                                                    · {{ $event->location }}
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="list-group-item px-3 py-4 text-center text-secondary">
+                                    <i class="ti ti-calendar-off d-block fs-3 mb-2 opacity-25"></i>
+                                    No upcoming events.
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if ($documentStats)
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <h3 class="card-title mb-0">Documents</h3>
+                        @can('student_documents.view')
+                            <a href="{{ route('admin.documents.index') }}" class="btn btn-sm btn-outline-primary ms-auto">
+                                <i class="ti ti-file-text me-1"></i> View All
+                            </a>
+                        @endcan
+                    </div>
+                    <div class="card-body p-0">
+                        @if ($documentStats['pending_count'] > 0 || $documentStats['expiring_count'] > 0)
+                            <div class="px-3 py-2 border-bottom">
+                                <div class="d-flex gap-3">
+                                    @if ($documentStats['pending_count'] > 0)
+                                        <div class="small">
+                                            <span class="badge bg-warning text-dark">{{ $documentStats['pending_count'] }}</span> pending verification
+                                        </div>
+                                    @endif
+                                    @if ($documentStats['expiring_count'] > 0)
+                                        <div class="small">
+                                            <span class="badge bg-danger">{{ $documentStats['expiring_count'] }}</span> expiring soon
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                        <div class="list-group list-group-flush">
+                            @forelse ($documentStats['recent'] as $doc)
+                                <div class="list-group-item px-3 py-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="ti ti-file text-secondary fs-5"></i>
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="fw-semibold small text-truncate">{{ $doc['title'] ?? 'Untitled' }}</div>
+                                            <div class="small text-secondary">
+                                                {{ \Illuminate\Support\Str::limit($doc['student']['full_name'] ?? 'Unknown', 30) }}
+                                                @if (isset($doc['expiry_date']))
+                                                    · Expires {{ \Carbon\Carbon::parse($doc['expiry_date'])->format('d M') }}
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="list-group-item px-3 py-4 text-center text-secondary">
+                                    <i class="ti ti-inbox d-block fs-3 mb-2 opacity-25"></i>
+                                    No documents uploaded yet.
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 @endsection

@@ -1,6 +1,6 @@
 <div class="d-flex flex-nowrap gap-1">
     @can('notifications.update')
-        <button type="button" class="btn btn-sm btn-outline-secondary edit-notification"
+        <button type="button" class="btn btn-sm btn-outline-primary edit-notification"
                 data-url="{{ route('admin.notifications.show', $notification) }}"
                 data-update-url="{{ route('admin.notifications.update', $notification) }}"
                 title="Edit">

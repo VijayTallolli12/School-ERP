@@ -11,7 +11,7 @@
             </div>
             <div class="col-md-6 text-end">
                 <a href="{{ route('reports.attendance.index') }}" class="btn btn-outline-secondary me-2">
-                    <i class="ti-back-left me-2"></i>Back
+                    <i class="ti ti-back-left me-2"></i>Back
                 </a>
             </div>
         </div>
@@ -49,11 +49,26 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary py-2 w-100">
-                        <i class="ti-filter me-1"></i> Filter
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary py-2 flex-fill">
+                            <i class="ti ti-filter me-1"></i> Filter
+                        </button>
+                    </div>
                 </div>
             </form>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a id="exportExcel" href="{{ route('reports.attendance.daily.export.excel') }}" class="btn btn-success me-2">
+                        <i class="ti ti-file-type-xls me-1"></i> Export Excel
+                    </a>
+                    <a id="exportPdf" href="{{ route('reports.attendance.daily.export.pdf') }}" class="btn btn-danger me-2">
+                        <i class="ti ti-file-type-pdf me-1"></i> Export PDF
+                    </a>
+                    <a id="exportPrint" href="{{ route('reports.attendance.daily.print') }}" class="btn btn-warning" target="_blank">
+                        <i class="ti ti-printer me-1"></i> Print
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -68,7 +83,7 @@
                             <h4 class="fw-semibold mb-0">{{ $summary['summary']['present'] ?? 0 }}</h4>
                         </div>
                         <div class="fs-32 text-success">
-                            <i class="ti-check"></i>
+                            <i class="ti ti-check"></i>
                         </div>
                     </div>
                 </div>
@@ -83,7 +98,7 @@
                             <h4 class="fw-semibold mb-0">{{ $summary['summary']['absent'] ?? 0 }}</h4>
                         </div>
                         <div class="fs-32 text-danger">
-                            <i class="ti-close"></i>
+                            <i class="ti ti-close"></i>
                         </div>
                     </div>
                 </div>
@@ -98,7 +113,7 @@
                             <h4 class="fw-semibold mb-0">{{ $summary['summary']['late'] ?? 0 }}</h4>
                         </div>
                         <div class="fs-32 text-warning">
-                            <i class="ti-time"></i>
+                            <i class="ti ti-time"></i>
                         </div>
                     </div>
                 </div>
@@ -113,7 +128,7 @@
                             <h4 class="fw-semibold mb-0">{{ $summary['summary']['leave'] ?? 0 }}</h4>
                         </div>
                         <div class="fs-32 text-info">
-                            <i class="ti-clipboard"></i>
+                            <i class="ti ti-clipboard"></i>
                         </div>
                     </div>
                 </div>
@@ -141,9 +156,9 @@
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             let table = $('#dailyAttendanceTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -158,7 +173,7 @@
                 columns: [
                     {data: 'DT_RowIndex', name: 'DT_RowIndex', searchable: false, orderable: false},
                     {data: 'student_name', name: 'student_name'},
-                    {data: 'classSection.display_name', name: 'classSection.display_name'},
+                    {data: 'class_section_name', name: 'class_section_name'},
                     {data: 'status_badge', name: 'attendance_status', orderable: false},
                     {data: 'remarks', name: 'remarks'}
                 ],
@@ -169,15 +184,35 @@
                 pageLength: 25
             });
 
+            function updateExportLinks() {
+                var params = {
+                    date: $('input[name="date"]').val(),
+                    academic_year_id: $('select[name="academic_year_id"]').val(),
+                    class_section_id: $('select[name="class_section_id"]').val()
+                };
+                var queryString = $.param(params);
+
+                var baseExcel = "{{ route('reports.attendance.daily.export.excel') }}";
+                var basePdf = "{{ route('reports.attendance.daily.export.pdf') }}";
+                var basePrint = "{{ route('reports.attendance.daily.print') }}";
+
+                $('#exportExcel').attr('href', baseExcel + (queryString ? '?' + queryString : ''));
+                $('#exportPdf').attr('href', basePdf + (queryString ? '?' + queryString : ''));
+                $('#exportPrint').attr('href', basePrint + (queryString ? '?' + queryString : ''));
+            }
+
             $('#filterForm').on('submit', function(e) {
                 e.preventDefault();
                 table.draw();
+                updateExportLinks();
             });
 
-            // Auto-load data on date change
             $('input[name="date"]').on('change', function() {
                 table.draw();
+                updateExportLinks();
             });
+
+            updateExportLinks();
         });
     </script>
-@endsection
+@endpush

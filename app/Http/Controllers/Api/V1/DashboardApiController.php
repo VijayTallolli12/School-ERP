@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class DashboardApiController extends ApiBaseController
 {
@@ -25,15 +26,31 @@ class DashboardApiController extends ApiBaseController
         $schoolId = app(SchoolContext::class)->id();
         $user = auth()->user();
 
-        $data = [
-            'students' => Student::query()->count(),
-            'teachers' => Teacher::query()->count(),
-            'active_teachers' => Teacher::query()->where('status', 'active')->count(),
-            'exams' => Exam::query()->count(),
-            'published_exams' => Exam::query()->where('is_published', true)->count(),
-            'roles' => Role::query()->when($schoolId, fn ($query) => $query->where('school_id', $schoolId))->count(),
-            'login_today' => LoginActivity::query()->withoutGlobalScopes()->whereDate('created_at', today())->count(),
-        ];
+        // Batch related counts to reduce separate queries
+        $data = [];
+
+        $data['students'] = Student::query()->count();
+
+        $teacherCounts = Teacher::query()
+            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as active', ['active'])
+            ->first();
+        $data['teachers'] = (int) ($teacherCounts->total ?? 0);
+        $data['active_teachers'] = (int) ($teacherCounts->active ?? 0);
+
+        $examCounts = Exam::query()
+            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN is_published = 1 THEN 1 ELSE 0 END) as published')
+            ->first();
+        $data['exams'] = (int) ($examCounts->total ?? 0);
+        $data['published_exams'] = (int) ($examCounts->published ?? 0);
+
+        $data['roles'] = Role::query()
+            ->when($schoolId, fn ($query) => $query->where('school_id', $schoolId))
+            ->count();
+
+        $data['login_today'] = LoginActivity::query()
+            ->withoutGlobalScopes()
+            ->whereDate('created_at', today())
+            ->count();
 
         // Fee stats (permission-gated)
         if ($user->can('fees.view')) {

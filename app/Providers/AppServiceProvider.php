@@ -8,6 +8,14 @@ use App\Modules\Academics\Models\SchoolClass;
 use App\Modules\Academics\Models\Section;
 use App\Modules\Academics\Models\Subject;
 use App\Modules\Academics\Models\ClassSection;
+use App\Modules\Calendar\Models\AcademicCalendar;
+use App\Modules\Calendar\Policies\CalendarPolicy;
+use App\Modules\Calendar\Repositories\CalendarRepository;
+use App\Modules\Calendar\Repositories\CalendarRepositoryInterface;
+use App\Modules\Documents\Policies\DocumentPolicy;
+use App\Modules\Documents\Repositories\DocumentRepository;
+use App\Modules\Documents\Repositories\DocumentRepositoryInterface;
+use App\Modules\Students\Models\StudentDocument;
 use App\Modules\Academics\Policies\AcademicYearPolicy;
 use App\Modules\Academics\Policies\ClassSectionPolicy;
 use App\Modules\Academics\Policies\SchoolClassPolicy;
@@ -48,6 +56,18 @@ use App\Modules\Exams\Models\Exam;
 use App\Modules\Exams\Policies\ExamPolicy;
 use App\Modules\Exams\Repositories\ExamRepository;
 use App\Modules\Exams\Repositories\ExamRepositoryInterface;
+use App\Modules\Homework\Models\Homework;
+use App\Modules\Homework\Policies\HomeworkPolicy;
+use App\Modules\Homework\Repositories\HomeworkRepository;
+use App\Modules\Homework\Repositories\HomeworkRepositoryInterface;
+use App\Modules\Leave\Models\LeaveRequest;
+use App\Modules\Leave\Models\LeaveType;
+use App\Modules\Leave\Policies\LeaveRequestPolicy;
+use App\Modules\Leave\Policies\LeaveTypePolicy;
+use App\Modules\Leave\Repositories\LeaveRequestRepository;
+use App\Modules\Leave\Repositories\LeaveRequestRepositoryInterface;
+use App\Modules\Leave\Repositories\LeaveTypeRepository;
+use App\Modules\Leave\Repositories\LeaveTypeRepositoryInterface;
 use App\Modules\Reports\Repositories\AttendanceReportRepository;
 use App\Modules\Reports\Repositories\AttendanceReportRepositoryInterface;
 use App\Modules\Reports\Repositories\ExamReportRepository;
@@ -99,6 +119,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TeacherReportRepositoryInterface::class, TeacherReportRepository::class);
         $this->app->bind(ParentReportRepositoryInterface::class, ParentReportRepository::class);
         $this->app->bind(SettingsRepositoryInterface::class, SettingsRepository::class);
+        $this->app->bind(HomeworkRepositoryInterface::class, HomeworkRepository::class);
+        $this->app->bind(LeaveTypeRepositoryInterface::class, LeaveTypeRepository::class);
+        $this->app->bind(LeaveRequestRepositoryInterface::class, LeaveRequestRepository::class);
+        $this->app->bind(CalendarRepositoryInterface::class, CalendarRepository::class);
+        $this->app->bind(DocumentRepositoryInterface::class, DocumentRepository::class);
     }
 
     /**
@@ -133,5 +158,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(StudentFee::class, StudentFeePolicy::class);
         Gate::policy(FeePayment::class, FeePaymentPolicy::class);
         Gate::policy(\App\Modules\Notifications\Models\Notification::class, \App\Modules\Notifications\Policies\NotificationPolicy::class);
+        Gate::policy(Homework::class, HomeworkPolicy::class);
+        Gate::policy(LeaveType::class, LeaveTypePolicy::class);
+        Gate::policy(LeaveRequest::class, LeaveRequestPolicy::class);
+        Gate::policy(AcademicCalendar::class, CalendarPolicy::class);
+        Gate::policy(StudentDocument::class, DocumentPolicy::class);
     }
 }

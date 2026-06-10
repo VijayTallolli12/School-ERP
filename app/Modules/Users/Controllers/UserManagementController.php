@@ -2,6 +2,7 @@
 
 namespace App\Modules\Users\Controllers;
 
+use App\Core\Tenant\SchoolContext;
 use App\Http\Controllers\Controller;
 use App\Models\School;
 use App\Models\User;
@@ -22,8 +23,9 @@ class UserManagementController extends Controller
 
     public function index(): View
     {
-        $roles = Role::all();
-        $schools = School::all();
+        $schoolId = app(SchoolContext::class)->id();
+        $roles = Role::query()->when($schoolId, fn($q, $id) => $q->where('school_id', $id))->get();
+        $schools = $schoolId ? collect([app(SchoolContext::class)->school()]) : School::query()->get();
         $statuses = ['active' => 'Active', 'inactive' => 'Inactive'];
 
         return view('modules.users.index', compact('roles', 'schools', 'statuses'));
@@ -38,243 +40,104 @@ class UserManagementController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('is_active', $request->status === 'active');
         }
 
         if ($request->filled('school_id')) {
-            $query->where('current_school_id', $request->school_id);
-        }
-
-        if ($request->filled('created_from')) {
-            $query->whereDate('created_at', '>=', $request->created_from);
-        }
-
-        if ($request->filled('created_to')) {
-            $query->whereDate('created_at', '<=', $request->created_to);
+            $query->whereHas('schools', fn ($q) => $q->where('schools.id', $request->school_id));
         }
 
         return DataTables::of($query)
-            ->addColumn('role_label', function (User $user) {
-                $role = $user->roles->first();
-                if (! $role) {
-                    return '<span class="badge bg-secondary">No Role</span>';
-                }
-
-                $badgeClass = match ($role->name) {
-                    'Super Admin' => 'bg-danger',
-                    'School Admin' => 'bg-warning text-dark',
-                    'Principal' => 'bg-info',
-                    'Accountant' => 'bg-primary',
-                    'Teacher' => 'bg-success',
-                    'Parent' => 'bg-purple',
-                    'Student' => 'bg-teal',
-                    default => 'bg-secondary',
-                };
-
-                return '<span class="badge ' . $badgeClass . '">' . e($role->name) . '</span>';
-            })
-            ->addColumn('school_name', fn (User $user) => $user->currentSchool?->name ?? '<span class="text-muted">—</span>')
-            ->addColumn('status_label', function (User $user) {
-                $badgeClass = $user->status === 'active' ? 'bg-success' : 'bg-danger';
-
-                return '<span class="badge ' . $badgeClass . '">' . ucfirst($user->status) . '</span>';
-            })
-            ->addColumn('actions', function (User $user) {
-                return view('modules.users._actions', compact('user'))->render();
-            })
-            ->rawColumns(['role_label', 'school_name', 'status_label', 'actions'])
+            ->addColumn('role', fn (User $user) => $user->roles->pluck('name')->implode(', '))
+            ->addColumn('school', fn (User $user) => $user->currentSchool?->name ?? '-')
+            ->editColumn('is_active', fn (User $user) => $user->is_active ? 'Active' : 'Inactive')
+            ->addColumn('actions', fn (User $user) => view('modules.users._actions', compact('user'))->render())
+            ->rawColumns(['actions'])
             ->make(true);
+    }
+
+    public function create(): View
+    {
+        $schoolId = app(SchoolContext::class)->id();
+        $roles = Role::query()->when($schoolId, fn($q, $id) => $q->where('school_id', $id))->get();
+        $schools = $schoolId ? collect([app(SchoolContext::class)->school()]) : School::query()->get();
+
+        return view('modules.users.create', compact('roles', 'schools'));
     }
 
     public function store(StoreUserRequest $request): JsonResponse
     {
-        /** @var User $currentUser */
-        $currentUser = $request->user();
-        $roleName = $request->role;
+        $data = $request->validated();
+        $data['password'] = Hash::make($data['password']);
 
-        // Only Super Admin can create admins/principals
-        if (in_array($roleName, ['Super Admin', 'School Admin', 'Principal'], true) && ! $currentUser->isSuperAdmin()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only Super Admin can create admin or principal accounts.',
-            ], 403);
+        $user = User::query()->create($data);
+
+        if (!empty($data['role'])) {
+            $user->assignRole($data['role']);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'status' => $request->status,
-            'current_school_id' => $request->school_id,
-            'force_password_change' => false,
-        ]);
-
-        if ($request->hasFile('avatar')) {
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $user->update(['avatar_path' => $path]);
+        if (!empty($data['school_id'])) {
+            $user->schools()->sync([$data['school_id']]);
         }
 
-        // Assign role
-        $user->syncRoles([$roleName]);
-
-        // Attach school to pivot if provided
-        if ($request->filled('school_id')) {
-            $user->schools()->syncWithoutDetaching([$request->school_id => [
-                'status' => 'active',
-                'is_primary' => true,
-            ]]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User created successfully.',
-        ]);
+        return response()->json(['success' => true, 'message' => 'User created successfully.']);
     }
 
-    public function show(User $user): JsonResponse
+    public function show(User $user): View
     {
-        $user->load(['roles', 'schools']);
+        $user->load(['roles', 'currentSchool']);
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'status' => $user->status,
-                'role' => $user->roles->first()?->name,
-                'school_id' => $user->current_school_id,
-                'avatar_url' => $user->avatar_path ? asset('storage/' . $user->avatar_path) : null,
-            ],
-        ]);
+        return view('modules.users.show', compact('user'));
+    }
+
+    public function edit(User $user): View
+    {
+        $schoolId = app(SchoolContext::class)->id();
+        $roles = Role::query()->when($schoolId, fn($q, $id) => $q->where('school_id', $id))->get();
+        $schools = $schoolId ? collect([app(SchoolContext::class)->school()]) : School::query()->get();
+        $user->load(['roles', 'currentSchool']);
+
+        return view('modules.users.edit', compact('user', 'roles', 'schools'));
     }
 
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
-        /** @var User $currentUser */
-        $currentUser = $request->user();
+        $data = $request->validated();
 
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'status' => $request->status,
-        ];
-
-        if ($request->filled('school_id')) {
-            $data['current_school_id'] = $request->school_id;
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
         }
 
         $user->update($data);
 
-        if ($request->hasFile('avatar')) {
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $user->update(['avatar_path' => $path]);
+        if (!empty($data['role'])) {
+            $user->syncRoles([$data['role']]);
         }
 
-        // Update role if provided
-        if ($request->filled('role')) {
-            $roleName = $request->role;
-
-            if (in_array($roleName, ['Super Admin', 'School Admin', 'Principal'], true) && ! $currentUser->isSuperAdmin()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Only Super Admin can assign admin or principal roles.',
-                ], 403);
-            }
-
-            $user->syncRoles([$roleName]);
+        if (isset($data['school_id'])) {
+            $user->schools()->sync([$data['school_id']]);
         }
 
-        // Sync school pivot
-        if ($request->filled('school_id')) {
-            $user->schools()->syncWithoutDetaching([$request->school_id => [
-                'status' => 'active',
-                'is_primary' => true,
-            ]]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User updated successfully.',
-        ]);
+        return response()->json(['success' => true, 'message' => 'User updated successfully.']);
     }
 
     public function destroy(User $user): JsonResponse
     {
-        // Prevent deleting self
-        if ($user->is(auth()->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You cannot delete your own account.',
-            ], 403);
+        if ($user->id === auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'You cannot delete yourself.'], 422);
         }
 
         $user->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User deleted successfully.',
-        ]);
-    }
-
-    public function toggleStatus(User $user): JsonResponse
-    {
-        // Prevent deactivating self
-        if ($user->is(auth()->user())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You cannot change your own status.',
-            ], 403);
-        }
-
-        $newStatus = $user->status === 'active' ? 'inactive' : 'active';
-        $user->update(['status' => $newStatus]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User ' . $newStatus . ' successfully.',
-            'data' => ['status' => $newStatus],
-        ]);
+        return response()->json(['success' => true, 'message' => 'User deleted successfully.']);
     }
 
     public function resetPassword(ResetPasswordRequest $request, User $user): JsonResponse
     {
-        $user->update([
-            'password' => Hash::make($request->password),
-            'force_password_change' => false,
-        ]);
+        $user->update(['password' => Hash::make($request->password)]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Password reset successfully for ' . $user->name . '.',
-        ]);
-    }
-
-    public function assignRole(Request $request, User $user): JsonResponse
-    {
-        $request->validate([
-            'role' => ['required', 'exists:roles,name'],
-        ]);
-
-        /** @var User $currentUser */
-        $currentUser = $request->user();
-        $roleName = $request->role;
-
-        if (in_array($roleName, ['Super Admin', 'School Admin', 'Principal'], true) && ! $currentUser->isSuperAdmin()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only Super Admin can assign admin or principal roles.',
-            ], 403);
-        }
-
-        $user->syncRoles([$roleName]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Role assigned successfully.',
-        ]);
+        return response()->json(['success' => true, 'message' => 'Password reset successfully.']);
     }
 }

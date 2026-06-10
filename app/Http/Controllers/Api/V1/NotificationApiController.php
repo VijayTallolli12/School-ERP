@@ -26,7 +26,7 @@ class NotificationApiController extends ApiBaseController
         ]);
 
         $user = $request->user();
-        $query = $user->notifications()->with('creator:id,name');
+        $query = $user->appNotifications()->with('creator:id,name');
 
         if ($type = $request->input('type')) {
             $query->where('type', $type);
@@ -51,7 +51,7 @@ class NotificationApiController extends ApiBaseController
     public function unread(Request $request): JsonResponse
     {
         $user = $request->user();
-        $notifications = $user->notifications()
+        $notifications = $user->appNotifications()
             ->wherePivot('is_read', false)
             ->with('creator:id,name')
             ->orderByDesc('id')
@@ -67,7 +67,7 @@ class NotificationApiController extends ApiBaseController
     public function markRead(int $id, Request $request): JsonResponse
     {
         $user = $request->user();
-        $notification = $user->notifications()->where('notifications.id', $id)->first();
+        $notification = $user->appNotifications()->where('notifications.id', $id)->first();
 
         if (! $notification) {
             return $this->notFound('Notification not found.');

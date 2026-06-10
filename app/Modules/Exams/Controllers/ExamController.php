@@ -15,7 +15,9 @@ use App\Modules\Exams\Requests\StoreExamResultRequest;
 use App\Modules\Exams\Requests\UpdateExamResultRequest;
 use App\Modules\Exams\Services\ExamService;
 use App\Modules\Students\Models\Student;
+use App\Modules\Students\Models\StudentSession;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -126,23 +128,25 @@ class ExamController extends Controller
         $examId = request('exam_id');
 
         if (! $examId) {
-            return DataTables::of(ExamResult::query()->whereRaw('0 = 1'))->toJson();
+            return response()->json(['data' => [], 'draw' => (int) request('draw', 0), 'recordsTotal' => 0, 'recordsFiltered' => 0]);
         }
 
         $exam = Exam::query()->find($examId);
 
         if (! $exam) {
-            return DataTables::of(ExamResult::query()->whereRaw('0 = 1'))->toJson();
+            return response()->json(['data' => [], 'draw' => (int) request('draw', 0), 'recordsTotal' => 0, 'recordsFiltered' => 0]);
         }
 
         $query = $this->exams->resultsQuery($exam);
 
         return DataTables::eloquent($query)
-            ->addColumn('student_name', fn (ExamResult $result) => e($result->student?->full_name ?? '-'))
+            ->addColumn('student_name', fn (ExamResult $result) => e($result->student?->full_name ?? 'Unknown Student'))
             ->addColumn('exam_name', fn (ExamResult $result) => e($result->exam->exam_name))
             ->addColumn('class_section', fn (ExamResult $result) => e($result->exam->classSection?->schoolClass->name.' - '.$result->exam->classSection?->section->name))
             ->addColumn('status_label', fn (ExamResult $result) => '<span class="badge bg-'.($result->status === 'pass' ? 'success' : 'danger').'">'.e($result->status_label).'</span>')
             ->addColumn('actions', fn (ExamResult $result) => view('modules.exams._results_actions', compact('result'))->render())
+            ->orderColumn('student_name', fn ($query, $direction) => $query->orderByRaw("CONCAT_WS(' ', students.first_name, students.middle_name, students.last_name) {$direction}"))
+            ->filterColumn('student_name', fn ($query, $keyword) => $query->whereRaw("CONCAT_WS(' ', students.first_name, students.middle_name, students.last_name) LIKE ?", ["%{$keyword}%"]))
             ->rawColumns(['status_label', 'actions'])
             ->toJson();
     }
@@ -219,5 +223,48 @@ class ExamController extends Controller
                 'name' => $student->full_name,
             ]),
         ]);
+    }
+
+    public function bulkEntry(Exam $exam): View
+    {
+        $students = Student::query()
+            ->select('students.id', 'students.first_name', 'students.middle_name', 'students.last_name', 'student_sessions.roll_no')
+            ->join('student_sessions', function ($join) use ($exam) {
+                $join->on('student_sessions.student_id', '=', 'students.id')
+                    ->where('student_sessions.class_section_id', '=', $exam->class_section_id)
+                    ->where('student_sessions.status', '=', 'active');
+            })
+            ->orderBy('student_sessions.roll_no')
+            ->orderBy('students.first_name')
+            ->get();
+
+        $existingResults = ExamResult::query()
+            ->where('exam_id', $exam->id)
+            ->get()
+            ->keyBy('student_id');
+
+        return view('modules.exams.bulk', compact('exam', 'students', 'existingResults'));
+    }
+
+    public function bulkSave(Exam $exam, Request $request): JsonResponse
+    {
+        $this->authorize('update', $exam);
+
+        $results = $request->input('results', []);
+
+        if (empty($results)) {
+            return response()->json(['success' => false, 'message' => 'No results data provided.'], 422);
+        }
+
+        $this->service->bulkSave($exam, $results);
+
+        $message = 'Results saved successfully.';
+
+        if ($request->boolean('publish') && ! $exam->is_published) {
+            $this->service->publish($exam);
+            $message = 'Results saved and published successfully.';
+        }
+
+        return response()->json(['success' => true, 'message' => $message]);
     }
 }

@@ -18,7 +18,8 @@ class ExamResultResource extends JsonResource
             'exam_name' => $this->whenLoaded('exam', fn() => $this->exam?->exam_name),
             'exam_type' => $this->whenLoaded('exam', fn() => $this->exam?->exam_type),
             'exam_date' => $this->whenLoaded('exam', fn() => $this->exam?->exam_date?->format('Y-m-d')),
-            'subject' => $this->whenLoaded('exam.subject', fn() => $this->exam?->subject?->name),
+            'subject_name' => $this->whenLoaded('exam', fn() => $this->exam?->subject?->name),
+            'subject' => $this->whenLoaded('exam', fn() => $this->exam?->subject?->name),
             'maximum_marks' => $this->whenLoaded('exam', fn() => $this->exam?->maximum_marks),
             'pass_marks' => $this->whenLoaded('exam', fn() => $this->exam?->pass_marks),
             'student_id' => $this->student_id,
@@ -27,7 +28,7 @@ class ExamResultResource extends JsonResource
             'marks_obtained' => $this->marks_obtained,
             'grade' => $this->grade,
             'remarks' => $this->remarks,
-            'status' => $this->status,
+            'status' => $this->status_label,
             'percentage' => $this->whenLoaded('exam', function () {
                 if (!$this->exam) return null;
                 return $this->exam->maximum_marks > 0

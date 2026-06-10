@@ -2,7 +2,9 @@
 
 namespace App\Modules\Timetable\Models;
 
+use App\Core\Tenant\BelongsToSchool;
 use App\Models\AcademicYear;
+use App\Models\School;
 use App\Modules\Academics\Models\ClassSection;
 use App\Modules\Academics\Models\Subject;
 use App\Modules\Teachers\Models\Teacher;
@@ -13,11 +15,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TimetableSlot extends Model
 {
-    use HasFactory, SoftDeletes;
+    use BelongsToSchool, HasFactory, SoftDeletes;
 
     protected $table = 'teacher_timetable_slots';
 
     protected $fillable = [
+        'school_id',
         'teacher_id',
         'class_section_id',
         'subject_id',
@@ -73,6 +76,11 @@ class TimetableSlot extends Model
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(Teacher::class);
+    }
+
+    public function school(): BelongsTo
+    {
+        return $this->belongsTo(School::class);
     }
 
     public function getDayNameAttribute(): string

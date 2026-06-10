@@ -32,4 +32,9 @@ class TeacherReportService
     {
         return $this->repository->classTeacherMapping($filters);
     }
+
+    public function workload(array $filters = []): array
+    {
+        return $this->repository->workload($filters);
+    }
 }

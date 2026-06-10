@@ -6,102 +6,77 @@
 @section("content")
     <div class="row mb-3">
         <div class="col-md-12">
-            <form id="filterForm" class="form-inline">
-                <div class="form-group mr-3">
-                    <label for="academic_year_id" class="mr-2">Academic Year:</label>
-                    <select name="academic_year_id" id="academic_year_id" class="form-control">
+            <form id="filterForm" class="row g-3" method="GET">
+                <div class="col-auto">
+                    <label for="academic_year_id" class="form-label">Academic Year:</label>
+                    <select name="academic_year_id" id="academic_year_id" class="form-select">
                         <option value="">All</option>
                         @foreach($academicYears as $year)
-                            <option value="{{ $year->id }}">{{ $year->name }}</option>
+                            <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>{{ $year->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group mr-3">
-                    <label for="class_section_id" class="mr-2">Class & Section:</label>
-                    <select name="class_section_id" id="class_section_id" class="form-control">
-                        <option value="">All</option>
-                        @foreach($classSections as $cs)
-                            <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
-                        @endforeach
-                    </select>
+                <div class="col-auto d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-filter me-1"></i> Filter</button>
+                    <a href="{{ route('reports.students.class_wise') }}" class="btn btn-outline-secondary py-2"><i class="ti ti-refresh me-1"></i> Reset</a>
                 </div>
-                <button type="button" id="filterBtn" class="btn btn-primary py-2"><i class="ti ti-filter me-1"></i> Filter</button>
-                <button type="button" id="resetBtn" class="btn btn-outline-secondary py-2"><i class="ti ti-refresh me-1"></i> Reset</button>
-                <a id="exportExcel" href="{{ route('reports.students.class_wise.export', ['type' => 'excel']) }}" class="btn btn-success py-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
-                <a id="exportPdf" href="{{ route('reports.students.class_wise.export', ['type' => 'pdf']) }}" class="btn btn-danger py-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
-                <a id="exportPrint" href="{{ route('reports.students.class_wise.export', ['type' => 'print']) }}" class="btn btn-warning py-2" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
             </form>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a href="{{ route('reports.students.class_wise.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-success py-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
+                    <a href="{{ route('reports.students.class_wise.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-danger py-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
+                    <a href="{{ route('reports.students.class_wise.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-warning py-2" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+                </div>
+            </div>
         </div>
     </div>
 
-    <table id="classWiseTable" class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Class</th>
-                <th>Total Students</th>
-                <th>Male</th>
-                <th>Female</th>
-                <th>Active</th>
-                <th>Inactive</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{-- DataTables will load data here via AJAX --}}
-        </tbody>
-    </table>
+    @php
+        $totalStudents = $data->sum('total_students');
+        $totalMale = $data->sum('male_count');
+        $totalFemale = $data->sum('female_count');
+        $totalActive = $data->sum('active_count');
+        $totalInactive = $data->sum('inactive_count');
+    @endphp
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover" id="classWiseTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Class</th>
+                    <th class="text-center">Total Students</th>
+                    <th class="text-center">Male</th>
+                    <th class="text-center">Female</th>
+                    <th class="text-center">Active</th>
+                    <th class="text-center">Inactive</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($data as $row)
+                    <tr>
+                        <td>{{ $row->class_name }}</td>
+                        <td class="text-center fw-bold">{{ $row->total_students }}</td>
+                        <td class="text-center">{{ $row->male_count }}</td>
+                        <td class="text-center">{{ $row->female_count }}</td>
+                        <td class="text-center"><span class="badge bg-success">{{ $row->active_count }}</span></td>
+                        <td class="text-center"><span class="badge bg-danger">{{ $row->inactive_count }}</span></td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No data available</td>
+                    </tr>
+                @endforelse
+            </tbody>
+            <tfoot class="table-light fw-bold">
+                <tr>
+                    <td>Total</td>
+                    <td class="text-center">{{ $totalStudents }}</td>
+                    <td class="text-center">{{ $totalMale }}</td>
+                    <td class="text-center">{{ $totalFemale }}</td>
+                    <td class="text-center">{{ $totalActive }}</td>
+                    <td class="text-center">{{ $totalInactive }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 @endsection
-
-@push("scripts")
-<script type="text/javascript">
-    $(function () {
-        var table = $("#classWiseTable").DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route("reports.students.class_wise") }}",
-                data: function (d) {
-                    d.academic_year_id = $('#academic_year_id').val();
-                    d.class_section_id = $('#class_section_id').val();
-                }
-            },
-            columns: [
-                {data: "class_name", name: "class_name"},
-                {data: "total_students", name: "total_students"},
-                {data: "male_count", name: "male_count"},
-                {data: "female_count", name: "female_count"},
-                {data: "active_count", name: "active_count"},
-                {data: "inactive_count", name: "inactive_count"},
-            ]
-        });
-
-        function updateExportLinks() {
-            var params = {
-                academic_year_id: $('#academic_year_id').val(),
-                class_section_id: $('#class_section_id').val()
-            };
-            var queryString = $.param(params);
-            var baseExcel = "{{ route('reports.students.class_wise.export', ['type' => 'excel']) }}";
-            var basePdf = "{{ route('reports.students.class_wise.export', ['type' => 'pdf']) }}";
-            var basePrint = "{{ route('reports.students.class_wise.export', ['type' => 'print']) }}";
-
-            $('#exportExcel').attr('href', baseExcel + (queryString ? '?' + queryString : ''));
-            $('#exportPdf').attr('href', basePdf + (queryString ? '?' + queryString : ''));
-            $('#exportPrint').attr('href', basePrint + (queryString ? '?' + queryString : ''));
-        }
-
-        $('#filterBtn').on('click', function() {
-            table.ajax.reload();
-            updateExportLinks();
-        });
-
-        $('#resetBtn').on('click', function() {
-            $('#academic_year_id').val('');
-            $('#class_section_id').val('');
-            table.ajax.reload();
-            updateExportLinks();
-        });
-
-        updateExportLinks();
-    });
-</script>
-@endpush

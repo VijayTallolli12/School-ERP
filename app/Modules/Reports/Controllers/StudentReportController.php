@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use App\Modules\Reports\Exports\StudentListExport;
+use App\Modules\Reports\Exports\StudentDirectoryExport;
+use App\Modules\Reports\Exports\GenderWiseExport;
 use App\Modules\Reports\Exports\AdmissionReportExport;
 use App\Modules\Reports\Exports\ClassWiseReportExport;
 use App\Modules\Reports\Services\StudentReportService;
@@ -52,22 +54,16 @@ class StudentReportController extends Controller
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('full_name', function ($student) {
-                    $name = trim(optional($student->user)->first_name . ' ' . optional($student->user)->last_name);
-                    return $name ?: ($student->full_name ?: 'Unknown Student');
+                    return $this->studentReportService->formatStudentRow($student)->full_name;
                 })
                 ->addColumn('class_section', function ($student) {
-                    $session = $student->sessions->first();
-                    return $session && $session->classSection
-                        ? $session->classSection->schoolClass->name . ' - ' . $session->classSection->section->name
-                        : '';
+                    return $this->studentReportService->formatStudentRow($student)->class_section;
                 })
                 ->addColumn('guardian', function ($student) {
-                    return $student->guardians->map(function ($guardian) {
-                        return optional($guardian->user)->first_name ?: $guardian->name;
-                    })->filter()->join(', ');
+                    return $this->studentReportService->formatStudentRow($student)->guardian;
                 })
                 ->addColumn('actions', function ($student) {
-                    return '<a href="#" class="btn btn-sm btn-info">View</a>';
+                    return $this->studentReportService->formatStudentRow($student)->actions;
                 })
                 ->rawColumns(['actions'])
                 ->make(true);
@@ -105,11 +101,148 @@ class StudentReportController extends Controller
         return view("modules.reports.students.class_wise", compact('data', 'academicYears', 'classSections'));
     }
 
+    public function directory(Request $request)
+    {
+        if ($request->ajax()) {
+            $filters = $request->only(['academic_year_id', 'class_section_id', 'status', 'gender', 'start_date', 'end_date']);
+            $query = $this->studentReportService->getDirectoryData($filters);
+
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('photo', fn($s) => $this->studentReportService->formatDirectoryRow($s)['photo'])
+                ->addColumn('student_name', fn($s) => $this->studentReportService->formatDirectoryRow($s)['student_name'])
+                ->addColumn('class_section', fn($s) => $this->studentReportService->formatDirectoryRow($s)['class_section'])
+                ->addColumn('gender', fn($s) => $this->studentReportService->formatDirectoryRow($s)['gender'])
+                ->addColumn('date_of_birth', fn($s) => $this->studentReportService->formatDirectoryRow($s)['date_of_birth'])
+                ->addColumn('parent_name', fn($s) => $this->studentReportService->formatDirectoryRow($s)['parent_name'])
+                ->addColumn('parent_mobile', fn($s) => $this->studentReportService->formatDirectoryRow($s)['parent_mobile'])
+                ->addColumn('email', fn($s) => $this->studentReportService->formatDirectoryRow($s)['email'])
+                ->addColumn('status_badge', fn($s) => $this->studentReportService->formatDirectoryRow($s)['status'] === 'Active'
+                    ? '<span class="badge bg-success">Active</span>'
+                    : '<span class="badge bg-danger">Inactive</span>')
+                ->addColumn('actions', function ($s) {
+                    $row = $this->studentReportService->formatDirectoryRow($s);
+                    $profileUrl = $row['profile_url'];
+                    $contactJs = "window.location.href='tel:" . $row['parent_mobile'] . "'";
+                    return '<div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="' . $profileUrl . '"><i class="ti ti-eye me-2"></i>View Profile</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="' . $contactJs . '"><i class="ti ti-phone me-2"></i>Call Parent</a></li>
+                        </ul></div>';
+                })
+                ->rawColumns(['photo', 'status_badge', 'actions'])
+                ->make(true);
+        }
+
+        $schoolId = auth()->user()->school_id;
+        $academicYears = AcademicYear::when($schoolId, fn($q) => $q->where('school_id', $schoolId))->get();
+        $classSections = ClassSection::with(['schoolClass', 'section'])
+            ->when($schoolId, fn($q) => $q->whereHas('schoolClass', fn($sq) => $sq->where('school_id', $schoolId)))
+            ->get();
+
+        return view("modules.reports.students.directory", compact('academicYears', 'classSections'));
+    }
+
+    public function genderWise(Request $request)
+    {
+        $filters = $request->only(['academic_year_id', 'class_section_id', 'start_date', 'end_date']);
+        $data = $this->studentReportService->getGenderWiseData($filters);
+
+        $rows = $data->map(function ($item) {
+            $total = (int) $item->total;
+            $male = (int) $item->male;
+            $female = (int) $item->female;
+            $other = (int) $item->other;
+            return [
+                'class_name' => $item->class_name,
+                'total' => $total,
+                'male' => $male,
+                'female' => $female,
+                'other' => $other,
+                'male_pct' => $total > 0 ? round(($male / $total) * 100, 1) : 0,
+                'female_pct' => $total > 0 ? round(($female / $total) * 100, 1) : 0,
+            ];
+        })->toArray();
+
+        $totals = [
+            'total' => array_sum(array_column($rows, 'total')),
+            'male' => array_sum(array_column($rows, 'male')),
+            'female' => array_sum(array_column($rows, 'female')),
+            'other' => array_sum(array_column($rows, 'other')),
+        ];
+
+        $schoolId = auth()->user()->school_id;
+        $academicYears = AcademicYear::when($schoolId, fn($q) => $q->where('school_id', $schoolId))->get();
+        $classSections = ClassSection::with(['schoolClass', 'section'])
+            ->when($schoolId, fn($q) => $q->whereHas('schoolClass', fn($sq) => $sq->where('school_id', $schoolId)))
+            ->get();
+
+        return view("modules.reports.students.gender_wise", compact('rows', 'totals', 'academicYears', 'classSections'));
+    }
+
+    public function exportGenderWise(Request $request, $type)
+    {
+        $filters = $request->only(['academic_year_id', 'class_section_id', 'start_date', 'end_date']);
+        $data = $this->studentReportService->getGenderWiseData($filters);
+
+        $rows = $data->map(function ($item) {
+            $total = (int) $item->total;
+            $male = (int) $item->male;
+            $female = (int) $item->female;
+            $other = (int) $item->other;
+            return [
+                'class_name' => $item->class_name,
+                'total' => $total,
+                'male' => $male,
+                'female' => $female,
+                'other' => $other,
+                'male_pct' => $total > 0 ? round(($male / $total) * 100, 1) : 0,
+                'female_pct' => $total > 0 ? round(($female / $total) * 100, 1) : 0,
+            ];
+        })->toArray();
+
+        $totals = [
+            'total' => array_sum(array_column($rows, 'total')),
+            'male' => array_sum(array_column($rows, 'male')),
+            'female' => array_sum(array_column($rows, 'female')),
+            'other' => array_sum(array_column($rows, 'other')),
+        ];
+
+        if ($type === 'excel') {
+            return Excel::download(new GenderWiseExport($rows, $totals), 'gender_wise_report.xlsx');
+        } elseif ($type === 'pdf') {
+            $title = 'Gender-wise Student Report';
+            $pdf = Pdf::loadView('modules.reports.students.exports.gender_wise_pdf', compact('rows', 'totals', 'title'));
+            return $pdf->setPaper('a4', 'landscape')->download('gender_wise_report.pdf');
+        } elseif ($type === 'print') {
+            $title = 'Gender-wise Student Report';
+            return view('modules.reports.students.exports.gender_wise_print', compact('rows', 'totals', 'title'));
+        }
+    }
+
+    public function exportDirectory(Request $request, $type)
+    {
+        $filters = $request->only(['academic_year_id', 'class_section_id', 'status', 'gender', 'start_date', 'end_date']);
+        $students = $this->studentReportService->getDirectoryData($filters)->get();
+        $rows = $students->map(fn($s) => $this->studentReportService->formatDirectoryRow($s))->toArray();
+
+        if ($type === 'excel') {
+            return Excel::download(new StudentDirectoryExport($rows), 'student_directory.xlsx');
+        } elseif ($type === 'pdf') {
+            $title = 'Student Directory Report';
+            $pdf = Pdf::loadView('modules.reports.students.exports.directory_pdf', compact('rows', 'title'));
+            return $pdf->setPaper('a4', 'landscape')->download('student_directory.pdf');
+        } elseif ($type === 'print') {
+            $title = 'Student Directory Report';
+            return view('modules.reports.students.exports.directory_print', compact('rows', 'title'));
+        }
+    }
+
     public function exportList(Request $request, $type)
     {
         $filters = $request->only(['academic_year_id', 'class_section_id', 'status']);
-        $query = $this->studentReportService->getStudentListData($filters);
-        $data = $query->get();
+        $data = $this->studentReportService->getStudentListReport($filters);
 
         if ($type === 'excel') {
             return Excel::download(new StudentListExport($data), 'student_list.xlsx');

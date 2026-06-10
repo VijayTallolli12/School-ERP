@@ -137,13 +137,15 @@ class NotificationService
 
     private function resolveTargetUserIds(string $targetType): array
     {
-        $query = User::query();
+        $schoolId = $this->schoolContext->id();
+        $query = User::query()->whereHas('schools', fn ($q) => $q->whereKey($schoolId));
 
         return match ($targetType) {
             'all' => $query->pluck('id')->all(),
             'students' => $query->whereHas('roles', fn ($q) => $q->where('name', 'Student'))->pluck('id')->all(),
             'parents' => $query->whereHas('roles', fn ($q) => $q->where('name', 'Parent'))->pluck('id')->all(),
             'teachers' => $query->whereHas('roles', fn ($q) => $q->where('name', 'Teacher'))->pluck('id')->all(),
+            'staff' => $query->whereHas('roles', fn ($q) => $q->where('name', 'Staff'))->pluck('id')->all(),
             'admins' => $query->whereHas('roles', fn ($q) => $q->whereIn('name', ['Super Admin', 'Admin']))->pluck('id')->all(),
             default => [],
         };

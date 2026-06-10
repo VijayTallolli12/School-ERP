@@ -1,5 +1,5 @@
 @can('exams.update')
-    <button type="button" class="btn btn-sm btn-outline-secondary edit-exam" data-url="{{ route('admin.exams.show', $exam) }}" data-update-url="{{ route('admin.exams.update', $exam) }}" title="Edit">
+    <button type="button" class="btn btn-sm btn-outline-primary edit-exam" data-url="{{ route('admin.exams.show', $exam) }}" data-update-url="{{ route('admin.exams.update', $exam) }}" title="Edit">
         <i class="ti ti-pencil"></i>
     </button>
 @endcan

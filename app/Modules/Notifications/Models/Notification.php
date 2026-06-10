@@ -85,6 +85,7 @@ class Notification extends Model
             'exam_result_alert' => 'Exam Result Alert',
             'announcement' => 'Announcement',
             'timetable_update' => 'Timetable Update',
+            'calendar_event' => 'Calendar Event',
         ];
     }
 
@@ -105,6 +106,7 @@ class Notification extends Model
             'students' => 'Students',
             'parents' => 'Parents',
             'teachers' => 'Teachers',
+            'staff' => 'Staff',
             'admins' => 'Admins',
         ];
     }

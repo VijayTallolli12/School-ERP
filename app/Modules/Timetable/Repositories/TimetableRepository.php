@@ -12,7 +12,6 @@ class TimetableRepository implements TimetableRepositoryInterface
     public function query(): Builder
     {
         return TimetableSlot::query()
-            ->select('timetable_slots.*')
             ->with(['academicYear', 'classSection.schoolClass', 'classSection.section', 'subject', 'teacher']);
     }
 
@@ -69,14 +68,8 @@ class TimetableRepository implements TimetableRepositoryInterface
             $query->whereKeyNot($ignoreId);
         }
 
-        return $query->where(function (Builder $query) use ($data) {
-            $query->whereBetween('start_time', [$data['start_time'], $data['end_time']])
-                ->orWhereBetween('end_time', [$data['start_time'], $data['end_time']])
-                ->orWhere(function (Builder $query) use ($data) {
-                    $query->where('start_time', '<=', $data['start_time'])
-                        ->where('end_time', '>=', $data['end_time']);
-                });
-        });
+        return $query->where('start_time', '<', $data['end_time'])
+            ->where('end_time', '>', $data['start_time']);
     }
 
     public function findClassSectionConflicts(array $data, ?int $ignoreId = null): Builder
@@ -90,14 +83,27 @@ class TimetableRepository implements TimetableRepositoryInterface
             $query->whereKeyNot($ignoreId);
         }
 
-        return $query->where(function (Builder $query) use ($data) {
-            $query->whereBetween('start_time', [$data['start_time'], $data['end_time']])
-                ->orWhereBetween('end_time', [$data['start_time'], $data['end_time']])
-                ->orWhere(function (Builder $query) use ($data) {
-                    $query->where('start_time', '<=', $data['start_time'])
-                        ->where('end_time', '>=', $data['end_time']);
-                });
-        });
+        return $query->where('start_time', '<', $data['end_time'])
+            ->where('end_time', '>', $data['start_time']);
+    }
+
+    public function findRoomConflicts(array $data, ?int $ignoreId = null): Builder
+    {
+        $query = $this->query()
+            ->where('room', $data['room'])
+            ->where('day_of_week', $data['day_of_week'])
+            ->where('academic_year_id', $data['academic_year_id']);
+
+        if (empty($data['room'])) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if ($ignoreId) {
+            $query->whereKeyNot($ignoreId);
+        }
+
+        return $query->where('start_time', '<', $data['end_time'])
+            ->where('end_time', '>', $data['start_time']);
     }
 
     public function getForClassSchedule(int $classSectionId, int $academicYearId): Builder

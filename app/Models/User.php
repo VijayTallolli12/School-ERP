@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use App\Modules\Notifications\Models\Notification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -20,18 +21,12 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'phone',
         'avatar_path',
         'status',
-        'is_super_admin',
         'current_school_id',
         'last_login_at',
         'last_login_ip',
@@ -39,21 +34,15 @@ class User extends Authenticatable
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    protected $guarded = [
+        'is_super_admin',
+    ];
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -76,6 +65,11 @@ class User extends Authenticatable
         return $this->belongsTo(School::class, 'current_school_id');
     }
 
+    public function getSchoolIdAttribute(): ?int
+    {
+        return $this->current_school_id;
+    }
+
     public function schools(): BelongsToMany
     {
         return $this->belongsToMany(School::class)
@@ -93,12 +87,20 @@ class User extends Authenticatable
         return $this->currentSchool ?: $this->schools()->wherePivot('status', 'active')->first();
     }
 
-    /**
-     * Get the guardian record associated with this user.
-     * A user with the "Parent" role can have exactly one Guardian record.
-     */
     public function guardian(): HasOne
     {
         return $this->hasOne(\App\Modules\Parents\Models\Guardian::class);
+    }
+
+    /**
+     * Custom notification relationship via notification_user pivot.
+     * Named differently to avoid conflicting with Notifiable trait's notifications() MorphMany return type.
+     */
+    public function appNotifications(): BelongsToMany
+    {
+        return $this->belongsToMany(Notification::class, 'notification_user')
+            ->withPivot(['is_read', 'read_at', 'delivery_status'])
+            ->withTimestamps()
+            ->latest('notifications.id');
     }
 }

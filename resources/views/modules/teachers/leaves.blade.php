@@ -13,7 +13,7 @@
     <div class="card">
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title mb-0">Teacher Leave Requests</h3>
-            @can('teachers.create')
+            @can('leave_management.create')
                 <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#leaveModal" id="createLeave">
                     <i class="ti ti-plus me-1"></i> New Leave Request
                 </button>

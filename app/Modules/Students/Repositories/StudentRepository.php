@@ -13,6 +13,7 @@ class StudentRepository implements StudentRepositoryInterface
             ->with([
                 'user',
                 'guardians',
+                'parents',
                 'sessions.academicYear',
                 'sessions.classSection.schoolClass',
                 'sessions.classSection.section',

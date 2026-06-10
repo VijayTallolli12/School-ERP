@@ -224,28 +224,22 @@
                         if (key === 'students') {
                             $('#studentSelections').html('');
                             studentCounter = 0;
+
+                            // Existing linked students — rendered as read-only rows
                             value.forEach((student) => {
                                 studentCounter++;
                                 const studentHtml = `
                                     <div class="student-entry mb-3 p-3 border rounded bg-body" data-id="${studentCounter}">
-                                        <div class="row g-3">
+                                        <input type="hidden" name="student_ids[]" value="${student.id}">
+                                        <input type="hidden" name="relationships[]" value="${student.relationship || 'guardian'}">
+                                        <div class="row g-3 align-items-center">
                                             <div class="col-md-5">
                                                 <label class="form-label">Student</label>
-                                                <select class="form-select student-select" name="student_ids[]" required>
-                                                    <option value="">Select Student</option>
-                                                    @foreach(\App\Modules\Students\Models\Student::query()->where('school_id', auth()->user()->school_id)->orderBy('first_name')->get() as $studentOption)
-                                                        <option value="{{ $studentOption->id }}" ${studentOption.id == student.id ? 'selected' : ''}>{{ $studentOption->full_name }} ({{ $studentOption->admission_no }})</option>
-                                                    @endforeach
-                                                </select>
+                                                <div class="form-control-plaintext fw-semibold py-2">${student.name} (${student.admission_no || ''})</div>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Relationship</label>
-                                                <select class="form-select" name="relationships[]">
-                                                    <option value="father" ${student.relationship == 'father' ? 'selected' : ''}>Father</option>
-                                                    <option value="mother" ${student.relationship == 'mother' ? 'selected' : ''}>Mother</option>
-                                                    <option value="guardian" ${student.relationship == 'guardian' ? 'selected' : ''}>Guardian</option>
-                                                    <option value="other" ${student.relationship == 'other' ? 'selected' : ''}>Other</option>
-                                                </select>
+                                                <div class="form-control-plaintext py-2 text-capitalize">${student.relationship || 'Guardian'}</div>
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="form-label">&nbsp;</label>

@@ -6,88 +6,65 @@
 @section("content")
     <div class="row mb-3">
         <div class="col-md-12">
-            <form id="filterForm" class="form-inline">
-                <div class="form-group mr-3">
-                    <label for="academic_year_id" class="mr-2">Academic Year:</label>
-                    <select name="academic_year_id" id="academic_year_id" class="form-control">
-                        <option value="">All</option>
-                        @foreach($academicYears as $year)
-                            <option value="{{ $year->id }}">{{ $year->name }}</option>
-                        @endforeach
-                    </select>
+            <form id="filterForm" class="row g-3" method="GET">
+                <div class="col-auto">
+                    <label for="start_date" class="form-label">From Date:</label>
+                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request('start_date') }}">
                 </div>
-                <button type="button" id="filterBtn" class="btn btn-primary py-2"><i class="ti ti-filter me-1"></i> Filter</button>
-                <button type="button" id="resetBtn" class="btn btn-outline-secondary py-2"><i class="ti ti-refresh me-1"></i> Reset</button>
-                <a id="exportExcel" href="{{ route('reports.students.admission.export', ['type' => 'excel']) }}" class="btn btn-success py-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
-                <a id="exportPdf" href="{{ route('reports.students.admission.export', ['type' => 'pdf']) }}" class="btn btn-danger py-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
-                <a id="exportPrint" href="{{ route('reports.students.admission.export', ['type' => 'print']) }}" class="btn btn-warning py-2" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+                <div class="col-auto">
+                    <label for="end_date" class="form-label">To Date:</label>
+                    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request('end_date') }}">
+                </div>
+                <div class="col-auto d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-filter me-1"></i> Filter</button>
+                    <a href="{{ route('reports.students.admission') }}" class="btn btn-outline-secondary py-2"><i class="ti ti-refresh me-1"></i> Reset</a>
+                </div>
             </form>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a href="{{ route('reports.students.admission.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-success py-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
+                    <a href="{{ route('reports.students.admission.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-danger py-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
+                    <a href="{{ route('reports.students.admission.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-warning py-2" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+                </div>
+            </div>
         </div>
     </div>
 
-    <table id="admissionTable" class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Admission Date</th>
-                <th>Student Name</th>
-                <th>Admission No</th>
-                <th>Class</th>
-                <th>Guardian</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{-- DataTables will load data here via AJAX --}}
-        </tbody>
-    </table>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="fw-semibold mb-0">Total Admissions: <span class="text-primary">{{ $totalAdmissions }}</span></h5>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover" id="admissionTable">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Class Name</th>
+                    <th class="text-center">Total Admissions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($data as $index => $row)
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $row->class_name }}</td>
+                        <td class="text-center fw-bold">{{ $row->total_admissions }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">No admission data found</td>
+                    </tr>
+                @endforelse
+            </tbody>
+            <tfoot class="table-light fw-bold">
+                <tr>
+                    <td></td>
+                    <td>Total</td>
+                    <td class="text-center">{{ $totalAdmissions }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 @endsection
-
-@push("scripts")
-<script type="text/javascript">
-    $(function () {
-        var table = $("#admissionTable").DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route("reports.students.admission") }}",
-                data: function (d) {
-                    d.academic_year_id = $('#academic_year_id').val();
-                }
-            },
-            columns: [
-                {data: "admission_date", name: "admission_date"},
-                {data: "student_name", name: "student_name"},
-                {data: "admission_no", name: "admission_no"},
-                {data: "class_section", name: "class_section"},
-                {data: "guardian", name: "guardian"},
-            ]
-        });
-
-        function updateExportLinks() {
-            var params = {
-                academic_year_id: $('#academic_year_id').val()
-            };
-            var queryString = $.param(params);
-            var baseExcel = "{{ route('reports.students.admission.export', ['type' => 'excel']) }}";
-            var basePdf = "{{ route('reports.students.admission.export', ['type' => 'pdf']) }}";
-            var basePrint = "{{ route('reports.students.admission.export', ['type' => 'print']) }}";
-
-            $('#exportExcel').attr('href', baseExcel + (queryString ? '?' + queryString : ''));
-            $('#exportPdf').attr('href', basePdf + (queryString ? '?' + queryString : ''));
-            $('#exportPrint').attr('href', basePrint + (queryString ? '?' + queryString : ''));
-        }
-
-        $('#filterBtn').on('click', function() {
-            table.ajax.reload();
-            updateExportLinks();
-        });
-
-        $('#resetBtn').on('click', function() {
-            $('#academic_year_id').val('');
-            table.ajax.reload();
-            updateExportLinks();
-        });
-
-        updateExportLinks();
-    });
-</script>
-@endpush

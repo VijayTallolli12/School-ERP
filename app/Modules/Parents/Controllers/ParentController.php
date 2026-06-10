@@ -39,13 +39,13 @@ class ParentController extends Controller
         $query = $this->parents->filterQuery($this->parents->query(), request()->only([
             'status',
             'search',
-        ]));
+        ]))->withCount('students');
 
         return DataTables::eloquent($query)
             ->addColumn('full_name', fn (Guardian $parent) => e($parent->full_name))
             ->addColumn('email', fn (Guardian $parent) => e($parent->email))
             ->addColumn('phone', fn (Guardian $parent) => e($parent->phone ?? '-'))
-            ->addColumn('students_count', fn (Guardian $parent) => $parent->students()->count())
+            ->addColumn('students_count', fn (Guardian $parent) => $parent->students_count)
             ->addColumn('status_label', fn (Guardian $parent) => '<span class="badge bg-'.($parent->status === 'active' ? 'success' : 'secondary').'">'.e(ucfirst($parent->status)).'</span>')
             ->addColumn('actions', fn (Guardian $parent) => view('modules.parents._actions', compact('parent'))->render())
             ->rawColumns(['status_label', 'actions'])
@@ -179,6 +179,17 @@ class ParentController extends Controller
 
         return view('modules.parents.notifications', [
             'notifications' => $parent->notifications()->latest()->paginate(20),
+        ]);
+    }
+
+    public function homework(): View
+    {
+        $parent = auth()->user()->guardian;
+
+        $homework = $this->service->getHomeworkForStudents($parent->students);
+
+        return view('modules.parents.homework', [
+            'homework' => $homework,
         ]);
     }
 }

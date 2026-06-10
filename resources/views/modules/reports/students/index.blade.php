@@ -61,7 +61,7 @@
 
 @push("scripts")
 <script type="text/javascript">
-    $(function () {
+    document.addEventListener('DOMContentLoaded', function () {
         var table = $("#studentsTable").DataTable({
             processing: true,
             serverSide: true,

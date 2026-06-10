@@ -1,6 +1,6 @@
 <div class="btn-group" role="group">
     @can('teachers.update')
-        <button type="button" class="btn btn-sm btn-outline-secondary edit-teacher" data-url="{{ route('admin.teachers.show', $teacher) }}" data-update-url="{{ route('admin.teachers.update', $teacher) }}" title="Edit">
+        <button type="button" class="btn btn-sm btn-outline-primary edit-teacher" data-url="{{ route('admin.teachers.show', $teacher) }}" data-update-url="{{ route('admin.teachers.update', $teacher) }}" title="Edit">
             <i class="ti ti-pencil"></i>
         </button>
     @endcan

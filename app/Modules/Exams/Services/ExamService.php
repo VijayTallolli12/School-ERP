@@ -76,6 +76,52 @@ class ExamService
         $this->exams->deleteResult($result);
     }
 
+    public function bulkSave(Exam $exam, array $results): array
+    {
+        $schoolId = app(SchoolContext::class)->id();
+        $userId = auth()->id();
+
+        return DB::transaction(function () use ($exam, $results, $schoolId, $userId): array {
+            $saved = [];
+            $now = now();
+
+            foreach ($results as $entry) {
+                $studentId = (int) ($entry['student_id'] ?? 0);
+                $marks = (int) ($entry['marks_obtained'] ?? 0);
+                $grade = $entry['grade'] ?? null;
+                $remarks = $entry['remarks'] ?? null;
+                $status = $marks >= $exam->pass_marks ? 'pass' : 'fail';
+
+                $payload = [
+                    'school_id' => $schoolId,
+                    'exam_id' => $exam->id,
+                    'student_id' => $studentId,
+                    'marks_obtained' => $marks,
+                    'grade' => $grade,
+                    'remarks' => $remarks,
+                    'status' => $status,
+                    'updated_by' => $userId,
+                ];
+
+                $existing = ExamResult::query()
+                    ->where('exam_id', $exam->id)
+                    ->where('student_id', $studentId)
+                    ->first();
+
+                if ($existing) {
+                    $payload['created_by'] ??= $existing->created_by;
+                    $existing->fill($payload)->save();
+                    $saved[] = $existing->fresh();
+                } else {
+                    $payload['created_by'] = $userId;
+                    $saved[] = ExamResult::query()->create($payload);
+                }
+            }
+
+            return $saved;
+        });
+    }
+
     private function examPayload(array $data): array
     {
         return Arr::only($data, [

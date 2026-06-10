@@ -11,7 +11,7 @@ class ParentReportRepository implements ParentReportRepositoryInterface
 {
     protected function getSchoolId()
     {
-        return auth()->user()->school_id ?? null;
+        return auth()->user()->current_school_id ?? null;
     }
 
     public function dashboardStats(): array

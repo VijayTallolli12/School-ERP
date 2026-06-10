@@ -4,11 +4,11 @@ namespace App\Modules\Exams\Repositories;
 
 use App\Modules\Exams\Models\Exam;
 use App\Modules\Exams\Models\ExamResult;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class ExamRepository implements ExamRepositoryInterface
 {
-    public function query(): \Illuminate\Database\Eloquent\Builder
+    public function query(): Builder
     {
         return Exam::query()
             ->with(['academicYear', 'classSection.schoolClass', 'classSection.section', 'subject']);
@@ -31,9 +31,13 @@ class ExamRepository implements ExamRepositoryInterface
         $exam->delete();
     }
 
-    public function resultsQuery(Exam $exam): HasMany
+    public function resultsQuery(Exam $exam): Builder
     {
-        return $exam->results()->with(['student', 'exam.classSection.schoolClass', 'exam.classSection.section']);
+        return ExamResult::query()
+            ->leftJoin('students', 'exam_results.student_id', '=', 'students.id')
+            ->where('exam_results.exam_id', $exam->id)
+            ->select('exam_results.*')
+            ->with(['student', 'exam.classSection.schoolClass', 'exam.classSection.section']);
     }
 
     public function createResult(array $data): ExamResult

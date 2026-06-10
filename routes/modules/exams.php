@@ -16,6 +16,9 @@ Route::prefix('exams')
         Route::put('results/{result}', [ExamController::class, 'updateResult'])->middleware('permission:exams.update')->name('results.update');
         Route::delete('results/{result}', [ExamController::class, 'destroyResult'])->middleware('permission:exams.delete')->name('results.destroy');
 
+        Route::get('{exam}/results/bulk', [ExamController::class, 'bulkEntry'])->name('results.bulk');
+        Route::post('{exam}/results/bulk-save', [ExamController::class, 'bulkSave'])->middleware('permission:exams.update')->name('results.bulk-save');
+
         Route::get('class-sections/{classSection}/students', [ExamController::class, 'getStudentsByClassSection'])->name('students');
 
         Route::post('/', [ExamController::class, 'store'])->middleware('permission:exams.create')->name('store');

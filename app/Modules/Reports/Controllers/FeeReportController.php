@@ -5,20 +5,25 @@ namespace App\Modules\Reports\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Modules\Fees\Services\FeeService;
+use App\Modules\Fees\Models\FeeStructure;
+use App\Modules\Students\Models\Student;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\AcademicYear;
 use App\Modules\Academics\Models\ClassSection;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Modules\Reports\Exports\FeeReportExport;
+use App\Modules\Reports\Repositories\FeeDefaulterReportRepository;
 
 class FeeReportController extends Controller
 {
     protected $feeService;
+    protected $defaulterRepo;
 
-    public function __construct(FeeService $feeService)
+    public function __construct(FeeService $feeService, FeeDefaulterReportRepository $defaulterRepo)
     {
         $this->feeService = $feeService;
+        $this->defaulterRepo = $defaulterRepo;
         $this->middleware('can:fees.reports');
     }
 
@@ -37,7 +42,15 @@ class FeeReportController extends Controller
                 });
             })->get();
 
-        return compact('academicYears', 'classSections');
+        $feeStructures = FeeStructure::with(['classSection.schoolClass', 'classSection.section'])
+            ->when($schoolId, fn($q) => $q->where('school_id', $schoolId))
+            ->get()
+            ->map(fn($fs) => [
+                'id' => $fs->id,
+                'label' => ($fs->classSection?->display_name ?? 'N/A') . ' - ' . ($fs->name ?? 'Default'),
+            ]);
+
+        return compact('academicYears', 'classSections', 'feeStructures');
     }
 
     public function index()
@@ -148,5 +161,91 @@ class FeeReportController extends Controller
         $title = ucfirst(str_replace('_', ' ', $type)) . ' Fees Report';
         
         return view('Reports::fees.print', compact('data', 'type', 'title'));
+    }
+
+    // --- Fee Defaulters Report ---
+
+    public function defaulters(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = $this->defaulterRepo->defaulters(
+                $request->get('academic_year_id'),
+                $request->get('class_section_id'),
+                $request->get('student_id'),
+                $request->get('fee_structure_id'),
+                $request->get('from_due_date'),
+                $request->get('to_due_date'),
+                $request->get('min_outstanding') !== null ? (float) $request->get('min_outstanding') : null,
+                $request->get('max_outstanding') !== null ? (float) $request->get('max_outstanding') : null
+            );
+
+            return response()->json($data);
+        }
+
+        $shared = $this->getSharedData();
+        return view("Reports::fees.defaulters", $shared);
+    }
+
+    public function getStudentsByClass(Request $request)
+    {
+        $classSectionId = $request->get('class_section_id');
+        $students = $this->defaulterRepo->getStudentsByClass($classSectionId);
+
+        return response()->json($students->map(fn($s) => [
+            'id' => $s->id,
+            'text' => $s->full_name . ' (' . $s->admission_no . ')',
+        ]));
+    }
+
+    public function exportDefaultersPdf(Request $request)
+    {
+        $data = $this->defaulterRepo->defaulters(
+            $request->get('academic_year_id'),
+            $request->get('class_section_id'),
+            $request->get('student_id'),
+            $request->get('fee_structure_id'),
+            $request->get('from_due_date'),
+            $request->get('to_due_date'),
+            $request->get('min_outstanding') !== null ? (float) $request->get('min_outstanding') : null,
+            $request->get('max_outstanding') !== null ? (float) $request->get('max_outstanding') : null
+        );
+        $title = 'Fee Defaulters Report';
+
+        return Pdf::loadView('Reports::fees.defaulters_pdf', compact('data', 'title'))
+            ->setPaper('a4', 'landscape')
+            ->download("fee_defaulters_" . now()->format('Ymd_His') . ".pdf");
+    }
+
+    public function exportDefaultersExcel(Request $request)
+    {
+        $data = $this->defaulterRepo->defaulters(
+            $request->get('academic_year_id'),
+            $request->get('class_section_id'),
+            $request->get('student_id'),
+            $request->get('fee_structure_id'),
+            $request->get('from_due_date'),
+            $request->get('to_due_date'),
+            $request->get('min_outstanding') !== null ? (float) $request->get('min_outstanding') : null,
+            $request->get('max_outstanding') !== null ? (float) $request->get('max_outstanding') : null
+        );
+
+        return Excel::download(new FeeReportExport($data['defaulters'], 'fee_defaulters'), "fee_defaulters_" . now()->format('Ymd_His') . ".xlsx");
+    }
+
+    public function printDefaulters(Request $request)
+    {
+        $data = $this->defaulterRepo->defaulters(
+            $request->get('academic_year_id'),
+            $request->get('class_section_id'),
+            $request->get('student_id'),
+            $request->get('fee_structure_id'),
+            $request->get('from_due_date'),
+            $request->get('to_due_date'),
+            $request->get('min_outstanding') !== null ? (float) $request->get('min_outstanding') : null,
+            $request->get('max_outstanding') !== null ? (float) $request->get('max_outstanding') : null
+        );
+        $title = 'Fee Defaulters Report';
+
+        return view('Reports::fees.defaulters_print', compact('data', 'title'));
     }
 }

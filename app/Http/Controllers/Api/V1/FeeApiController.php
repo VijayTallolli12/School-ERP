@@ -27,6 +27,18 @@ class FeeApiController extends ApiBaseController
             'per_page' => 'sometimes|integer|min:5|max:100',
         ]);
 
+        $user = $request->user();
+
+        if ($studentId = $request->integer('student_id')) {
+            if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Accountant')) {
+                $guardian = $user->guardian;
+
+                if (! $guardian || ! $guardian->students()->where('students.id', $studentId)->exists()) {
+                    return $this->forbidden('You are not authorized to view fees for this student.');
+                }
+            }
+        }
+
         $query = StudentFee::query()
             ->with(['student:id,first_name,last_name,admission_no,uuid', 'academicYear', 'items.feeCategory', 'items.paymentItems']);
 
@@ -44,6 +56,33 @@ class FeeApiController extends ApiBaseController
             paginator: $paginator->through(fn (StudentFee $sf) => new StudentFeeResource($sf)),
             message: 'Student fees retrieved.'
         );
+    }
+
+    public function paymentReceipt(int $paymentId): JsonResponse
+    {
+        $user = request()->user();
+        $payment = FeePayment::query()
+            ->with([
+                'student:id,first_name,last_name,admission_no,uuid',
+                'academicYear',
+                'collector:id,name',
+                'items.studentFeeItem.feeCategory',
+            ])
+            ->find($paymentId);
+
+        if (! $payment) {
+            return $this->notFound('Payment not found.');
+        }
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Accountant')) {
+            $guardian = $user->guardian;
+
+            if (! $guardian || ! $guardian->students()->where('students.id', $payment->student_id)->exists()) {
+                return $this->forbidden('You are not authorized to view this receipt.');
+            }
+        }
+
+        return $this->success(new FeePaymentResource($payment), 'Payment receipt retrieved.');
     }
 
     public function pendingFees(Request $request): JsonResponse
@@ -118,24 +157,6 @@ class FeeApiController extends ApiBaseController
             paginator: $paginator->through(fn (FeePayment $fp) => new FeePaymentResource($fp)),
             message: 'Payment history retrieved.'
         );
-    }
-
-    public function paymentReceipt(int $paymentId): JsonResponse
-    {
-        $payment = FeePayment::query()
-            ->with([
-                'student:id,first_name,last_name,admission_no,uuid',
-                'academicYear',
-                'collector:id,name',
-                'items.studentFeeItem.feeCategory',
-            ])
-            ->find($paymentId);
-
-        if (! $payment) {
-            return $this->notFound('Payment not found.');
-        }
-
-        return $this->success(new FeePaymentResource($payment), 'Payment receipt retrieved.');
     }
 
     public function dashboardStats(): JsonResponse

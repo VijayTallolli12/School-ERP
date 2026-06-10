@@ -39,7 +39,12 @@ class StudentService
 
             $student = $this->students->create($studentData);
             $this->syncSession($student, $data);
-            $this->syncGuardians($student, $data);
+
+            if (!empty($data['parent_id'])) {
+                $this->syncParentFromId($student, (int) $data['parent_id'], $data);
+            } else {
+                $this->syncGuardians($student, $data);
+            }
 
             activity()->causedBy(auth()->user())->performedOn($student)->event('created')->log('Student admitted');
 
@@ -59,7 +64,12 @@ class StudentService
 
             $student = $this->students->update($student, $studentData);
             $this->syncSession($student, $data);
-            $this->syncGuardians($student, $data);
+
+            if (!empty($data['parent_id'])) {
+                $this->syncParentFromId($student, (int) $data['parent_id'], $data);
+            } else {
+                $this->syncGuardians($student, $data);
+            }
 
             activity()->causedBy(auth()->user())->performedOn($student)->event('updated')->log('Student updated');
 
@@ -202,6 +212,40 @@ class StudentService
         foreach ($student->guardians as $guardian) {
             $this->syncParentFromGuardian($student, $guardian);
         }
+    }
+
+    private function syncParentFromId(Student $student, int $parentId, array $data): void
+    {
+        $parent = Guardian::query()->find($parentId);
+
+        if (!$parent) {
+            return;
+        }
+
+        $relationship = $data['relationship'] ?? 'guardian';
+
+        $parent->students()->syncWithoutDetaching([
+            $student->id => [
+                'relationship' => $this->normalizeParentRelationship($relationship),
+                'is_primary' => true,
+            ],
+        ]);
+
+        // Sync legacy StudentGuardian record for backward compatibility.
+        // Remove all existing guardians first to prevent dual inconsistent states.
+        $student->guardians()->delete();
+
+        $student->guardians()->create([
+            'school_id' => $student->school_id,
+            'relation' => $relationship,
+            'name' => $parent->full_name,
+            'phone' => $parent->phone ?? '',
+            'email' => $parent->email,
+            'occupation' => $parent->occupation ?? '',
+            'is_primary' => true,
+            'can_pickup' => true,
+            'user_id' => $parent->user_id,
+        ]);
     }
 
     private function guardianPayloads(array $data): array
@@ -371,7 +415,10 @@ class StudentService
                 $guardian->update(['user_id' => $user->id]);
             }
 
-            if (Role::where('name', 'Parent')->exists() && !$user->hasRole('Parent')) {
+            app(PermissionRegistrar::class)->setPermissionsTeamId($student->school_id);
+
+            if (Role::where('name', 'Parent')->where('school_id', $student->school_id)->exists()
+                && !$user->hasRole('Parent')) {
                 $user->assignRole('Parent');
             }
         }
@@ -411,6 +458,7 @@ class StudentService
     {
         return [
             'guardians',
+            'parents',
             'sessions.academicYear',
             'sessions.classSection.schoolClass',
             'sessions.classSection.section',

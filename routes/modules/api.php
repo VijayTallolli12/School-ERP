@@ -32,71 +32,113 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         ->name('auth.login');
 
     // ===================================================================
-    // Authenticated routes (Sanctum + School context)
+    // Authenticated routes (Sanctum + School context + throttle)
     // ===================================================================
-    Route::middleware(['auth:sanctum', 'school'])->group(function (): void {
+    Route::middleware(['auth:sanctum', 'school', 'throttle:60,1'])->group(function (): void {
 
         // --- Auth ---
         Route::get('me', [ApiAuthController::class, 'me'])->name('me');
         Route::post('auth/refresh', [ApiAuthController::class, 'refreshToken'])->name('auth.refresh');
         Route::post('auth/logout', [ApiAuthController::class, 'logout'])->name('auth.logout');
 
-        // --- Dashboard ---
-        Route::get('dashboard/stats', [DashboardApiController::class, 'stats'])->name('dashboard.stats');
-        Route::get('dashboard/activity', [DashboardApiController::class, 'recentActivity'])->name('dashboard.activity');
-        Route::get('dashboard/notifications', [DashboardApiController::class, 'notifications'])->name('dashboard.notifications');
+        // --- Dashboard (permission-gated) ---
+        Route::get('dashboard/stats', [DashboardApiController::class, 'stats'])
+            ->middleware('permission:dashboard.view')->name('dashboard.stats');
+        Route::get('dashboard/activity', [DashboardApiController::class, 'recentActivity'])
+            ->middleware('permission:dashboard.view')->name('dashboard.activity');
+        Route::get('dashboard/notifications', [DashboardApiController::class, 'notifications'])
+            ->middleware('permission:dashboard.view')->name('dashboard.notifications');
 
-        // --- Students ---
-        Route::get('students', [StudentApiController::class, 'index'])->name('students.index');
-        Route::get('students/{uuid}', [StudentApiController::class, 'show'])->name('students.show');
-        Route::get('students/{uuid}/attendance', [StudentApiController::class, 'attendanceSummary'])->name('students.attendance');
-        Route::get('students/{uuid}/fees', [StudentApiController::class, 'feesSummary'])->name('students.fees');
-        Route::get('students/{uuid}/exams', [StudentApiController::class, 'examSummary'])->name('students.exams');
-        Route::get('students/{uuid}/timetable', [StudentApiController::class, 'timetable'])->name('students.timetable');
+        // --- Students (permission-gated) ---
+        Route::get('students', [StudentApiController::class, 'index'])
+            ->middleware('permission:students.view')->name('students.index');
+        Route::get('students/{uuid}', [StudentApiController::class, 'show'])
+            ->middleware('permission:students.view')->name('students.show');
+        Route::get('students/{uuid}/attendance', [StudentApiController::class, 'attendanceSummary'])
+            ->middleware('permission:attendance.view')->name('students.attendance');
+        Route::get('students/{uuid}/fees', [StudentApiController::class, 'feesSummary'])
+            ->middleware('permission:fees.view')->name('students.fees');
+        Route::get('students/{uuid}/exams', [StudentApiController::class, 'examSummary'])
+            ->middleware('permission:exams.view')->name('students.exams');
+        Route::get('students/{uuid}/timetable', [StudentApiController::class, 'timetable'])
+            ->middleware('permission:timetable.view')->name('students.timetable');
 
-        // --- Parents ---
-        Route::get('parents', [ParentApiController::class, 'index'])->name('parents.index');
-        Route::get('parents/{uuid}', [ParentApiController::class, 'show'])->name('parents.show');
-        Route::get('parents/{uuid}/dashboard', [ParentApiController::class, 'dashboard'])->name('parents.dashboard');
-        Route::get('parents/{uuid}/children', [ParentApiController::class, 'children'])->name('parents.children');
-        Route::get('parents/{uuid}/children/{childUuid}/attendance', [ParentApiController::class, 'childAttendance'])->name('parents.child.attendance');
-        Route::get('parents/{uuid}/children/{childUuid}/fees', [ParentApiController::class, 'childFees'])->name('parents.child.fees');
-        Route::get('parents/{uuid}/children/{childUuid}/exams', [ParentApiController::class, 'childExamResults'])->name('parents.child.exams');
-        Route::get('parents/{uuid}/children/{childUuid}/timetable', [ParentApiController::class, 'childTimetable'])->name('parents.child.timetable');
+        // --- Parents (permission-gated) ---
+        Route::get('parents', [ParentApiController::class, 'index'])
+            ->middleware('permission:parents.view')->name('parents.index');
+        Route::get('parents/{uuid}', [ParentApiController::class, 'show'])
+            ->middleware('permission:parents.view')->name('parents.show');
+        Route::get('parents/{uuid}/dashboard', [ParentApiController::class, 'dashboard'])
+            ->middleware('permission:dashboard.view')->name('parents.dashboard');
+        Route::get('parents/{uuid}/children', [ParentApiController::class, 'children'])
+            ->middleware('permission:parents.view')->name('parents.children');
+        Route::get('parents/{uuid}/children/{childUuid}/attendance', [ParentApiController::class, 'childAttendance'])
+            ->middleware('permission:attendance.view')->name('parents.child.attendance');
+        Route::get('parents/{uuid}/children/{childUuid}/fees', [ParentApiController::class, 'childFees'])
+            ->middleware('permission:fees.view')->name('parents.child.fees');
+        Route::get('parents/{uuid}/children/{childUuid}/exams', [ParentApiController::class, 'childExamResults'])
+            ->middleware('permission:exams.view')->name('parents.child.exams');
+        Route::get('parents/{uuid}/children/{childUuid}/timetable', [ParentApiController::class, 'childTimetable'])
+            ->middleware('permission:timetable.view')->name('parents.child.timetable');
 
-        // --- Teachers ---
-        Route::get('teachers', [TeacherApiController::class, 'index'])->name('teachers.index');
-        Route::get('teachers/{uuid}', [TeacherApiController::class, 'show'])->name('teachers.show');
-        Route::get('teachers/{uuid}/timetable', [TeacherApiController::class, 'timetable'])->name('teachers.timetable');
-        Route::get('teachers/{uuid}/attendance', [TeacherApiController::class, 'attendance'])->name('teachers.attendance');
-        Route::get('teachers/{uuid}/classes', [TeacherApiController::class, 'assignedClasses'])->name('teachers.classes');
-        Route::get('teachers/{uuid}/subjects', [TeacherApiController::class, 'assignedSubjects'])->name('teachers.subjects');
+        // --- Teachers (permission-gated) ---
+        Route::get('teachers', [TeacherApiController::class, 'index'])
+            ->middleware('permission:teachers.view')->name('teachers.index');
+        Route::get('teachers/{uuid}', [TeacherApiController::class, 'show'])
+            ->middleware('permission:teachers.view')->name('teachers.show');
+        Route::get('teachers/{uuid}/timetable', [TeacherApiController::class, 'timetable'])
+            ->middleware('permission:timetable.view')->name('teachers.timetable');
+        Route::get('teachers/{uuid}/attendance', [TeacherApiController::class, 'attendance'])
+            ->middleware('permission:attendance.view')->name('teachers.attendance');
+        Route::get('teachers/{uuid}/classes', [TeacherApiController::class, 'assignedClasses'])
+            ->middleware('permission:teachers.view')->name('teachers.classes');
+        Route::get('teachers/{uuid}/subjects', [TeacherApiController::class, 'assignedSubjects'])
+            ->middleware('permission:teachers.view')->name('teachers.subjects');
 
-        // --- Attendance ---
-        Route::get('attendance', [AttendanceApiController::class, 'index'])->name('attendance.index');
-        Route::get('attendance/daily', [AttendanceApiController::class, 'daily'])->name('attendance.daily');
-        Route::get('attendance/monthly', [AttendanceApiController::class, 'monthly'])->name('attendance.monthly');
-        Route::get('attendance/statistics', [AttendanceApiController::class, 'statistics'])->name('attendance.statistics');
+        // --- Attendance (permission-gated) ---
+        Route::get('attendance', [AttendanceApiController::class, 'index'])
+            ->middleware('permission:attendance.view')->name('attendance.index');
+        Route::get('attendance/daily', [AttendanceApiController::class, 'daily'])
+            ->middleware('permission:attendance.view')->name('attendance.daily');
+        Route::get('attendance/monthly', [AttendanceApiController::class, 'monthly'])
+            ->middleware('permission:attendance.view')->name('attendance.monthly');
+        Route::get('attendance/statistics', [AttendanceApiController::class, 'statistics'])
+            ->middleware('permission:attendance.view')->name('attendance.statistics');
 
-        // --- Fees ---
-        Route::get('fees', [FeeApiController::class, 'studentFees'])->name('fees.index');
-        Route::get('fees/pending', [FeeApiController::class, 'pendingFees'])->name('fees.pending');
-        Route::get('fees/payments', [FeeApiController::class, 'payments'])->name('fees.payments');
-        Route::get('fees/payments/{paymentId}/receipt', [FeeApiController::class, 'paymentReceipt'])->name('fees.receipt');
-        Route::get('fees/dashboard-stats', [FeeApiController::class, 'dashboardStats'])->name('fees.dashboard');
+        // --- Fees (permission-gated) ---
+        Route::get('fees', [FeeApiController::class, 'studentFees'])
+            ->middleware('permission:fees.view')->name('fees.index');
+        Route::get('fees/pending', [FeeApiController::class, 'pendingFees'])
+            ->middleware('permission:fees.view')->name('fees.pending');
+        Route::get('fees/payments', [FeeApiController::class, 'payments'])
+            ->middleware('permission:fees.view')->name('fees.payments');
+        Route::get('fees/payments/{paymentId}/receipt', [FeeApiController::class, 'paymentReceipt'])
+            ->middleware('permission:fees.view')->name('fees.receipt');
+        Route::get('fees/dashboard-stats', [FeeApiController::class, 'dashboardStats'])
+            ->middleware('permission:fees.view')->name('fees.dashboard');
 
-        // --- Exams ---
-        Route::get('exams', [ExamApiController::class, 'index'])->name('exams.index');
-        Route::get('exams/{id}', [ExamApiController::class, 'show'])->name('exams.show');
-        Route::get('exams/{examId}/results', [ExamApiController::class, 'results'])->name('exams.results');
-        Route::get('exams/{examId}/results/{resultId}', [ExamApiController::class, 'resultDetail'])->name('exams.result.detail');
-        Route::get('exams/{examId}/report-card', [ExamApiController::class, 'reportCard'])->name('exams.report-card');
+        // --- Exams (permission-gated) ---
+        Route::get('exams', [ExamApiController::class, 'index'])
+            ->middleware('permission:exams.view')->name('exams.index');
+        Route::get('exams/{id}', [ExamApiController::class, 'show'])
+            ->middleware('permission:exams.view')->name('exams.show');
+        Route::get('exams/{examId}/results', [ExamApiController::class, 'results'])
+            ->middleware('permission:exams.view')->name('exams.results');
+        Route::get('exams/{examId}/results/{resultId}', [ExamApiController::class, 'resultDetail'])
+            ->middleware('permission:exams.view')->name('exams.result.detail');
+        Route::get('exams/{examId}/report-card', [ExamApiController::class, 'reportCard'])
+            ->middleware('permission:exams.view')->name('exams.report-card');
 
-        // --- Notifications ---
-        Route::get('notifications', [NotificationApiController::class, 'index'])->name('notifications.index');
-        Route::get('notifications/unread', [NotificationApiController::class, 'unread'])->name('notifications.unread');
-        Route::post('notifications/{id}/read', [NotificationApiController::class, 'markRead'])->name('notifications.read');
-        Route::post('notifications/read-all', [NotificationApiController::class, 'markAllRead'])->name('notifications.read-all');
-        Route::get('notifications/announcements', [NotificationApiController::class, 'announcements'])->name('notifications.announcements');
+        // --- Notifications (permission-gated) ---
+        Route::get('notifications', [NotificationApiController::class, 'index'])
+            ->middleware('permission:notifications.view')->name('notifications.index');
+        Route::get('notifications/unread', [NotificationApiController::class, 'unread'])
+            ->middleware('permission:notifications.view')->name('notifications.unread');
+        Route::post('notifications/{id}/read', [NotificationApiController::class, 'markRead'])
+            ->middleware('permission:notifications.view')->name('notifications.read');
+        Route::post('notifications/read-all', [NotificationApiController::class, 'markAllRead'])
+            ->middleware('permission:notifications.view')->name('notifications.read-all');
+        Route::get('notifications/announcements', [NotificationApiController::class, 'announcements'])
+            ->middleware('permission:notifications.view')->name('notifications.announcements');
     });
 });

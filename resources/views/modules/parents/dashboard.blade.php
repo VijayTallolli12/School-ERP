@@ -62,8 +62,48 @@
         <div class="col-md-6 col-lg-3">
             <div class="card text-center">
                 <div class="card-body">
+                    <div class="display-4 text-primary">{{ $homework_summary['active'] ?? 0 }}</div>
+                    <p class="card-text">Active Homework</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card text-center">
+                <div class="card-body">
                     <div class="display-4 text-primary">{{ $notifications->count() }}</div>
                     <p class="card-text">Notifications</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Homework -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <h5 class="mb-0">Recent Homework</h5>
+                    <a href="{{ route('parent-portal.homework') }}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                </div>
+                <div class="card-body">
+                    @php $recentHomework = $homework_summary['recent'] ?? collect(); @endphp
+                    @if($recentHomework->count() > 0)
+                        @foreach($recentHomework as $homework)
+                            <div class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">{{ $homework->title }}</h6>
+                                    @if($homework->due_date?->isPast())
+                                        <span class="badge bg-danger ms-2">Overdue</span>
+                                    @else
+                                        <span class="badge bg-success ms-2">Pending</span>
+                                    @endif
+                                </div>
+                                <p class="text-muted small mb-0">
+                                    {{ $homework->subject?->name }} &middot; Due: {{ $homework->due_date?->format('M d, Y') }}
+                                </p>
+                            </div>
+                        @endforeach
+                    @else
+                        <p class="text-muted mb-0">No homework assigned.</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -108,6 +148,12 @@
                             <a href="{{ route('parent-portal.fees') }}" class="btn btn-outline-success w-100">
                                 <i class="ti ti-cash fs-2 d-block mb-2"></i>
                                 View Fees
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ route('parent-portal.homework') }}" class="btn btn-outline-dark w-100">
+                                <i class="ti ti-books fs-2 d-block mb-2"></i>
+                                Homework
                             </a>
                         </div>
                         <div class="col-6">

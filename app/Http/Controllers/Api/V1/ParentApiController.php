@@ -226,7 +226,7 @@ class ParentApiController extends ApiBaseController
         return $this->success(['timetable' => $slots], 'Child timetable retrieved.');
     }
 
-    public function dashboard(string $uuid): JsonResponse
+    public function dashboard(string $uuid, Request $request): JsonResponse
     {
         $parent = Guardian::query()->where('uuid', $uuid)->with('students')->first();
 
@@ -234,7 +234,9 @@ class ParentApiController extends ApiBaseController
             return $this->notFound('Parent not found.');
         }
 
-        $data = $this->parentService->getParentDashboardData($parent);
+        $childUuid = $request->query('child_uuid');
+
+        $data = $this->parentService->getParentDashboardData($parent, $childUuid);
 
         return $this->success($data, 'Parent dashboard retrieved.');
     }
