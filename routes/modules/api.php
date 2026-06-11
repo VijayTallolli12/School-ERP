@@ -80,6 +80,32 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             ->middleware('permission:exams.view')->name('parents.child.exams');
         Route::get('parents/{uuid}/children/{childUuid}/timetable', [ParentApiController::class, 'childTimetable'])
             ->middleware('permission:timetable.view')->name('parents.child.timetable');
+        Route::get('parents/{uuid}/children/{childUuid}/homework', [ParentApiController::class, 'childHomework'])
+            ->middleware('permission:homework.view')->name('parents.child.homework');
+        Route::get('parents/{uuid}/children/{childUuid}/calendar', [ParentApiController::class, 'childCalendar'])
+            ->middleware('permission:academic_calendar.view')->name('parents.child.calendar');
+        Route::get('parents/{uuid}/children/{childUuid}/documents', [ParentApiController::class, 'childDocuments'])
+            ->middleware('permission:student_documents.view')->name('parents.child.documents');
+        Route::get('parents/{uuid}/children/{childUuid}/leave-requests', [ParentApiController::class, 'childLeaveRequests'])
+            ->middleware('permission:leave_management.view')->name('parents.child.leave-requests');
+        Route::post('parents/{uuid}/children/{childUuid}/leave-requests', [ParentApiController::class, 'storeLeaveRequest'])
+            ->middleware('permission:leave_management.create')->name('parents.child.leave-requests.store');
+        Route::get('parents/{uuid}/children/{childUuid}/leave-requests/{id}', [ParentApiController::class, 'showLeaveRequest'])
+            ->middleware('permission:leave_management.view')->name('parents.child.leave-requests.show');
+        Route::put('parents/{uuid}/children/{childUuid}/leave-requests/{id}', [ParentApiController::class, 'updateLeaveRequest'])
+            ->middleware('permission:leave_management.create')->name('parents.child.leave-requests.update');
+
+        Route::get('parents/{uuid}/circulars', [ParentApiController::class, 'childCirculars'])
+            ->middleware('permission:notifications.view')->name('parents.circulars');
+        Route::get('parents/{uuid}/circulars/{id}', [ParentApiController::class, 'childCircularDetail'])
+            ->middleware('permission:notifications.view')->name('parents.circulars.show');
+        Route::post('parents/{uuid}/circulars/{id}/read', [ParentApiController::class, 'markCircularRead'])
+            ->middleware('permission:notifications.view')->name('parents.circulars.read');
+
+        Route::put('parents/{uuid}', [ParentApiController::class, 'updateParentProfile'])
+            ->middleware('permission:parents.view')->name('parents.update');
+        Route::put('parents/{uuid}/change-password', [ParentApiController::class, 'changeParentPassword'])
+            ->middleware('permission:parents.view')->name('parents.change-password');
 
         // --- Teachers (permission-gated) ---
         Route::get('teachers', [TeacherApiController::class, 'index'])

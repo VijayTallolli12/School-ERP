@@ -98,7 +98,12 @@ class PermissionSeeder extends Seeder
                 'homework.view', 'homework.create', 'homework.update', 'homework.delete',
             ],
             'Student' => ['dashboard.view', 'attendance.view', 'fees.view', 'exams.view'],
-            'Parent' => ['dashboard.view', 'students.view', 'attendance.view', 'fees.view', 'exams.view'],
+            'Parent' => [
+                'dashboard.view', 'students.view', 'attendance.view', 'fees.view', 'exams.view',
+                'timetable.view', 'homework.view', 'academic_calendar.view', 'student_documents.view',
+                'notifications.view', 'leave_management.view', 'leave_management.create',
+                'parents.view',
+            ],
             'Accountant' => ['dashboard.view', 'fees.view', 'fees.create', 'fees.collect', 'fees.update', 'fees.reports', 'reports.view'],
             'Librarian' => ['dashboard.view', 'reports.view'],
             'Receptionist' => ['dashboard.view', 'students.view', 'students.create', 'parents.view', 'parents.create'],

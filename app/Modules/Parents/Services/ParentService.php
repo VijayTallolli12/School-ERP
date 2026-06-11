@@ -38,7 +38,7 @@ class ParentService
                     'name' => $data['first_name'] . ' ' . $data['last_name'],
                     'email' => $data['email'],
                     'password' => Hash::make('password'), // Default password
-                    'school_id' => $schoolId,
+                    'current_school_id' => $schoolId,
                 ]);
 
                 app(PermissionRegistrar::class)->setPermissionsTeamId($schoolId);
