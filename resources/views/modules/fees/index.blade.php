@@ -13,15 +13,15 @@
         <div class="card-header p-0 border-bottom-0">
             <ul class="nav nav-tabs" id="feesTabs" role="tablist">
                 @foreach ([
-                    'categories' => 'Categories',
-                    'structures' => 'Structures',
-                    'assignments' => 'Assignments',
-                    'collections' => 'Collections',
-                    'dues' => 'Due Tracking',
-                    'reports' => 'Reports',
-                ] as $id => $label)
+                    'categories' => 'ti-category',
+                    'structures' => 'ti-layout-list',
+                    'assignments' => 'ti-clipboard-check',
+                    'collections' => 'ti-cash',
+                    'dues' => 'ti-alert-triangle',
+                    'reports' => 'ti-chart-bar',
+                ] as $id => $icon)
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button">{{ $label }}</button>
+                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"><i class="{{ $icon }} me-1"></i>{{ ucfirst($id === 'dues' ? 'Due Tracking' : ($id === 'collections' ? 'Collections' : ucfirst($id))) }}</button>
                     </li>
                 @endforeach
             </ul>
@@ -147,7 +147,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0">Collection report</h5></div>
+                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-cash text-primary me-1"></i>Collection report</h5></div>
                                     <div class="card-body">
                                         <form class="row g-2" method="get" action="{{ route('admin.fees.reports.collection') }}" target="_blank">
                                             <div class="col-6"><input type="date" name="from_date" class="form-control form-control-sm" placeholder="From"></div>
@@ -168,15 +168,15 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit">Print</button></div>
-                                            <div class="col-6"><a class="btn btn-sm btn-outline-danger w-100" href="#" id="collectionPdfBtn">PDF</a></div>
+                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="ti ti-printer me-1"></i>Print</button></div>
+                                            <div class="col-6"><a class="btn btn-sm btn-outline-danger w-100" href="#" id="collectionPdfBtn"><i class="ti ti-file-type-pdf me-1"></i>PDF</a></div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0">Due report</h5></div>
+                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-clock text-primary me-1"></i>Due report</h5></div>
                                     <div class="card-body">
                                         <form class="row g-2" method="get" action="{{ route('admin.fees.reports.due') }}" target="_blank" id="dueReportForm">
                                             <div class="col-12">
@@ -193,15 +193,15 @@
                                                     <label class="form-check-label" for="overdueOnly">Overdue only</label>
                                                 </div>
                                             </div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit">Print</button></div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="submit" formaction="{{ route('admin.fees.reports.due.pdf') }}">PDF</button></div>
+                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="ti ti-printer me-1"></i>Print</button></div>
+                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="submit" formaction="{{ route('admin.fees.reports.due.pdf') }}"><i class="ti ti-file-type-pdf me-1"></i>PDF</button></div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0">Class-wise summary</h5></div>
+                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-school text-primary me-1"></i>Class-wise summary</h5></div>
                                     <div class="card-body">
                                         <form class="row g-2" method="get" action="{{ route('admin.fees.reports.class-wise') }}" target="_blank">
                                             <div class="col-12">
@@ -211,22 +211,22 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit">Print</button></div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="submit" formaction="{{ route('admin.fees.reports.class-wise.pdf') }}">PDF</button></div>
+                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="ti ti-printer me-1"></i>Print</button></div>
+                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="submit" formaction="{{ route('admin.fees.reports.class-wise.pdf') }}"><i class="ti ti-file-type-pdf me-1"></i>PDF</button></div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0">Daily collection</h5></div>
+                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-calendar text-primary me-1"></i>Daily collection</h5></div>
                                     <div class="card-body">
                                         <form class="row g-2" method="get" action="{{ route('admin.fees.reports.daily') }}" target="_blank">
                                             <div class="col-12">
                                                 <input type="date" name="report_date" class="form-control form-control-sm" value="{{ now()->toDateString() }}">
                                             </div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit">Print</button></div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="submit" formaction="{{ route('admin.fees.reports.daily.pdf') }}">PDF</button></div>
+                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="ti ti-printer me-1"></i>Print</button></div>
+                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="submit" formaction="{{ route('admin.fees.reports.daily.pdf') }}"><i class="ti ti-file-type-pdf me-1"></i>PDF</button></div>
                                         </form>
                                     </div>
                                 </div>
@@ -270,7 +270,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save</button>
                 </div>
             </form>
@@ -328,7 +328,7 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save</button>
                 </div>
             </form>
@@ -374,7 +374,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-user-check me-1"></i> Assign</button>
                 </div>
             </form>
@@ -418,7 +418,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-users me-1"></i> Assign Class</button>
                 </div>
             </form>
@@ -451,7 +451,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Update</button>
                 </div>
             </form>
@@ -502,7 +502,7 @@
                             <input class="form-control" name="remarks" maxlength="500">
                         </div>
                         <div class="col-12">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="loadCollectLines">Load pending lines</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="loadCollectLines"><i class="ti ti-list me-1"></i>Load pending lines</button>
                         </div>
                     </div>
                     <table class="table table-sm">
@@ -511,7 +511,7 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Payment</button>
                 </div>
             </form>
@@ -521,7 +521,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const categoryModal = new bootstrap.Modal('#categoryModal');
             const structureModal = new bootstrap.Modal('#structureModal');
             const editAssignModal = new bootstrap.Modal('#editAssignModal');

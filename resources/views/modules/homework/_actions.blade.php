@@ -1,3 +1,4 @@
+<div class="btn-group btn-group-sm">
 @can('homework.update')
     <button type="button" class="btn btn-sm btn-outline-primary edit-homework"
             data-url="{{ route('admin.homework.show', $hw) }}"
@@ -13,3 +14,4 @@
         <i class="ti ti-trash"></i>
     </button>
 @endcan
+</div>

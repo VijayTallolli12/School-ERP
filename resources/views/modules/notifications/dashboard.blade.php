@@ -15,7 +15,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0">{{ $stats['total_sent'] }}</h3>
-                    <small>Total Sent</small>
+                    <small><i class="ti ti-check-circle me-1"></i>Total Sent</small>
                 </div>
             </div>
         </div>
@@ -23,7 +23,7 @@
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
                     <h3 class="mb-0">{{ $stats['pending'] }}</h3>
-                    <small>Pending (Draft)</small>
+                    <small><i class="ti ti-clock me-1"></i>Pending (Draft)</small>
                 </div>
             </div>
         </div>
@@ -31,7 +31,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0">{{ $stats['failed'] }}</h3>
-                    <small>Failed</small>
+                    <small><i class="ti ti-alert-triangle me-1"></i>Failed</small>
                 </div>
             </div>
         </div>
@@ -39,7 +39,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h3 class="mb-0">{{ $stats['unread_count'] }}</h3>
-                    <small>Unread</small>
+                    <small><i class="ti ti-mail me-1"></i>Unread</small>
                 </div>
             </div>
         </div>
@@ -50,7 +50,7 @@
             <div class="card">
                 <div class="card-header">
                     <strong><i class="ti ti-list-check me-1"></i> Notification History</strong>
-                    <a href="{{ route('admin.notifications.index') }}" class="btn btn-sm btn-outline-primary float-end">View All</a>
+                    <a href="{{ route('admin.notifications.index') }}" class="btn btn-sm btn-outline-primary float-end"><i class="ti ti-arrow-right me-1"></i>View All</a>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-striped table-bordered w-100 m-0" id="dashboardNotificationsTable">
@@ -73,7 +73,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             $('#dashboardNotificationsTable').DataTable({
                 processing: true,
                 serverSide: true,

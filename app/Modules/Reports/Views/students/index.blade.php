@@ -6,38 +6,38 @@
 @section("content")
     <div class="row mb-3">
         <div class="col-md-12">
-            <form id="filterForm" class="form-inline">
-                <div class="form-group mr-3">
-                    <label for="academic_year_id" class="mr-2">Academic Year:</label>
-                    <select name="academic_year_id" id="academic_year_id" class="form-control">
+            <form id="filterForm" class="row g-3 align-items-end">
+                <div class="me-3">
+                    <label for="academic_year_id" class="form-label me-2">Academic Year:</label>
+                    <select name="academic_year_id" id="academic_year_id" class="form-select">
                         <option value="">All</option>
                         @foreach($academicYears as $year)
                             <option value="{{ $year->id }}">{{ $year->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group mr-3">
-                    <label for="class_section_id" class="mr-2">Class & Section:</label>
-                    <select name="class_section_id" id="class_section_id" class="form-control">
+                <div class="me-3">
+                    <label for="class_section_id" class="form-label me-2">Class & Section:</label>
+                    <select name="class_section_id" id="class_section_id" class="form-select">
                         <option value="">All</option>
                         @foreach($classSections as $cs)
                             <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group mr-3">
-                    <label for="status" class="mr-2">Status:</label>
-                    <select name="status" id="status" class="form-control">
+                <div class="me-3">
+                    <label for="status" class="form-label me-2">Status:</label>
+                    <select name="status" id="status" class="form-select">
                         <option value="">All</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                     </select>
                 </div>
-                <button type="button" id="filterBtn" class="btn btn-primary">Filter</button>
-                <button type="button" id="resetBtn" class="btn btn-secondary ml-2">Reset</button>
-                <a id="exportExcel" href="{{ route('reports.students.list.export', ['type' => 'excel']) }}" class="btn btn-success ml-2">Export Excel</a>
-                <a id="exportPdf" href="{{ route('reports.students.list.export', ['type' => 'pdf']) }}" class="btn btn-danger ml-2">Export PDF</a>
-                <a id="exportPrint" href="{{ route('reports.students.list.export', ['type' => 'print']) }}" class="btn btn-warning ml-2" target="_blank">Print</a>
+                <button type="button" id="filterBtn" class="btn btn-primary"><i class="ti ti-filter me-1"></i>Filter</button>
+                <button type="button" id="resetBtn" class="btn btn-secondary ms-2"><i class="ti ti-refresh me-1"></i>Reset</button>
+                <a id="exportExcel" href="{{ route('reports.students.list.export', ['type' => 'excel']) }}" class="btn btn-success ms-2"><i class="ti ti-file-spreadsheet me-1"></i>Export Excel</a>
+                <a id="exportPdf" href="{{ route('reports.students.list.export', ['type' => 'pdf']) }}" class="btn btn-danger ms-2"><i class="ti ti-file-type-pdf me-1"></i>Export PDF</a>
+                <a id="exportPrint" href="{{ route('reports.students.list.export', ['type' => 'print']) }}" class="btn btn-warning ms-2" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
             </form>
         </div>
     </div>
@@ -61,7 +61,8 @@
 
 @push("scripts")
 <script type="text/javascript">
-    $(function () {
+    $(async function () {
+        const DataTable = await window.lazyDT();
         var table = $("#studentsTable").DataTable({
             processing: true,
             serverSide: true,

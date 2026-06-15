@@ -11,7 +11,7 @@
             </div>
             <div class="col-md-6 text-end">
                 <a href="{{ route('reports.attendance.index') }}" class="btn btn-outline-secondary me-2">
-                    <i class="ti ti-back-left me-2"></i>Back
+                    <i class="ti ti-arrow-left me-1"></i> Back to Attendance Reports
                 </a>
             </div>
         </div>
@@ -27,7 +27,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Academic Year</label>
-                    <select name="academic_year_id" class="form-control">
+                    <select name="academic_year_id" class="form-select">
                         <option value="">All Academic Years</option>
                         @foreach ($academicYears as $year)
                             <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>
@@ -65,7 +65,7 @@
     <div class="card">
         <div class="card-header">
             <h5 class="fw-semibold card-title mb-0">
-                Attendance Summary - {{ \Carbon\Carbon::parse($filters['date'])->format('d M Y') }}
+                <i class="ti ti-table text-primary me-2"></i>Attendance Summary - {{ \Carbon\Carbon::parse($filters['date'])->format('d M Y') }}
             </h5>
         </div>
         <div class="card-body">
@@ -141,7 +141,7 @@
         <div class="col-md-12">
             <div class="card bg-body">
                 <div class="card-body">
-                    <h5 class="fw-semibold card-title mb-3">Overall Summary</h5>
+                    <h5 class="fw-semibold card-title mb-3"><i class="ti ti-chart-bar text-primary me-2"></i>Overall Summary</h5>
                     <div class="row">
                         <div class="col-md-3">
                             <div class="d-flex align-items-center">

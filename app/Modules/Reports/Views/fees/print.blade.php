@@ -79,9 +79,9 @@
                                 @if($type === 'pending')
                                     <td>
                                         @if($row['overdue'] === 'Yes')
-                                            <span class="badge badge-danger">Yes</span>
+                                            <span class="badge bg-danger">Yes</span>
                                         @else
-                                            <span class="badge badge-success">No</span>
+                                            <span class="badge bg-success">No</span>
                                         @endif
                                     </td>
                                 @endif

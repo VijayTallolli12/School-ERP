@@ -6,20 +6,20 @@
 @section("content")
     <div class="row mb-3">
         <div class="col-md-12">
-            <form method="GET" class="form-inline">
-                <div class="form-group mr-3">
-                    <label for="academic_year_id" class="mr-2">Academic Year:</label>
-                    <select name="academic_year_id" id="academic_year_id" class="form-control">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="me-3">
+                    <label for="academic_year_id" class="form-label me-2">Academic Year:</label>
+                    <select name="academic_year_id" id="academic_year_id" class="form-select">
                         <option value="">All</option>
                         @foreach($academicYears as $year)
                             <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>{{ $year->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Generate Report</button>
-                <a href="{{ route('reports.students.class_wise.export', ['type' => 'excel']) . '?' . http_build_query(request()->all()) }}" class="btn btn-success ml-2">Export Excel</a>
-                <a href="{{ route('reports.students.class_wise.export', ['type' => 'pdf']) . '?' . http_build_query(request()->all()) }}" class="btn btn-danger ml-2">Export PDF</a>
-                <a href="{{ route('reports.students.class_wise.export', ['type' => 'print']) . '?' . http_build_query(request()->all()) }}" class="btn btn-warning ml-2" target="_blank">Print</a>
+                <button type="submit" class="btn btn-primary"><i class="ti ti-report me-1"></i>Generate Report</button>
+                <a href="{{ route('reports.students.class_wise.export', ['type' => 'excel']) . '?' . http_build_query(request()->all()) }}" class="btn btn-success ms-2"><i class="ti ti-file-spreadsheet me-1"></i>Export Excel</a>
+                <a href="{{ route('reports.students.class_wise.export', ['type' => 'pdf']) . '?' . http_build_query(request()->all()) }}" class="btn btn-danger ms-2"><i class="ti ti-file-type-pdf me-1"></i>Export PDF</a>
+                <a href="{{ route('reports.students.class_wise.export', ['type' => 'print']) . '?' . http_build_query(request()->all()) }}" class="btn btn-warning ms-2" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
             </form>
         </div>
     </div>

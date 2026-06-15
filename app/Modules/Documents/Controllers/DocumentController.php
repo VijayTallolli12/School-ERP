@@ -87,13 +87,37 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function show(StudentDocument $document): View
+    public function show(StudentDocument $document)
     {
         $this->authorize('view', $document);
 
-        return view('modules.documents.show', [
-            'document' => $document->load(['student', 'uploader']),
-        ]);
+        $document->load(['student', 'uploader']);
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'document' => [
+                    'id' => $document->id,
+                    'student_id' => $document->student_id,
+                    'student_name' => $document->student?->full_name,
+                    'document_type' => $document->document_type,
+                    'document_type_label' => $document->document_type_label,
+                    'title' => $document->title,
+                    'file_name' => $document->original_name,
+                    'file_path' => $document->file_path,
+                    'file_size' => $document->file_size ? round($document->file_size / 1024, 1) . ' KB' : '-',
+                    'mime_type' => $document->mime_type,
+                    'issue_date' => $document->issue_date?->format('d M Y'),
+                    'expiry_date' => $document->expiry_date?->format('d M Y'),
+                    'remarks' => $document->remarks,
+                    'is_verified' => $document->is_verified,
+                    'uploader_name' => $document->uploader?->name,
+                    'created_at' => $document->created_at?->format('d M Y h:i A'),
+                ],
+            ]);
+        }
+
+        return view('modules.documents.show', compact('document'));
     }
 
     public function edit(StudentDocument $document): View
@@ -143,6 +167,18 @@ class DocumentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Document deleted successfully.',
+        ]);
+    }
+
+    public function toggleVerify(StudentDocument $document): JsonResponse
+    {
+        $this->authorize('verify', $document);
+
+        $document->update(['is_verified' => !$document->is_verified]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $document->is_verified ? 'Document verified.' : 'Verification removed.',
         ]);
     }
 

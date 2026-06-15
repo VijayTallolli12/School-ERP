@@ -112,7 +112,7 @@
     <div class="row g-3 mb-4">
         <div class="col-xl-5">
             <div class="card h-100">
-                <div class="card-header"><h5 class="card-title mb-0">Gender Distribution</h5></div>
+                <div class="card-header"><h5 class="card-title mb-0"><i class="ti ti-chart-donut text-primary me-2"></i>Gender Distribution</h5></div>
                 <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 320px;">
                     <canvas id="genderDoughnut" height="280"></canvas>
                     <div id="noDoughnut" class="text-center text-muted d-none"><i class="ti ti-cloud-off fs-32 d-block mb-2"></i> No data</div>
@@ -121,7 +121,7 @@
         </div>
         <div class="col-xl-7">
             <div class="card h-100">
-                <div class="card-header"><h5 class="card-title mb-0">Class-wise Gender Distribution</h5></div>
+                <div class="card-header"><h5 class="card-title mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>Class-wise Gender Distribution</h5></div>
                 <div class="card-body" style="min-height: 320px;">
                     <canvas id="classGenderChart" height="280"></canvas>
                     <div id="noBar" class="text-center text-muted py-5 d-none"><i class="ti ti-cloud-off fs-32 d-block mb-2"></i> No data</div>
@@ -132,7 +132,7 @@
 
     {{-- Table --}}
     <div class="card">
-        <div class="card-header"><h5 class="card-title mb-0">Class-wise Breakdown</h5></div>
+        <div class="card-header"><h5 class="card-title mb-0"><i class="ti ti-table text-primary me-2"></i>Class-wise Breakdown</h5></div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover">
@@ -181,7 +181,8 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
+        const Chart = await window.lazyChart();
         var rows = @json($rows);
         var totals = @json($totals);
 

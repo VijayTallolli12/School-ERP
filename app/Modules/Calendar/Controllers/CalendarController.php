@@ -130,4 +130,30 @@ class CalendarController extends Controller
             'message' => $event->is_published ? 'Event published.' : 'Event unpublished.',
         ]);
     }
+
+    public function calendarEvents(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', AcademicCalendar::class);
+
+        $start = $request->input('start');
+        $end = $request->input('end');
+
+        $query = AcademicCalendar::query()
+            ->where('is_published', true)
+            ->when($start, fn ($q) => $q->where('end_date', '>=', $start))
+            ->when($end, fn ($q) => $q->where('start_date', '<=', $end));
+
+        $events = $query->get()->map(fn (AcademicCalendar $event) => [
+            'id' => $event->id,
+            'title' => $event->title,
+            'start' => $event->start_date?->toDateTimeString(),
+            'end' => $event->end_date?->copy()->addDay()->toDateTimeString(),
+            'color' => $event->event_type_color === 'primary' ? '#2563eb'
+                : ($event->event_type_color === 'success' ? '#16a34a'
+                : ($event->event_type_color === 'danger' ? '#dc2626' : '#f59e0b')),
+            'url' => route('admin.calendar.show', $event->id),
+        ]);
+
+        return response()->json($events);
+    }
 }

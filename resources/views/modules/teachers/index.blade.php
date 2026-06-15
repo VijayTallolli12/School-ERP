@@ -11,7 +11,7 @@
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center">
-            <h3 class="card-title fw-semibold mb-0">Teachers</h3>
+            <h3 class="card-title fw-semibold mb-0"><i class="ti ti-chalkboard-teacher text-primary me-2"></i>Teachers</h3>
             @can('teachers.create')
                 <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#teacherModal" id="createTeacher">
                     <i class="ti ti-plus me-1"></i> Add Teacher
@@ -195,7 +195,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Teacher</button>
                 </div>
             </form>
@@ -205,7 +205,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const modal = new bootstrap.Modal('#teacherModal');
             const form = $('#teacherForm');
             const table = $('#teachersTable').DataTable({

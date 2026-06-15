@@ -189,7 +189,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn" id="actionModalBtn">Confirm</button>
+                        <button type="submit" class="btn" id="actionModalBtn"><i class="ti ti-check me-1"></i> Confirm</button>
                     </div>
                 </form>
             </div>
@@ -199,7 +199,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const requestModal = new bootstrap.Modal('#leaveRequestModal');
             const detailModal = new bootstrap.Modal('#detailModal');
             const actionModal = new bootstrap.Modal('#actionModal');
@@ -294,7 +294,7 @@
                 const url = $(this).data('url');
                 $('#actionModalTitle').text('Approve Leave Request');
                 $('#actionModalMessage').text('Are you sure you want to approve this leave request?');
-                $('#actionModalBtn').text('Approve').removeClass('btn-danger').addClass('btn-success');
+                $('#actionModalBtn').html('<i class="ti ti-check me-1"></i> Approve').removeClass('btn-danger').addClass('btn-success');
                 actionForm.attr('action', url);
                 actionForm.find('[name="remarks"]').val('');
                 actionModal.show();
@@ -304,7 +304,7 @@
                 const url = $(this).data('url');
                 $('#actionModalTitle').text('Reject Leave Request');
                 $('#actionModalMessage').text('Are you sure you want to reject this leave request?');
-                $('#actionModalBtn').text('Reject').removeClass('btn-success').addClass('btn-danger');
+                $('#actionModalBtn').html('<i class="ti ti-x me-1"></i> Reject').removeClass('btn-success').addClass('btn-danger');
                 actionForm.attr('action', url);
                 actionForm.find('[name="remarks"]').val('');
                 actionModal.show();

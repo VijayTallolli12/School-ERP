@@ -167,7 +167,7 @@
         <div class="col-xl-8">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Top Performers <span class="text-muted fs-13 fw-normal">(Percentage)</span></h5>
+                    <h5 class="card-title mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>Top Performers <span class="text-muted fs-13 fw-normal">(Percentage)</span></h5>
                 </div>
                 <div class="card-body">
                     <canvas id="topPerformersChart" height="280"></canvas>
@@ -180,7 +180,7 @@
         <div class="col-xl-4">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Grade Distribution</h5>
+                    <h5 class="card-title mb-0"><i class="ti ti-chart-donut text-primary me-2"></i>Grade Distribution</h5>
                 </div>
                 <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 330px;">
                     <canvas id="gradeDistributionChart" height="280"></canvas>
@@ -195,7 +195,7 @@
     {{-- DataTable --}}
     <div class="card">
         <div class="card-header">
-            <h5 class="card-title mb-0">Ranked Students</h5>
+            <h5 class="card-title mb-0"><i class="ti ti-list text-primary me-2"></i>Ranked Students</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -223,7 +223,9 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    $(async function() {
+        const Chart = await window.lazyChart();
+        const DataTable = await window.lazyDT();
         const gradeColors = {
             'A+': '#198754', 'A': '#0d6efd', 'B+': '#0dcaf0',
             'B': '#6f42c1', 'C': '#ffc107', 'D': '#fd7e14', 'F': '#dc3545'

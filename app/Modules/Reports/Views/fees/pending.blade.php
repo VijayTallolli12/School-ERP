@@ -8,30 +8,35 @@
         <a href="{{ route('reports.fees.index') }}" class="btn btn-outline-secondary"><i class="ti ti-arrow-left me-1"></i> Back to Fee Reports</a>
     </div>
 
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <form id="filterForm" class="form-inline">
-                <div class="form-group mr-2 mb-2">
-                    <label for="academic_year_id" class="mr-2">Academic Year:</label>
-                    <select name="academic_year_id" id="academic_year_id" class="form-control">
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="filterForm" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="academic_year_id" class="form-label">Academic Year</label>
+                    <select name="academic_year_id" id="academic_year_id" class="form-select">
                         <option value="">All</option>
                         @foreach($academicYears as $year)
                             <option value="{{ $year->id }}">{{ $year->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group mb-2">
-                    <button type="button" id="filterBtn" class="btn btn-primary mr-2">Filter</button>
-                    <button type="button" id="resetBtn" class="btn btn-secondary mr-2">Reset</button>
-                    <a id="exportExcel" href="{{ route('reports.fees.export.excel', ['type' => 'pending']) }}" class="btn btn-success mr-2">Export Excel</a>
-                    <a id="exportPdf" href="{{ route('reports.fees.export.pdf', ['type' => 'pending']) }}" class="btn btn-danger mr-2">Export PDF</a>
-                    <a id="exportPrint" href="{{ route('reports.fees.print', ['type' => 'pending']) }}" class="btn btn-warning" target="_blank">Print</a>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="button" id="filterBtn" class="btn btn-primary"><i class="ti ti-filter me-1"></i> Filter</button>
+                    <button type="button" id="resetBtn" class="btn btn-outline-secondary"><i class="ti ti-refresh"></i> Reset</button>
                 </div>
             </form>
+            <div class="mt-3">
+                <a id="exportExcel" href="#" class="btn btn-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
+                <a id="exportPdf" href="#" class="btn btn-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
+                <a id="exportPrint" href="#" class="btn btn-warning" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+            </div>
         </div>
     </div>
 
     <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="ti ti-hourglass text-warning me-2"></i>Pending Fee Records</h5>
+        </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table id="pendingTable" class="table table-bordered table-striped">
@@ -41,90 +46,72 @@
                             <th>Student</th>
                             <th>Admission No</th>
                             <th>Academic Year</th>
-                            <th>Category</th>
-                            <th>Amount Due</th>
-                            <th>Paid</th>
-                            <th>Balance</th>
+                            <th>Fee Category</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-end">Paid</th>
+                            <th class="text-end">Balance</th>
                             <th>Due Date</th>
                             <th>Overdue</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {{-- DataTables will load data here via AJAX --}}
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
     </div>
 @endsection
 
-@push("scripts")
-<script type="text/javascript">
-    $(function () {
+@push('scripts')
+<script>
+    $(async function() {
+        const DataTable = await window.lazyDT();
         var table = $("#pendingTable").DataTable({
             processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route("reports.fees.pending") }}",
-                data: function (d) {
-                    d.academic_year_id = $('#academic_year_id').val();
-                }
-            },
+            serverSide: false,
+            data: [],
             columns: [
                 {data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false},
                 {data: "student", name: "student"},
                 {data: "admission_no", name: "admission_no"},
                 {data: "academic_year", name: "academic_year"},
                 {data: "category", name: "category"},
-                {data: "amount", name: "amount"},
-                {data: "paid", name: "paid"},
-                {
-                    data: "balance", 
-                    name: "balance",
-                    render: function(data, type, row) {
-                        return '<span class="text-danger font-weight-bold">' + data + '</span>';
-                    }
-                },
+                {data: "amount", name: "amount", className: "text-end", render: function(d) { return '₹ ' + Number(d).toLocaleString('en-IN', {minimumFractionDigits: 2}); }},
+                {data: "paid", name: "paid", className: "text-end", render: function(d) { return '₹ ' + Number(d).toLocaleString('en-IN', {minimumFractionDigits: 2}); }},
+                {data: "balance", name: "balance", className: "text-end", render: function(d) { return '<span class="text-danger fw-bold">₹ ' + Number(d).toLocaleString('en-IN', {minimumFractionDigits: 2}) + '</span>'; }},
                 {data: "due_date", name: "due_date"},
-                {
-                    data: "overdue", 
-                    name: "overdue",
-                    render: function(data, type, row) {
-                        return data === 'Yes' 
-                            ? '<span class="badge badge-danger">Yes</span>' 
-                            : '<span class="badge badge-success">No</span>';
-                    }
-                },
-            ]
+                {data: "overdue", name: "overdue", className: "text-center", render: function(d) {
+                    return d === 'Yes' ? '<span class="badge bg-danger">Yes</span>' : '<span class="badge bg-success">No</span>';
+                }},
+            ],
+            order: [[7, 'desc']],
+            pageLength: 25,
         });
 
+        function loadData() {
+            var params = { academic_year_id: $('#academic_year_id').val() };
+            $.get("{{ route('reports.fees.pending') }}", params, function(data) {
+                table.clear().rows.add(data).draw();
+                updateExportLinks();
+            });
+        }
+
         function updateExportLinks() {
-            var params = {
-                academic_year_id: $('#academic_year_id').val()
-            };
-            var queryString = $.param(params);
-            
+            var qs = $.param({ academic_year_id: $('#academic_year_id').val() });
             var baseExcel = "{{ route('reports.fees.export.excel', ['type' => 'pending']) }}";
             var basePdf = "{{ route('reports.fees.export.pdf', ['type' => 'pending']) }}";
             var basePrint = "{{ route('reports.fees.print', ['type' => 'pending']) }}";
-
-            $('#exportExcel').attr('href', baseExcel + (queryString ? '?' + queryString : ''));
-            $('#exportPdf').attr('href', basePdf + (queryString ? '?' + queryString : ''));
-            $('#exportPrint').attr('href', basePrint + (queryString ? '?' + queryString : ''));
+            $('#exportExcel').attr('href', baseExcel + (qs ? '?' + qs : ''));
+            $('#exportPdf').attr('href', basePdf + (qs ? '?' + qs : ''));
+            $('#exportPrint').attr('href', basePrint + (qs ? '?' + qs : ''));
         }
 
-        $('#filterBtn').on('click', function() {
-            table.ajax.reload();
-            updateExportLinks();
-        });
-
+        $('#filterBtn').on('click', loadData);
         $('#resetBtn').on('click', function() {
             $('#filterForm')[0].reset();
-            table.ajax.reload();
-            updateExportLinks();
+            loadData();
         });
 
-        updateExportLinks();
+        loadData();
     });
 </script>
 @endpush

@@ -11,7 +11,7 @@
             </div>
             <div class="col-md-6 text-end">
                 <a href="{{ route('reports.attendance.index') }}" class="btn btn-outline-secondary me-2">
-                    <i class="ti ti-back-left me-2"></i>Back
+                    <i class="ti ti-arrow-left me-1"></i> Back to Attendance Reports
                 </a>
             </div>
         </div>
@@ -23,7 +23,7 @@
             <form id="filterForm" class="row g-3">
                 <div class="col-md-2">
                     <label class="form-label">Month</label>
-                    <select name="month" class="form-control">
+                    <select name="month" class="form-select">
                         @for ($m = 1; $m <= 12; $m++)
                             <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
                                 {{ \Carbon\Carbon::createFromFormat('m', $m)->format('F') }}
@@ -37,7 +37,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Class Section</label>
-                    <select name="class_section_id" class="form-control" required>
+                    <select name="class_section_id" class="form-select" required>
                         <option value="">-- Select Class --</option>
                         @foreach ($classSections as $section)
                             <option value="{{ $section->id }}" {{ $classSectionId == $section->id ? 'selected' : '' }}>
@@ -134,7 +134,7 @@
         {{-- Student Breakdown Table --}}
         <div class="card">
             <div class="card-header">
-                <h5 class="fw-semibold card-title mb-0">Student-wise Breakdown</h5>
+                <h5 class="fw-semibold card-title mb-0"><i class="ti ti-table text-primary me-2"></i>Student-wise Breakdown</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">

@@ -12,7 +12,7 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h5 class="fw-semibold mb-0">Subject Allocation</h5>
+            <h5 class="fw-semibold mb-0"><i class="ti ti-book text-primary me-2"></i>Subject Allocation</h5>
         </div>
         <div class="card-body">
             <table class="table table-bordered table-striped">

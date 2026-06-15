@@ -11,7 +11,7 @@
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center">
-            <h3 class="card-title mb-0">Students</h3>
+            <h3 class="card-title mb-0"><i class="ti ti-school text-primary me-2"></i>Students</h3>
             @can('students.create')
                 <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#studentModal" id="createStudent">
                     <i class="ti ti-plus me-1"></i> Admit Student
@@ -261,7 +261,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const modal = new bootstrap.Modal('#studentModal');
             const form = $('#studentForm');
             const guardianRows = $('#guardianRows');

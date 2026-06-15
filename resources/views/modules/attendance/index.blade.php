@@ -11,7 +11,7 @@
 @section('content')
     <div class="card mb-3">
         <div class="card-header d-flex flex-wrap align-items-center gap-2">
-            <h3 class="card-title mb-0">Filters</h3>
+            <h3 class="card-title mb-0"><i class="ti ti-filter text-primary me-2"></i>Filters</h3>
             <div class="ms-auto d-flex flex-wrap gap-2">
                 @can('attendance.create')
                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#attendanceModal" id="btnOpenMark">
@@ -79,18 +79,18 @@
                     </select>
                 </div>
                 <div class="col-md-1 d-flex align-items-end gap-1">
-                    <button type="button" class="btn btn-primary btn-sm w-100" id="btnApplyFilters">Apply</button>
+                    <button type="button" class="btn btn-primary btn-sm w-100" id="btnApplyFilters"><i class="ti ti-check me-1"></i>Apply</button>
                 </div>
             </div>
             <div class="mt-2">
-                <button type="button" class="btn btn-link btn-sm px-0" id="btnResetFilters">Reset filters</button>
+                <button type="button" class="btn btn-link btn-sm px-0" id="btnResetFilters"><i class="ti ti-refresh me-1"></i>Reset filters</button>
             </div>
         </div>
     </div>
 
     <div class="card mb-3 d-none" id="statsCard">
         <div class="card-header">
-            <h3 class="card-title fw-semibold mb-0">Statistics <small class="text-muted fw-normal">(current filters)</small></h3>
+            <h3 class="card-title fw-semibold mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>Statistics <small class="text-muted fw-normal">(current filters)</small></h3>
         </div>
         <div class="card-body">
             <div class="row g-3 text-center" id="statsRow"></div>
@@ -116,7 +116,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title fw-semibold mb-0">Attendance Register</h3>
+            <h3 class="card-title fw-semibold mb-0"><i class="ti ti-table text-primary me-2"></i>Attendance Register</h3>
         </div>
         <div class="card-body">
             <table id="attendanceTable" class="table table-striped table-bordered w-100">
@@ -190,7 +190,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save</button>
                 </div>
             </form>
@@ -237,7 +237,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-success py-2"><i class="ti ti-device-floppy me-1"></i> Save attendance</button>
                 </div>
             </form>
@@ -275,7 +275,7 @@
                             <input type="number" class="form-control" id="monthlyYear" value="{{ now()->year }}" min="2000" max="2100">
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
-                            <button type="button" class="btn btn-primary w-100" id="btnLoadMonthly">Load</button>
+                            <button type="button" class="btn btn-primary w-100" id="btnLoadMonthly"><i class="ti ti-download me-1"></i>Load</button>
                         </div>
                     </div>
                     <div id="monthlySummaryBadges" class="mb-3"></div>
@@ -304,7 +304,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const routes = {
                 data: @json(route('admin.attendance.data')),
                 store: @json(route('admin.attendance.store')),

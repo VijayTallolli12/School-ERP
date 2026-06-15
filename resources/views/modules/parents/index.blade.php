@@ -11,7 +11,7 @@
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center">
-            <h3 class="card-title fw-semibold mb-0">Parents</h3>
+            <h3 class="card-title fw-semibold mb-0"><i class="ti ti-users-group text-primary me-2"></i>Parents</h3>
             @can('parents.create')
                 <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#parentModal" id="createParent">
                     <i class="ti ti-plus me-1"></i> Add Parent
@@ -119,7 +119,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Parent</button>
                 </div>
             </form>
@@ -129,7 +129,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const filterStatus = $('#filterStatus');
             const filterSearch = $('#filterSearch');
             const parentModal = new bootstrap.Modal('#parentModal');

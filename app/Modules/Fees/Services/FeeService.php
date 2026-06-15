@@ -459,7 +459,7 @@ class FeeService
         $rows = StudentFeeItem::query()
             ->select([
                 'class_section.id',
-                DB::raw("CONCAT(school_classes.name, ' - ', sections.name) as class_label"),
+                DB::raw("CONCAT(classes.name, ' - ', sections.name) as class_label"),
                 DB::raw('SUM(student_fee_items.amount) as total_due'),
                 DB::raw('COALESCE(SUM(fpi.paid_amount), 0) as total_paid'),
             ])
@@ -471,11 +471,11 @@ class FeeService
                     ->where('student_sessions.status', '=', 'active');
             })
             ->leftJoin('class_section', 'student_sessions.class_section_id', '=', 'class_section.id')
-            ->leftJoin('school_classes', 'class_section.class_id', '=', 'school_classes.id')
+            ->leftJoin('classes', 'class_section.class_id', '=', 'classes.id')
             ->leftJoin('sections', 'class_section.section_id', '=', 'sections.id')
             ->leftJoin(DB::raw('(SELECT student_fee_item_id, SUM(amount) as paid_amount FROM fee_payment_items WHERE EXISTS (SELECT 1 FROM fee_payments WHERE fee_payments.id = fee_payment_items.fee_payment_id) GROUP BY student_fee_item_id) as fpi'), 'student_fee_items.id', '=', 'fpi.student_fee_item_id')
             ->where('student_fees.academic_year_id', $academicYearId)
-            ->groupBy('class_section.id', 'school_classes.name', 'sections.name')
+            ->groupBy('class_section.id', 'classes.name', 'sections.name')
             ->get();
 
         $groups = [];

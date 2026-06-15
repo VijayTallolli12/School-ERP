@@ -13,7 +13,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex align-items-center">
-                    <h3 class="card-title fw-semibold mb-0">Exam Schedules</h3>
+                    <h3 class="card-title fw-semibold mb-0"><i class="ti ti-calendar-event text-primary me-2"></i>Exam Schedules</h3>
                     @can('exams.create')
                         <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#examModal" id="createExam">
                             <i class="ti ti-plus me-1"></i> Add Exam
@@ -229,7 +229,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => { (async () => { const DataTable = await window.lazyDT();
             const examModal = new bootstrap.Modal('#examModal');
             const resultModal = new bootstrap.Modal('#resultModal');
             const examForm = $('#examForm');
@@ -357,8 +357,9 @@
                 });
             });
 
-            $('#examsTable').on('click', '.publish-exam', function () {
+            $('#examsTable').on('click', '.publish-exam', async function () {
                 const url = $(this).data('url');
+                const Swal = await window.lazySwal();
                 Swal.fire({
                     title: 'Toggle publish status?',
                     text: 'Are you sure you want to change the publish status of this exam?',

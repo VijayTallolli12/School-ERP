@@ -11,7 +11,7 @@
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center flex-wrap gap-2">
-            <h3 class="card-title mb-0">All Documents</h3>
+            <h3 class="card-title mb-0"><i class="ti ti-file-text text-primary me-2"></i>All Documents</h3>
             @can('student_documents.create')
                 <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#documentModal" id="createDocument">
                     <i class="ti ti-plus me-1"></i> Upload Document
@@ -127,8 +127,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="documentSubmit">Upload</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="documentSubmit"><i class="ti ti-upload me-1"></i>Upload</button>
                 </div>
             </form>
         </div>
@@ -207,7 +207,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => { (async () => { const DataTable = await window.lazyDT();
             // Load students and populate filter & select
             const loadStudents = (selectId, selectedId = null) => {
                 fetch('{{ route('admin.students.data') }}')
@@ -330,9 +330,10 @@
             });
 
             // Toggle verify
-            $(document).on('click', '.toggle-verify', function () {
+            $(document).on('click', '.toggle-verify', async function () {
                 const id = this.dataset.id;
                 const btn = this;
+                const Swal = await window.lazySwal();
                 Swal.fire({
                     title: 'Toggle Verification?',
                     text: 'Change the verification status of this document.',
@@ -358,30 +359,11 @@
             });
 
             // Delete
-            $(document).on('click', '.delete-document', function () {
+            $(document).on('click', '.delete-document', async function () {
                 const id = this.dataset.id;
-                App.confirmDelete?.('{{ url('admin/documents') }}/' + id, table) ||
-                Swal.fire({
-                    title: 'Delete Document?',
-                    text: 'This action cannot be undone.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, delete',
-                }).then((result) => {
-                    if (!result.isConfirmed) return;
-                    fetch('{{ url('admin/documents') }}/' + id, {
-                        method: 'DELETE',
-                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                App.toast?.('success', data.message);
-                                table.ajax.reload();
-                            } else {
-                                App.toast?.('error', data.message);
-                            }
-                        });
+                App.confirmDelete({
+                    url: '{{ url('admin/documents') }}/' + id,
+                    onSuccess: () => table.ajax.reload(),
                 });
             });
         });

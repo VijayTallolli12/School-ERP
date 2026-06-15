@@ -194,7 +194,7 @@
         <div class="col-xl-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Pass vs Fail</h5>
+                    <h5 class="card-title mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>Pass vs Fail</h5>
                 </div>
                 <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 300px;">
                     <canvas id="passFailDoughnut" height="260"></canvas>
@@ -207,7 +207,7 @@
         <div class="col-xl-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Class-wise Pass %</h5>
+                    <h5 class="card-title mb-0"><i class="ti ti-school text-primary me-2"></i>Class-wise Pass %</h5>
                 </div>
                 <div class="card-body" style="min-height: 300px;">
                     <canvas id="classPassChart" height="260"></canvas>
@@ -220,7 +220,7 @@
         <div class="col-xl-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Subject-wise Pass %</h5>
+                    <h5 class="card-title mb-0"><i class="ti ti-book text-primary me-2"></i>Subject-wise Pass %</h5>
                 </div>
                 <div class="card-body" style="min-height: 300px;">
                     <canvas id="subjectPassChart" height="260"></canvas>
@@ -235,7 +235,7 @@
     {{-- Class Performance Table --}}
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="card-title mb-0">Class-wise Performance</h5>
+            <h5 class="card-title mb-0"><i class="ti ti-table text-primary me-2"></i>Class-wise Performance</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -280,7 +280,7 @@
     {{-- Subject-wise Analysis --}}
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">Subject-wise Analysis</h5>
+            <h5 class="card-title mb-0"><i class="ti ti-chart-line text-primary me-2"></i>Subject-wise Analysis</h5>
             <div class="fs-13 text-muted">
                 <span class="badge bg-success me-2">Highest: {{ $analysis['highestSubject'] ?: '--' }}</span>
                 <span class="badge bg-danger">Lowest: {{ $analysis['lowestSubject'] ?: '--' }}</span>
@@ -327,7 +327,7 @@
     {{-- Student-level DataTable --}}
     <div class="card">
         <div class="card-header">
-            <h5 class="card-title mb-0">Student-wise Breakdown</h5>
+            <h5 class="card-title mb-0"><i class="ti ti-users text-primary me-2"></i>Student-wise Breakdown</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -353,7 +353,9 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    $(async function() {
+        const Chart = await window.lazyChart();
+        const DataTable = await window.lazyDT();
         let chartData = @json($analysis['chartData']);
 
         // --- Pass vs Fail Doughnut ---
@@ -477,7 +479,7 @@
         let table = $('#studentAnalysisTable').DataTable({
             data: studentData,
             columns: [
-                { data: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: null, orderable: false, searchable: false, render: function(data, type, row, meta) { return meta.row + meta.settings._iDisplayStart + 1; } },
                 { data: 'student_name', name: 'student_name' },
                 { data: 'admission_no', name: 'admission_no' },
                 { data: 'class_section', name: 'class_section' },
@@ -500,23 +502,8 @@
                 },
             ],
             order: [[1, 'asc']],
-            pageLength: 25,
-            drawCallback: function() {
-                // Re-index rows
-                var api = this.api();
-                api.rows().every(function() {
-                    var data = this.data();
-                    data.DT_RowIndex = this.index() + 1;
-                });
-            }
+            pageLength: 25
         });
-
-        // Manually set DT_RowIndex after initial load
-        table.rows().every(function() {
-            var data = this.data();
-            data.DT_RowIndex = this.index() + 1;
-        });
-        table.draw();
 
         // --- Filter ---
         function getFilterParams() {

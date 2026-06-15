@@ -43,7 +43,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>Available Reports</h4>
+                    <h4><i class="ti ti-list text-primary me-2"></i>Available Reports</h4>
                 </div>
                 <div class="card-body">
                     <div class="list-group">

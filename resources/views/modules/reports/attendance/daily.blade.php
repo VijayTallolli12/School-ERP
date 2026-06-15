@@ -11,7 +11,7 @@
             </div>
             <div class="col-md-6 text-end">
                 <a href="{{ route('reports.attendance.index') }}" class="btn btn-outline-secondary me-2">
-                    <i class="ti ti-back-left me-2"></i>Back
+                    <i class="ti ti-arrow-left me-1"></i> Back to Attendance Reports
                 </a>
             </div>
         </div>
@@ -27,7 +27,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Academic Year</label>
-                    <select name="academic_year_id" class="form-control">
+                    <select name="academic_year_id" class="form-select">
                         <option value="">All Academic Years</option>
                         @foreach ($academicYears as $year)
                             <option value="{{ $year->id }}" {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>
@@ -38,7 +38,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Class Section</label>
-                    <select name="class_section_id" class="form-control">
+                    <select name="class_section_id" class="form-select">
                         <option value="">All Classes</option>
                         @foreach ($classSections as $section)
                             <option value="{{ $section->id }}" {{ request('class_section_id') == $section->id ? 'selected' : '' }}>
@@ -158,7 +158,8 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            const DataTable = await window.lazyDT();
             let table = $('#dailyAttendanceTable').DataTable({
                 processing: true,
                 serverSide: true,

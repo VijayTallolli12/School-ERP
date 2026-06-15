@@ -13,15 +13,15 @@
         <div class="card-header p-0 border-bottom-0">
             <ul class="nav nav-tabs" id="academicTabs" role="tablist">
                 @foreach ([
-                    'years' => 'Academic Years',
-                    'classes' => 'Classes',
-                    'sections' => 'Sections',
-                    'classSections' => 'Class Sections',
-                    'subjects' => 'Subjects',
-                    'classSubjects' => 'Class Subjects',
-                ] as $id => $label)
+                    'years' => 'ti-calendar',
+                    'classes' => 'ti-school',
+                    'sections' => 'ti-layout-columns',
+                    'classSections' => 'ti-columns',
+                    'subjects' => 'ti-book',
+                    'classSubjects' => 'ti-book-2',
+                ] as $id => $icon)
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button">{{ $label }}</button>
+                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"><i class="{{ $icon }} me-1"></i>{{ str_replace('classSections', 'Class Sections', str_replace('classSubjects', 'Class Subjects', ucfirst($id))) }}</button>
                     </li>
                 @endforeach
             </ul>
@@ -215,7 +215,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const tables = {
                 years: $('#yearsTable').DataTable({processing: true, serverSide: true, responsive: true, ajax: '{{ route('admin.academics.academic-years.data') }}', columns: [
                     {data:'id'}, {data:'name'}, {data:'starts_on'}, {data:'ends_on'}, {data:'active_badge', orderable:false, searchable:false}, {data:'status'}, {data:'terms_count', searchable:false}, {data:'actions', orderable:false, searchable:false}

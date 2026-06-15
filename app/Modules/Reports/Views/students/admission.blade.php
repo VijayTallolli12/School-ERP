@@ -6,19 +6,19 @@
 @section("content")
     <div class="row mb-3">
         <div class="col-md-12">
-            <form method="GET" class="form-inline">
-                <div class="form-group mr-3">
-                    <label for="start_date" class="mr-2">Start Date:</label>
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="me-3">
+                    <label for="start_date" class="form-label me-2">Start Date:</label>
                     <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request('start_date') }}">
                 </div>
-                <div class="form-group mr-3">
-                    <label for="end_date" class="mr-2">End Date:</label>
+                <div class="me-3">
+                    <label for="end_date" class="form-label me-2">End Date:</label>
                     <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request('end_date') }}">
                 </div>
-                <button type="submit" class="btn btn-primary">Generate Report</button>
-                <a href="{{ route('reports.students.admission.export', ['type' => 'excel']) . '?' . http_build_query(request()->all()) }}" class="btn btn-success ml-2">Export Excel</a>
-                <a href="{{ route('reports.students.admission.export', ['type' => 'pdf']) . '?' . http_build_query(request()->all()) }}" class="btn btn-danger ml-2">Export PDF</a>
-                <a href="{{ route('reports.students.admission.export', ['type' => 'print']) . '?' . http_build_query(request()->all()) }}" class="btn btn-warning ml-2" target="_blank">Print</a>
+                <button type="submit" class="btn btn-primary"><i class="ti ti-report me-1"></i>Generate Report</button>
+                <a href="{{ route('reports.students.admission.export', ['type' => 'excel']) . '?' . http_build_query(request()->all()) }}" class="btn btn-success ms-2"><i class="ti ti-file-spreadsheet me-1"></i>Export Excel</a>
+                <a href="{{ route('reports.students.admission.export', ['type' => 'pdf']) . '?' . http_build_query(request()->all()) }}" class="btn btn-danger ms-2"><i class="ti ti-file-type-pdf me-1"></i>Export PDF</a>
+                <a href="{{ route('reports.students.admission.export', ['type' => 'print']) . '?' . http_build_query(request()->all()) }}" class="btn btn-warning ms-2" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
             </form>
         </div>
     </div>

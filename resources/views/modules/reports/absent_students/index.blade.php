@@ -11,7 +11,7 @@
             </div>
             <div class="col-md-6 text-end">
                 <a href="{{ route('reports.attendance.index') }}" class="btn btn-outline-secondary me-2">
-                    <i class="ti ti-back-left me-2"></i>Back
+                    <i class="ti ti-arrow-left me-1"></i> Back to Attendance Reports
                 </a>
             </div>
         </div>
@@ -31,7 +31,7 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Academic Year</label>
-                    <select name="academic_year_id" class="form-control">
+                    <select name="academic_year_id" class="form-select">
                         <option value="">All</option>
                         @foreach ($academicYears as $year)
                             <option value="{{ $year->id }}" {{ ($filters['academic_year_id'] ?? '') == $year->id ? 'selected' : '' }}>
@@ -42,7 +42,7 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Class & Section</label>
-                    <select name="class_section_id" id="class_section_id" class="form-control">
+                    <select name="class_section_id" id="class_section_id" class="form-select">
                         <option value="">All</option>
                         @foreach ($classSections as $cs)
                             <option value="{{ $cs->id }}" {{ ($filters['class_section_id'] ?? '') == $cs->id ? 'selected' : '' }}>
@@ -53,7 +53,7 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Student</label>
-                    <select name="student_id" id="student_id" class="form-control">
+                    <select name="student_id" id="student_id" class="form-select">
                         <option value="">All</option>
                         @foreach ($students as $s)
                             <option value="{{ $s['id'] }}" {{ ($filters['student_id'] ?? '') == $s['id'] ? 'selected' : '' }}>
@@ -158,7 +158,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="fw-semibold card-title mb-0">Class-wise Absence Distribution</h5>
+                    <h5 class="fw-semibold card-title mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>Class-wise Absence Distribution</h5>
                 </div>
                 <div class="card-body">
                     <canvas id="classWiseChart" height="180"></canvas>
@@ -171,7 +171,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="fw-semibold card-title mb-0">Attendance Trend</h5>
+                    <h5 class="fw-semibold card-title mb-0"><i class="ti ti-chart-line text-primary me-2"></i>Attendance Trend</h5>
                 </div>
                 <div class="card-body">
                     <canvas id="trendChart" height="180"></canvas>
@@ -186,7 +186,7 @@
     {{-- DataTable --}}
     <div class="card">
         <div class="card-header">
-            <h5 class="fw-semibold card-title mb-0">Absent Students List</h5>
+            <h5 class="fw-semibold card-title mb-0"><i class="ti ti-users text-primary me-2"></i>Absent Students List</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -220,7 +220,9 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
+        const Chart = await window.lazyChart();
+        const DataTable = await window.lazyDT();
         let table = $('#absentStudentsTable').DataTable({
             processing: true,
             serverSide: true,

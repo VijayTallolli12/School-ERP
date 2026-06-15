@@ -81,7 +81,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const modal = new bootstrap.Modal('#leaveTypeModal');
             const form = $('#leaveTypeForm');
 

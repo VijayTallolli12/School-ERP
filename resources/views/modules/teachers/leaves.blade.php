@@ -12,7 +12,7 @@
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center">
-            <h3 class="card-title mb-0">Teacher Leave Requests</h3>
+            <h3 class="card-title mb-0"><i class="ti ti-calendar-off text-primary me-2"></i>Teacher Leave Requests</h3>
             @can('leave_management.create')
                 <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#leaveModal" id="createLeave">
                     <i class="ti ti-plus me-1"></i> New Leave Request
@@ -96,8 +96,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Leave Request</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy me-1"></i>Save Leave Request</button>
                 </div>
             </form>
         </div>
@@ -106,7 +106,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const modal = new bootstrap.Modal('#leaveModal');
             const form = $('#leaveForm');
             const table = $('#leaveTable').DataTable({

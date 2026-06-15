@@ -11,7 +11,7 @@
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center">
-            <h3 class="card-title mb-0">Role Management</h3>
+            <h3 class="card-title mb-0"><i class="ti ti-shield text-primary me-2"></i>Role Management</h3>
             @can('roles.create')
                 <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#roleModal" id="createRole">
                     <i class="ti ti-plus me-1"></i> Add Role
@@ -76,7 +76,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const modal = new bootstrap.Modal('#roleModal');
             const table = $('#rolesTable').DataTable({
                 processing: true,

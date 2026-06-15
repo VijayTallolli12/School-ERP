@@ -11,7 +11,7 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Student Fees</h5>
+            <h5 class="mb-0"><i class="ti ti-wallet text-primary me-2"></i>Student Fees</h5>
         </div>
         <div class="card-body">
             @foreach($students as $student)

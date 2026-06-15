@@ -144,7 +144,7 @@
     {{-- Directory DataTable --}}
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
-            <h5 class="card-title mb-0">Student Directory</h5>
+            <h5 class="card-title mb-0"><i class="ti ti-users text-primary me-2"></i>Student Directory</h5>
             <span class="text-muted fs-13" id="recordCount">0 records</span>
         </div>
         <div class="card-body">
@@ -174,7 +174,8 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
+        const DataTable = await window.lazyDT();
         var table = $('#directoryTable').DataTable({
             processing: true,
             serverSide: true,

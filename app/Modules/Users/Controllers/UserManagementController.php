@@ -140,4 +140,26 @@ class UserManagementController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Password reset successfully.']);
     }
+
+    public function toggleStatus(User $user): JsonResponse
+    {
+        $user->update(['is_active' => !$user->is_active]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $user->is_active ? 'User activated.' : 'User deactivated.',
+        ]);
+    }
+
+    public function assignRole(Request $request, User $user): JsonResponse
+    {
+        $request->validate(['role' => 'required|string|exists:roles,name']);
+
+        $user->syncRoles([$request->role]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Role assigned successfully.',
+        ]);
+    }
 }

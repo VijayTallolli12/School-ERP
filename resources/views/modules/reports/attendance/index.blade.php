@@ -8,171 +8,156 @@
 @endsection
 
 @section('content')
-    <div class="row g-3 mb-4">
+    <!-- KPI Row -->
+    <div class="row g-3 mb-3">
         <div class="col-xl-3 col-md-6">
-            <div class="card border-start border-success border-4">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted fs-13 mb-1 text-uppercase fw-medium">Present</p>
-                            <h3 class="fw-bold mb-1 text-success">{{ $todaySummary['present'] ?? 0 }}</h3>
-                            <span class="badge bg-success-subtle text-success">
-                                {{ $todaySummary['present_percent'] ?? 0 }}%
-                            </span>
-                            <span class="text-muted ms-1 small">of total</span>
-                        </div>
-                        <div class="fs-32 text-success opacity-50">
-                            <i class="ti ti-circle-check"></i>
-                        </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ $todaySummary['present'] ?? 0 }}</div>
+                    <div class="hero-label">Present Today</div>
+                    <div class="hero-trend trend-up">
+                        <i class="ti ti-arrow-up"></i> {{ $todaySummary['present_percent'] ?? 0 }}% of total
                     </div>
+                </div>
+                <div class="hero-icon" style="background:rgba(22,163,74,.1);color:#16a34a;">
+                    <i class="ti ti-circle-check"></i>
                 </div>
             </div>
         </div>
         <div class="col-xl-3 col-md-6">
-            <div class="card border-start border-danger border-4">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted fs-13 mb-1 text-uppercase fw-medium">Absent</p>
-                            <h3 class="fw-bold mb-1 text-danger">{{ $todaySummary['absent'] ?? 0 }}</h3>
-                            <span class="badge bg-danger-subtle text-danger">
-                                {{ $todaySummary['absent_percent'] ?? 0 }}%
-                            </span>
-                            <span class="text-muted ms-1 small">of total</span>
-                        </div>
-                        <div class="fs-32 text-danger opacity-50">
-                            <i class="ti ti-circle-x"></i>
-                        </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ $todaySummary['absent'] ?? 0 }}</div>
+                    <div class="hero-label">Absent Today</div>
+                    <div class="hero-trend trend-down">
+                        <i class="ti ti-arrow-down"></i> {{ $todaySummary['absent_percent'] ?? 0 }}% of total
                     </div>
+                </div>
+                <div class="hero-icon" style="background:rgba(220,38,38,.1);color:#dc2626;">
+                    <i class="ti ti-circle-x"></i>
                 </div>
             </div>
         </div>
         <div class="col-xl-3 col-md-6">
-            <div class="card border-start border-warning border-4">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted fs-13 mb-1 text-uppercase fw-medium">Late</p>
-                            <h3 class="fw-bold mb-1 text-warning">{{ $todaySummary['late'] ?? 0 }}</h3>
-                            <span class="badge bg-warning-subtle text-warning">
-                                {{ $todaySummary['late_percent'] ?? 0 }}%
-                            </span>
-                            <span class="text-muted ms-1 small">of total</span>
-                        </div>
-                        <div class="fs-32 text-warning opacity-50">
-                            <i class="ti ti-clock"></i>
-                        </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ $todaySummary['late'] ?? 0 }}</div>
+                    <div class="hero-label">Late Arrivals</div>
+                    <div class="hero-trend trend-down" style="color:#d97706;">
+                        <i class="ti ti-clock"></i> {{ $todaySummary['late_percent'] ?? 0 }}% of total
                     </div>
+                </div>
+                <div class="hero-icon" style="background:rgba(245,158,11,.12);color:#d97706;">
+                    <i class="ti ti-clock"></i>
                 </div>
             </div>
         </div>
         <div class="col-xl-3 col-md-6">
-            <div class="card border-start border-info border-4">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted fs-13 mb-1 text-uppercase fw-medium">Leave</p>
-                            <h3 class="fw-bold mb-1 text-info">{{ $todaySummary['leave'] ?? 0 }}</h3>
-                            <span class="badge bg-info-subtle text-info">
-                                {{ $todaySummary['leave_percent'] ?? 0 }}%
-                            </span>
-                            <span class="text-muted ms-1 small">of total</span>
-                        </div>
-                        <div class="fs-32 text-info opacity-50">
-                            <i class="ti ti-clipboard-list"></i>
-                        </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ $todaySummary['leave'] ?? 0 }}</div>
+                    <div class="hero-label">On Leave</div>
+                    <div class="hero-trend trend-neutral">
+                        <i class="ti ti-clipboard-list"></i> {{ $todaySummary['leave_percent'] ?? 0 }}% of total
                     </div>
+                </div>
+                <div class="hero-icon" style="background:rgba(14,165,233,.1);color:#0ea5e9;">
+                    <i class="ti ti-clipboard-list"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-xl-8">
+    <!-- Charts Row -->
+    <div class="row g-3 mb-3">
+        <div class="col-xl-7">
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h5 class="card-title mb-0">Attendance Trend <span class="text-muted fs-13 fw-normal">(Last 30 Days)</span></h5>
+                    <h3 class="card-title mb-0"><i class="ti ti-chart-line text-primary me-2"></i>Attendance Trend</h3>
+                    <span class="badge bg-secondary-subtle text-secondary fs-13">Last 30 Days</span>
                 </div>
-                <div class="card-body">
-                    <canvas id="trendChart" height="280"></canvas>
+                <div class="card-body" style="height:240px;">
+                    <canvas id="trendChart"></canvas>
                 </div>
             </div>
         </div>
-        <div class="col-xl-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Today's Distribution</h5>
+        <div class="col-xl-5">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h3 class="card-title mb-0"><i class="ti ti-chart-donut text-primary me-2"></i>Today's Distribution</h3>
+                    <span class="badge bg-secondary-subtle text-secondary fs-13">{{ ($todaySummary['present'] ?? 0) + ($todaySummary['absent'] ?? 0) + ($todaySummary['late'] ?? 0) + ($todaySummary['leave'] ?? 0) }} total</span>
                 </div>
-                <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 330px;">
-                    <canvas id="distributionChart" height="280"></canvas>
+                <div class="card-body d-flex align-items-center justify-content-center" style="min-height:240px;">
+                    <div class="position-relative">
+                        <canvas id="distributionChart" height="220" width="220"></canvas>
+                        <div class="donut-center">
+                            <div class="donut-value">{{ $todaySummary['present_percent'] ?? 0 }}%</div>
+                            <div class="donut-label">Present</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
+    <!-- Class-wise Attendance -->
+    <div class="row g-3 mb-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h5 class="card-title mb-0">Class-wise Attendance <span class="text-muted fs-13 fw-normal">(Today)</span></h5>
+                    <h3 class="card-title mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>Class-wise Attendance</h3>
+                    <span class="badge bg-secondary-subtle text-secondary fs-13">Today</span>
                 </div>
-                <div class="card-body">
-                    <canvas id="classWiseChart" height="220"></canvas>
+                <div class="card-body" style="height:200px;">
+                    <canvas id="classWiseChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Navigation Cards (compact row) -->
     <div class="row g-3">
-        <div class="col-xl-3 col-md-6">
-            <a href="{{ route('reports.attendance.daily') }}" class="text-decoration-none">
-                <div class="card h-100 hover-shadow transition-shadow">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-36 text-primary mb-3">
-                            <i class="ti ti-calendar-check"></i>
-                        </div>
-                        <h5 class="fw-semibold">Daily Report</h5>
-                        <p class="text-muted small mb-0">View attendance for a specific date</p>
-                    </div>
+        <div class="col-6 col-xl-3">
+            <a href="{{ route('reports.attendance.daily') }}" class="nav-card-compact">
+                <div class="nc-icon" style="background:rgba(37,99,235,.1);color:#2563eb;">
+                    <i class="ti ti-calendar-check"></i>
+                </div>
+                <div>
+                    <div class="nc-title">Daily Report</div>
+                    <div class="nc-sub">Attendance for a date</div>
                 </div>
             </a>
         </div>
-        <div class="col-xl-3 col-md-6">
-            <a href="{{ route('reports.attendance.monthly') }}" class="text-decoration-none">
-                <div class="card h-100 hover-shadow transition-shadow">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-36 text-info mb-3">
-                            <i class="ti ti-calendar-month"></i>
-                        </div>
-                        <h5 class="fw-semibold">Monthly Report</h5>
-                        <p class="text-muted small mb-0">View attendance trends for a month</p>
-                    </div>
+        <div class="col-6 col-xl-3">
+            <a href="{{ route('reports.attendance.monthly') }}" class="nav-card-compact">
+                <div class="nc-icon" style="background:rgba(14,165,233,.1);color:#0ea5e9;">
+                    <i class="ti ti-calendar-month"></i>
+                </div>
+                <div>
+                    <div class="nc-title">Monthly Report</div>
+                    <div class="nc-sub">Trends for a month</div>
                 </div>
             </a>
         </div>
-        <div class="col-xl-3 col-md-6">
-            <a href="{{ route('reports.attendance.class_wise') }}" class="text-decoration-none">
-                <div class="card h-100 hover-shadow transition-shadow">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-36 text-warning mb-3">
-                            <i class="ti ti-chart-bar"></i>
-                        </div>
-                        <h5 class="fw-semibold">Class-wise Report</h5>
-                        <p class="text-muted small mb-0">Compare attendance across classes</p>
-                    </div>
+        <div class="col-6 col-xl-3">
+            <a href="{{ route('reports.attendance.class_wise') }}" class="nav-card-compact">
+                <div class="nc-icon" style="background:rgba(245,158,11,.12);color:#d97706;">
+                    <i class="ti ti-chart-bar"></i>
+                </div>
+                <div>
+                    <div class="nc-title">Class-wise Report</div>
+                    <div class="nc-sub">Across classes</div>
                 </div>
             </a>
         </div>
-        <div class="col-xl-3 col-md-6">
-            <a href="{{ route('reports.attendance.absent_students') }}" class="text-decoration-none">
-                <div class="card h-100 hover-shadow transition-shadow">
-                    <div class="card-body text-center py-4">
-                        <div class="fs-36 text-danger mb-3">
-                            <i class="ti ti-user-cancel"></i>
-                        </div>
-                        <h5 class="fw-semibold">Absent Students</h5>
-                        <p class="text-muted small mb-0">Track absent students and patterns</p>
-                    </div>
+        <div class="col-6 col-xl-3">
+            <a href="{{ route('reports.attendance.absent_students') }}" class="nav-card-compact">
+                <div class="nc-icon" style="background:rgba(220,38,38,.1);color:#dc2626;">
+                    <i class="ti ti-user-cancel"></i>
+                </div>
+                <div>
+                    <div class="nc-title">Absent Students</div>
+                    <div class="nc-sub">Track absent patterns</div>
                 </div>
             </a>
         </div>
@@ -181,22 +166,23 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
+            const Chart = await window.lazyChart();
             const trendData = @json($trendData ?? []);
             const classWiseData = @json($classWiseData ?? []);
             const todaySummary = @json($todaySummary ?? []);
 
             const chartColors = {
-                success: '#198754',
-                danger: '#dc3545',
-                warning: '#ffc107',
-                info: '#0dcaf0',
-                primary: '#0d6efd',
-                successBg: 'rgba(25, 135, 84, 0.15)',
-                dangerBg: 'rgba(220, 53, 69, 0.15)',
-                warningBg: 'rgba(255, 193, 7, 0.15)',
-                infoBg: 'rgba(13, 202, 240, 0.15)',
-                primaryBg: 'rgba(13, 110, 253, 0.15)',
+                success: '#16a34a',
+                danger: '#dc2626',
+                warning: '#d97706',
+                info: '#0ea5e9',
+                primary: '#2563eb',
+                successBg: 'rgba(22,163,74,.12)',
+                dangerBg: 'rgba(220,38,38,.1)',
+                warningBg: 'rgba(217,119,6,.1)',
+                infoBg: 'rgba(14,165,233,.1)',
+                primaryBg: 'rgba(37,99,235,.1)',
             };
 
             function formatDate(dateStr) {
@@ -204,9 +190,9 @@
                 return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             }
 
-            if (trendData.length > 0) {
-                const ctx = document.getElementById('trendChart').getContext('2d');
-                new Chart(ctx, {
+            const trendCtx = document.getElementById('trendChart');
+            if (trendData.length > 0 && trendCtx) {
+                new Chart(trendCtx.getContext('2d'), {
                     type: 'line',
                     data: {
                         labels: trendData.map(d => formatDate(d.date)),
@@ -218,8 +204,8 @@
                                 backgroundColor: chartColors.successBg,
                                 fill: true,
                                 tension: 0.3,
-                                pointRadius: 3,
-                                pointHoverRadius: 6,
+                                pointRadius: 2,
+                                pointHoverRadius: 5,
                             },
                             {
                                 label: 'Absent %',
@@ -228,8 +214,8 @@
                                 backgroundColor: chartColors.dangerBg,
                                 fill: true,
                                 tension: 0.3,
-                                pointRadius: 3,
-                                pointHoverRadius: 6,
+                                pointRadius: 2,
+                                pointHoverRadius: 5,
                             }
                         ]
                     },
@@ -238,57 +224,58 @@
                         maintainAspectRatio: false,
                         interaction: { intersect: false, mode: 'index' },
                         plugins: {
-                            legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
+                            legend: { position: 'top', labels: { usePointStyle: true, padding: 16, boxWidth: 8, font: { size: 11 } } },
                         },
                         scales: {
-                            y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } },
-                            x: { grid: { display: false }, ticks: { maxTicksLimit: 15 } }
+                            y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } } },
+                            x: { grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 10 } } }
                         }
                     }
                 });
-            } else {
-                document.getElementById('trendChart').parentNode.innerHTML =
-                    '<div class="text-center text-muted py-5"><i class="ti ti-cloud-off fs-32 d-block mb-2"></i>No trend data available</div>';
+            } else if (trendCtx) {
+                trendCtx.parentNode.innerHTML =
+                    '<div class="text-center text-muted py-4"><i class="ti ti-cloud-off fs-4 d-block mb-1"></i><small>No trend data available</small></div>';
             }
 
-            const distCtx = document.getElementById('distributionChart').getContext('2d');
-            new Chart(distCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Present', 'Absent', 'Late', 'Leave'],
-                    datasets: [{
-                        data: [
-                            todaySummary.present || 0,
-                            todaySummary.absent || 0,
-                            todaySummary.late || 0,
-                            todaySummary.leave || 0,
-                        ],
-                        backgroundColor: [
-                            chartColors.success,
-                            chartColors.danger,
-                            chartColors.warning,
-                            chartColors.info,
-                        ],
-                        borderWidth: 2,
-                        borderColor: '#fff',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { usePointStyle: true, padding: 16, boxWidth: 10 }
-                        }
+            const distCtx = document.getElementById('distributionChart');
+            if (distCtx) {
+                new Chart(distCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Present', 'Absent', 'Late', 'Leave'],
+                        datasets: [{
+                            data: [
+                                todaySummary.present || 0,
+                                todaySummary.absent || 0,
+                                todaySummary.late || 0,
+                                todaySummary.leave || 0,
+                            ],
+                            backgroundColor: [
+                                chartColors.success,
+                                chartColors.danger,
+                                chartColors.warning,
+                                chartColors.info,
+                            ],
+                            borderWidth: 0,
+                        }]
                     },
-                    cutout: '65%',
-                }
-            });
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { usePointStyle: true, padding: 12, boxWidth: 8, font: { size: 11 } }
+                            }
+                        },
+                    }
+                });
+            }
 
-            if (classWiseData.length > 0) {
-                const cwCtx = document.getElementById('classWiseChart').getContext('2d');
-                new Chart(cwCtx, {
+            const cwCtx = document.getElementById('classWiseChart');
+            if (classWiseData.length > 0 && cwCtx) {
+                new Chart(cwCtx.getContext('2d'), {
                     type: 'bar',
                     data: {
                         labels: classWiseData.map(d => d.class_section),
@@ -297,25 +284,33 @@
                                 label: 'Present',
                                 data: classWiseData.map(d => d.present || 0),
                                 backgroundColor: chartColors.success,
-                                borderRadius: 4,
+                                borderRadius: 3,
+                                borderSkipped: false,
+                                barPercentage: 0.7,
                             },
                             {
                                 label: 'Absent',
                                 data: classWiseData.map(d => d.absent || 0),
                                 backgroundColor: chartColors.danger,
-                                borderRadius: 4,
+                                borderRadius: 3,
+                                borderSkipped: false,
+                                barPercentage: 0.7,
                             },
                             {
                                 label: 'Late',
                                 data: classWiseData.map(d => d.late || 0),
                                 backgroundColor: chartColors.warning,
-                                borderRadius: 4,
+                                borderRadius: 3,
+                                borderSkipped: false,
+                                barPercentage: 0.7,
                             },
                             {
                                 label: 'Leave',
                                 data: classWiseData.map(d => d.leave || 0),
                                 backgroundColor: chartColors.info,
-                                borderRadius: 4,
+                                borderRadius: 3,
+                                borderSkipped: false,
+                                barPercentage: 0.7,
                             }
                         ]
                     },
@@ -324,17 +319,17 @@
                         maintainAspectRatio: false,
                         interaction: { intersect: false, mode: 'index' },
                         plugins: {
-                            legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } },
+                            legend: { position: 'top', labels: { usePointStyle: true, padding: 12, boxWidth: 8, font: { size: 11 } } },
                         },
                         scales: {
-                            y: { beginAtZero: true, ticks: { stepSize: 1 } },
-                            x: { grid: { display: false } }
+                            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
+                            x: { grid: { display: false }, ticks: { font: { size: 10 } } }
                         }
                     }
                 });
-            } else {
-                document.getElementById('classWiseChart').parentNode.innerHTML =
-                    '<div class="text-center text-muted py-5"><i class="ti ti-cloud-off fs-32 d-block mb-2"></i>No class data available for today</div>';
+            } else if (cwCtx) {
+                cwCtx.parentNode.innerHTML =
+                    '<div class="text-center text-muted py-4"><i class="ti ti-cloud-off fs-4 d-block mb-1"></i><small>No class data available for today</small></div>';
             }
         });
     </script>

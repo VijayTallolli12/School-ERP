@@ -11,7 +11,7 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Notifications</h5>
+            <h5 class="mb-0"><i class="ti ti-bell text-primary me-2"></i>Notifications</h5>
         </div>
         <div class="card-body">
             @if($notifications->count() > 0)

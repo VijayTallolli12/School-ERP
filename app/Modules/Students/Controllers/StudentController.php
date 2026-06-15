@@ -86,7 +86,7 @@ class StudentController extends Controller
         ]);
     }
 
-    public function show(Student $student): JsonResponse
+    public function show(Student $student)
     {
         $student->load([
             'guardians',
@@ -100,53 +100,57 @@ class StudentController extends Controller
         $guardian = $student->guardians->firstWhere('is_primary', true);
         $primaryParent = $student->parents->first();
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $student->id,
-                'admission_no' => $student->admission_no,
-                'admission_date' => $student->admission_date?->toDateString(),
-                'first_name' => $student->first_name,
-                'middle_name' => $student->middle_name,
-                'last_name' => $student->last_name,
-                'date_of_birth' => $student->date_of_birth?->toDateString(),
-                'gender' => $student->gender,
-                'blood_group' => $student->blood_group,
-                'religion' => $student->religion,
-                'category' => $student->category,
-                'caste' => $student->caste,
-                'nationality' => $student->nationality,
-                'mother_tongue' => $student->mother_tongue,
-                'aadhar_no' => $student->aadhar_no,
-                'current_address' => $student->current_address,
-                'permanent_address' => $student->permanent_address,
-                'status' => $student->status,
-                'academic_year_id' => $session?->academic_year_id,
-                'class_section_id' => $session?->class_section_id,
-                'roll_no' => $session?->roll_no,
-                'parent_id' => $primaryParent?->id,
-                'relationship' => $primaryParent?->pivot?->relationship ?? 'guardian',
-                'guardian_name' => $guardian?->name ?? $primaryParent?->full_name,
-                'guardian_relation' => $guardian?->relation ?? $primaryParent?->pivot?->relationship ?? 'guardian',
-                'guardian_phone' => $guardian?->phone ?? $primaryParent?->phone,
-                'guardian_email' => $guardian?->email ?? $primaryParent?->email,
-                'guardian_occupation' => $guardian?->occupation ?? $primaryParent?->occupation,
-                'guardians' => $student->guardians
-                    ->sortByDesc('is_primary')
-                    ->values()
-                    ->map(fn ($guardian): array => [
-                        'id' => $guardian->id,
-                        'name' => $guardian->name,
-                        'relation' => $guardian->relation,
-                        'phone' => $guardian->phone,
-                        'email' => $guardian->email,
-                        'occupation' => $guardian->occupation,
-                        'is_primary' => $guardian->is_primary,
-                        'can_pickup' => $guardian->can_pickup,
-                    ])
-                    ->all(),
-            ],
-        ]);
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $student->id,
+                    'admission_no' => $student->admission_no,
+                    'admission_date' => $student->admission_date?->toDateString(),
+                    'first_name' => $student->first_name,
+                    'middle_name' => $student->middle_name,
+                    'last_name' => $student->last_name,
+                    'date_of_birth' => $student->date_of_birth?->toDateString(),
+                    'gender' => $student->gender,
+                    'blood_group' => $student->blood_group,
+                    'religion' => $student->religion,
+                    'category' => $student->category,
+                    'caste' => $student->caste,
+                    'nationality' => $student->nationality,
+                    'mother_tongue' => $student->mother_tongue,
+                    'aadhar_no' => $student->aadhar_no,
+                    'current_address' => $student->current_address,
+                    'permanent_address' => $student->permanent_address,
+                    'status' => $student->status,
+                    'academic_year_id' => $session?->academic_year_id,
+                    'class_section_id' => $session?->class_section_id,
+                    'roll_no' => $session?->roll_no,
+                    'parent_id' => $primaryParent?->id,
+                    'relationship' => $primaryParent?->pivot?->relationship ?? 'guardian',
+                    'guardian_name' => $guardian?->name ?? $primaryParent?->full_name,
+                    'guardian_relation' => $guardian?->relation ?? $primaryParent?->pivot?->relationship ?? 'guardian',
+                    'guardian_phone' => $guardian?->phone ?? $primaryParent?->phone,
+                    'guardian_email' => $guardian?->email ?? $primaryParent?->email,
+                    'guardian_occupation' => $guardian?->occupation ?? $primaryParent?->occupation,
+                    'guardians' => $student->guardians
+                        ->sortByDesc('is_primary')
+                        ->values()
+                        ->map(fn ($guardian): array => [
+                            'id' => $guardian->id,
+                            'name' => $guardian->name,
+                            'relation' => $guardian->relation,
+                            'phone' => $guardian->phone,
+                            'email' => $guardian->email,
+                            'occupation' => $guardian->occupation,
+                            'is_primary' => $guardian->is_primary,
+                            'can_pickup' => $guardian->can_pickup,
+                        ])
+                        ->all(),
+                ],
+            ]);
+        }
+
+        return view('modules.students.show', compact('student', 'session', 'guardian'));
     }
 
     public function update(UpdateStudentRequest $request, Student $student): JsonResponse

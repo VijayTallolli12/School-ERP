@@ -218,7 +218,7 @@
         <div class="col-xl-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Outstanding Fees by Class</h5>
+                    <h5 class="card-title mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>Outstanding Fees by Class</h5>
                 </div>
                 <div class="card-body" style="min-height: 300px;">
                     <canvas id="classOutstandingChart" height="260"></canvas>
@@ -231,7 +231,7 @@
         <div class="col-xl-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Collection vs Outstanding</h5>
+                    <h5 class="card-title mb-0"><i class="ti ti-chart-donut text-primary me-2"></i>Collection vs Outstanding</h5>
                 </div>
                 <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 300px;">
                     <canvas id="collectionDoughnut" height="260"></canvas>
@@ -244,7 +244,7 @@
         <div class="col-xl-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Monthly Collection Trend</h5>
+                    <h5 class="card-title mb-0"><i class="ti ti-chart-line text-primary me-2"></i>Monthly Collection Trend</h5>
                 </div>
                 <div class="card-body" style="min-height: 300px;">
                     <canvas id="monthlyTrendChart" height="260"></canvas>
@@ -259,7 +259,7 @@
     {{-- Defaulters DataTable --}}
     <div class="card">
         <div class="card-header">
-            <h5 class="card-title mb-0">Defaulter List</h5>
+            <h5 class="card-title mb-0"><i class="ti ti-list text-primary me-2"></i>Defaulter List</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -291,7 +291,9 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    $(async function() {
+        const Chart = await window.lazyChart();
+        const DataTable = await window.lazyDT();
         let table = null;
         let classChart = null, doughnutChart = null, trendChart = null;
 
@@ -503,7 +505,7 @@
                         table = $('#defaultersTable').DataTable({
                             data: response.defaulters,
                             columns: [
-                                { data: 'DT_RowIndex', orderable: false, searchable: false },
+                                { data: null, orderable: false, searchable: false, render: function(data, type, row, meta) { return meta.row + meta.settings._iDisplayStart + 1; } },
                                 { data: 'student_name', name: 'student_name' },
                                 { data: 'admission_no', name: 'admission_no' },
                                 { data: 'class_section', name: 'class_section' },
@@ -540,21 +542,14 @@
                                         return '<div class="dropdown">' +
                                             '<button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></button>' +
                                             '<ul class="dropdown-menu dropdown-menu-end">' +
-                                            '<li><a class="dropdown-item" href="#" onclick="alert(\'View Parent: ' + row.parent_name.replace(/'/g, "\\'") + '\')"><i class="ti ti-user me-2"></i>View Parent</a></li>' +
-                                            '<li><a class="dropdown-item" href="#" onclick="alert(\'Student Fee History: ' + row.student_name.replace(/'/g, "\\'") + '\')"><i class="ti ti-receipt me-2"></i>Fee History</a></li>' +
+                                            '<li><a class="dropdown-item" href="' + (row.parent_id ? '{{ route("admin.parents.show", "__ID__") }}'.replace('__ID__', row.parent_id) : '#') + '"><i class="ti ti-user me-2"></i>View Parent</a></li>' +
+                                            '<li><a class="dropdown-item" href="{{ route("admin.students.show", "__ID__") }}'.replace('__ID__', row.student_id) + '"><i class="ti ti-receipt me-2"></i>Fee History</a></li>' +
                                             '</ul></div>';
                                     }
                                 }
                             ],
                             order: [[10, 'asc']],
-                            pageLength: 25,
-                            drawCallback: function() {
-                                var api = this.api();
-                                api.rows().every(function() {
-                                    var d = this.data();
-                                    d.DT_RowIndex = this.index() + 1;
-                                });
-                            }
+                            pageLength: 25
                         });
                     }
 

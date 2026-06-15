@@ -35,7 +35,7 @@
                     <div class="tab-content">
                         {{-- List View --}}
                         <div class="tab-pane fade show active" id="listView" role="tabpanel">
-                            <div class="row g-2 mb-3">
+                            <div class="row g-3 mb-3">
                                 <div class="col-md-3">
                                     <select class="form-select form-select-sm filter-select" id="filterEventType">
                                         <option value="">All Event Types</option>
@@ -190,7 +190,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => { (async () => { const DataTable = await window.lazyDT();
             const eventModal = new bootstrap.Modal('#eventModal');
             const eventDetailModal = new bootstrap.Modal('#eventDetailModal');
             const eventForm = $('#eventForm');
@@ -253,8 +253,9 @@
                 });
             });
 
-            $('#eventsTable').on('click', '.toggle-publish', function () {
+            $('#eventsTable').on('click', '.toggle-publish', async function () {
                 const id = $(this).data('id');
+                const Swal = await window.lazySwal();
                 Swal.fire({
                     title: 'Toggle publish status?',
                     text: 'Publishing will send notifications to the target audience.',

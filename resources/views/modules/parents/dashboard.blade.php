@@ -9,7 +9,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">My Children</h5>
+                    <h5 class="mb-0"><i class="ti ti-heart text-primary me-2"></i>My Children</h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
@@ -38,7 +38,7 @@
         <div class="col-md-6 col-lg-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <div class="display-4 text-success">{{ $attendance_summary['percentage'] }}%</div>
+                    <div class="display-4 text-success"><i class="ti ti-user-check me-1"></i>{{ $attendance_summary['percentage'] }}%</div>
                     <p class="card-text">Attendance</p>
                 </div>
             </div>
@@ -46,7 +46,7 @@
         <div class="col-md-6 col-lg-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <div class="display-4 text-warning">${{ number_format($fees_summary['pending'], 2) }}</div>
+                    <div class="display-4 text-warning"><i class="ti ti-wallet me-1"></i>${{ number_format($fees_summary['pending'], 2) }}</div>
                     <p class="card-text">Pending Fees</p>
                 </div>
             </div>
@@ -54,7 +54,7 @@
         <div class="col-md-6 col-lg-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <div class="display-4 text-info">{{ $exam_results_summary['average'] }}%</div>
+                    <div class="display-4 text-info"><i class="ti ti-medal me-1"></i>{{ $exam_results_summary['average'] }}%</div>
                     <p class="card-text">Average Score</p>
                 </div>
             </div>
@@ -62,7 +62,7 @@
         <div class="col-md-6 col-lg-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <div class="display-4 text-primary">{{ $homework_summary['active'] ?? 0 }}</div>
+                    <div class="display-4 text-primary"><i class="ti ti-book me-1"></i>{{ $homework_summary['active'] ?? 0 }}</div>
                     <p class="card-text">Active Homework</p>
                 </div>
             </div>
@@ -70,7 +70,7 @@
         <div class="col-md-6 col-lg-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <div class="display-4 text-primary">{{ $notifications->count() }}</div>
+                    <div class="display-4 text-primary"><i class="ti ti-bell me-1"></i>{{ $notifications->count() }}</div>
                     <p class="card-text">Notifications</p>
                 </div>
             </div>
@@ -80,8 +80,8 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header d-flex align-items-center">
-                    <h5 class="mb-0">Recent Homework</h5>
-                    <a href="{{ route('parent-portal.homework') }}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    <h5 class="mb-0"><i class="ti ti-book text-primary me-2"></i>Recent Homework</h5>
+                    <a href="{{ route('parent-portal.homework') }}" class="btn btn-sm btn-outline-primary ms-auto"><i class="ti ti-arrow-right me-1"></i>View All</a>
                 </div>
                 <div class="card-body">
                     @php $recentHomework = $homework_summary['recent'] ?? collect(); @endphp
@@ -112,8 +112,8 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header d-flex align-items-center">
-                    <h5 class="mb-0">Recent Notifications</h5>
-                    <a href="{{ route('parent-portal.notifications') }}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    <h5 class="mb-0"><i class="ti ti-bell text-primary me-2"></i>Recent Notifications</h5>
+                    <a href="{{ route('parent-portal.notifications') }}" class="btn btn-sm btn-outline-primary ms-auto"><i class="ti ti-arrow-right me-1"></i>View All</a>
                 </div>
                 <div class="card-body">
                     @if($notifications->count() > 0)
@@ -134,7 +134,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Quick Actions</h5>
+                    <h5 class="mb-0"><i class="ti ti-bolt text-primary me-2"></i>Quick Actions</h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-2">

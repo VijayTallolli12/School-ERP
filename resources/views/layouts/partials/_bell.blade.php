@@ -1,8 +1,8 @@
 {{-- Notification Bell Partial --}}
 <li class="nav-item dropdown" id="notificationBellContainer">
-    <a class="nav-link position-relative" data-bs-toggle="dropdown" href="#" role="button" aria-label="Notifications">
+    <a class="nav-link position-relative" data-bs-toggle="dropdown" href="#" role="button" aria-label="Notifications" style="overflow:visible">
         <i class="ti ti-bell"></i>
-        <span class="position-absolute top-0 start-75 translate-middle badge rounded-pill bg-danger d-none" id="notificationBadge">
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notificationBadge" style="font-size:0.6rem;min-width:18px;padding:2px 5px;box-shadow:0 0 0 2px var(--bs-body-bg,#fff);line-height:1.2">
             0
         </span>
     </a>
@@ -78,7 +78,7 @@
                         const bgClass = n.is_read ? '' : 'bg-light';
                         return `
                             <a href="#" class="dropdown-item d-flex align-items-start gap-2 py-2 ${bgClass} notification-item"
-                               data-id="${n.id}" data-mark-url="{{ route('admin.notifications.markRead', '__ID__') }}'.replace('__ID__', n.id)"
+                               data-id="${n.id}"                                data-mark-url="{{ route('admin.notifications.markRead', '__ID__') }}"
                                style="border-bottom: 1px solid #f0f0f0;">
                                 <span class="mt-1" style="color:${color};"><i class="ti ti-${icon}"></i></span>
                                 <div class="flex-grow-1" style="min-width: 0;">
@@ -97,7 +97,7 @@
                     listEl.querySelectorAll('.notification-item').forEach(el => {
                         el.addEventListener('click', function (e) {
                             e.preventDefault();
-                            const url = this.dataset.markUrl;
+                            const url = this.dataset.markUrl.replace('__ID__', this.dataset.id);
                             fetch(url, {
                                 method: 'POST',
                                 headers: {

@@ -162,7 +162,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const homeworkModal = new bootstrap.Modal('#homeworkModal');
             const homeworkForm = $('#homeworkForm');
 

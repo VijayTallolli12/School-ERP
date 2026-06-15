@@ -52,7 +52,7 @@ class StudentReportService
             'admission_no' => $student->admission_no,
             'class_section' => $classSection,
             'guardian' => $guardianNames->join(', ') ?: '-',
-            'actions' => '<a href="#" class="btn btn-sm btn-info">View</a>',
+            'actions' => '<a href="' . route('admin.students.show', $student->id) . '" class="btn btn-sm btn-info">View</a>',
         ];
     }
 
@@ -96,7 +96,7 @@ class StudentReportService
             ? '<img src="' . $photoUrl . '" alt="Photo" class="rounded-circle" width="40" height="40" style="object-fit:cover;">'
             : '<span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white" style="width:40px;height:40px;font-size:14px;font-weight:600;">' . strtoupper(substr($student->first_name ?? '?', 0, 1)) . '</span>';
 
-        $profileUrl = route('students.show', $student->id);
+        $profileUrl = route('admin.students.show', $student->id);
 
         return [
             'photo' => $photoHtml,

@@ -11,7 +11,7 @@
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center">
-            <h3 class="card-title fw-semibold mb-0">Timetable Slots</h3>
+            <h3 class="card-title fw-semibold mb-0"><i class="ti ti-calendar text-primary me-2"></i>Timetable Slots</h3>
             @can('timetable.create')
                 <div class="btn-group ms-auto">
                     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#timetableModal" id="createTimetable">
@@ -80,7 +80,7 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm border">
                         <div class="card-header p-3">
-                            <h6 class="mb-0">Class Timetable Report</h6>
+                            <h6 class="mb-0"><i class="ti ti-report text-primary me-2"></i>Class Timetable Report</h6>
                         </div>
                         <div class="card-body">
                             <div class="row gy-3">
@@ -117,7 +117,7 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm border">
                         <div class="card-header p-3">
-                            <h6 class="mb-0">Teacher Timetable Report</h6>
+                            <h6 class="mb-0"><i class="ti ti-report text-primary me-2"></i>Teacher Timetable Report</h6>
                         </div>
                         <div class="card-body">
                             <div class="row gy-3">
@@ -413,7 +413,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const filterAcademicYear = $('#filterAcademicYear');
             const filterClassSection = $('#filterClassSection');
             const filterTeacher = $('#filterTeacher');
@@ -581,66 +581,6 @@
 
                 return html;
             }
-
-            $('#previewClassSchedule').on('click', () => {
-                const year = $('#reportClassAcademicYear').val();
-                const classSectionId = $('#reportClassSection').val();
-                const yearLabel = $('#reportClassAcademicYear option:selected').text();
-                const classLabel = $('#reportClassSection option:selected').text();
-
-                if (!year || !classSectionId) {
-                    App.toast.error('Please select an academic year and class/section to preview the class schedule.');
-                    return;
-                }
-
-                timetablePreviewTitle.text('Class Schedule Preview');
-                timetablePreviewBody.html('<div class="text-center py-5 text-muted"><i class="ti ti-loader ti-spin fs-2 mb-3"></i><p>Loading class schedule preview...</p></div>');
-                timetablePreviewModal.show();
-
-                $.get('{{ route('admin.timetable.class-schedule') }}', {
-                    academic_year_id: year,
-                    class_section_id: classSectionId,
-                }).done((response) => {
-                    timetablePreviewBody.html(renderSchedulePreview(
-                        'Class Schedule for ' + classLabel,
-                        yearLabel,
-                        response.data,
-                        false,
-                    ));
-                }).fail(() => {
-                    timetablePreviewBody.html('<div class="text-center py-5 text-danger"><p class="mb-0">Unable to load class schedule preview.</p></div>');
-                });
-            });
-
-            $('#previewTeacherSchedule').on('click', () => {
-                const year = $('#reportTeacherAcademicYear').val();
-                const teacherId = $('#reportTeacher').val();
-                const yearLabel = $('#reportTeacherAcademicYear option:selected').text();
-                const teacherLabel = $('#reportTeacher option:selected').text();
-
-                if (!year || !teacherId) {
-                    App.toast.error('Please select an academic year and teacher to preview the teacher schedule.');
-                    return;
-                }
-
-                timetablePreviewTitle.text('Teacher Schedule Preview');
-                timetablePreviewBody.html('<div class="text-center py-5 text-muted"><i class="ti ti-loader ti-spin fs-2 mb-3"></i><p>Loading teacher schedule preview...</p></div>');
-                timetablePreviewModal.show();
-
-                $.get('{{ route('admin.timetable.teacher-schedule') }}', {
-                    academic_year_id: year,
-                    teacher_id: teacherId,
-                }).done((response) => {
-                    timetablePreviewBody.html(renderSchedulePreview(
-                        'Teacher Schedule for ' + teacherLabel,
-                        yearLabel,
-                        response.data,
-                        true,
-                    ));
-                }).fail(() => {
-                    timetablePreviewBody.html('<div class="text-center py-5 text-danger"><p class="mb-0">Unable to load teacher schedule preview.</p></div>');
-                });
-            });
 
             let currentPreviewMode = null;
             let currentPreviewParams = {};

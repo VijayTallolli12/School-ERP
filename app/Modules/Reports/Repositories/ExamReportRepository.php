@@ -85,7 +85,7 @@ class ExamReportRepository implements ExamReportRepositoryInterface
                 'exams.exam_name',
                 'exams.maximum_marks',
                 'class_section.id as class_section_id',
-                'school_classes.name as class_name',
+                'classes.name as class_name',
                 'sections.name as section_name',
                 DB::raw('COUNT(exam_results.id) as total_students'),
                 DB::raw('SUM(CASE WHEN exam_results.status = \'pass\' THEN 1 ELSE 0 END) as passed'),
@@ -95,7 +95,7 @@ class ExamReportRepository implements ExamReportRepositoryInterface
             ])
             ->join('exams', 'exam_results.exam_id', '=', 'exams.id')
             ->join('class_section', 'exams.class_section_id', '=', 'class_section.id')
-            ->join('school_classes', 'class_section.class_id', '=', 'school_classes.id')
+            ->join('classes', 'class_section.class_id', '=', 'classes.id')
             ->join('sections', 'class_section.section_id', '=', 'sections.id')
             ->where('exam_results.school_id', $schoolId);
 
@@ -107,8 +107,8 @@ class ExamReportRepository implements ExamReportRepositoryInterface
         }
 
         $rows = $query
-            ->groupBy('exams.id', 'exams.exam_name', 'exams.maximum_marks', 'class_section.id', 'school_classes.name', 'sections.name')
-            ->orderBy('school_classes.name')
+            ->groupBy('exams.id', 'exams.exam_name', 'exams.maximum_marks', 'class_section.id', 'classes.name', 'sections.name')
+            ->orderBy('classes.name')
             ->get();
 
         $performance = [];
@@ -147,7 +147,7 @@ class ExamReportRepository implements ExamReportRepositoryInterface
                 'subjects.name as subject_name',
                 'exams.exam_name',
                 'class_section.id as class_section_id',
-                'school_classes.name as class_name',
+                'classes.name as class_name',
                 'sections.name as section_name',
                 DB::raw('COUNT(exam_results.id) as total_students'),
                 DB::raw('SUM(CASE WHEN exam_results.status = \'pass\' THEN 1 ELSE 0 END) as passed'),
@@ -158,7 +158,7 @@ class ExamReportRepository implements ExamReportRepositoryInterface
             ->join('exams', 'exam_results.exam_id', '=', 'exams.id')
             ->join('subjects', 'exams.subject_id', '=', 'subjects.id')
             ->join('class_section', 'exams.class_section_id', '=', 'class_section.id')
-            ->join('school_classes', 'class_section.class_id', '=', 'school_classes.id')
+            ->join('classes', 'class_section.class_id', '=', 'classes.id')
             ->join('sections', 'class_section.section_id', '=', 'sections.id')
             ->where('exam_results.school_id', $schoolId);
 
@@ -173,7 +173,7 @@ class ExamReportRepository implements ExamReportRepositoryInterface
         }
 
         $rows = $query
-            ->groupBy('subjects.id', 'subjects.name', 'exams.id', 'exams.exam_name', 'class_section.id', 'school_classes.name', 'sections.name')
+            ->groupBy('subjects.id', 'subjects.name', 'exams.id', 'exams.exam_name', 'class_section.id', 'classes.name', 'sections.name')
             ->orderBy('subjects.name')
             ->get();
 
@@ -279,13 +279,13 @@ class ExamReportRepository implements ExamReportRepositoryInterface
                 'students.first_name',
                 'students.last_name',
                 'students.admission_no',
-                'school_classes.name as class_name',
+                'classes.name as class_name',
                 'sections.name as section_name',
             ])
             ->join('exams', 'exam_results.exam_id', '=', 'exams.id')
             ->join('students', 'exam_results.student_id', '=', 'students.id')
             ->join('class_section', 'exams.class_section_id', '=', 'class_section.id')
-            ->join('school_classes', 'class_section.class_id', '=', 'school_classes.id')
+            ->join('classes', 'class_section.class_id', '=', 'classes.id')
             ->join('sections', 'class_section.section_id', '=', 'sections.id')
             ->where('exam_results.school_id', $schoolId);
 
@@ -298,7 +298,7 @@ class ExamReportRepository implements ExamReportRepositoryInterface
         }
 
         $studentRows = $query
-            ->groupBy('exam_results.student_id', 'students.id', 'students.first_name', 'students.last_name', 'students.admission_no', 'school_classes.name', 'sections.name')
+            ->groupBy('exam_results.student_id', 'students.id', 'students.first_name', 'students.last_name', 'students.admission_no', 'classes.name', 'sections.name')
             ->get()
             ->keyBy('student_id');
 
@@ -383,7 +383,7 @@ class ExamReportRepository implements ExamReportRepositoryInterface
         $baseQuery = ExamResult::query()
             ->join('exams', 'exam_results.exam_id', '=', 'exams.id')
             ->join('class_section', 'exams.class_section_id', '=', 'class_section.id')
-            ->join('school_classes', 'class_section.class_id', '=', 'school_classes.id')
+            ->join('classes', 'class_section.class_id', '=', 'classes.id')
             ->join('sections', 'class_section.section_id', '=', 'sections.id')
             ->leftJoin('subjects', 'exams.subject_id', '=', 'subjects.id')
             ->where('exam_results.school_id', $schoolId);
@@ -428,14 +428,14 @@ class ExamReportRepository implements ExamReportRepositoryInterface
         $classRows = (clone $baseQuery)
             ->select([
                 'class_section.id as class_section_id',
-                DB::raw("CONCAT(school_classes.name, ' - ', sections.name) as class_label"),
+                DB::raw("CONCAT(classes.name, ' - ', sections.name) as class_label"),
                 DB::raw('COUNT(*) as appeared'),
                 DB::raw('SUM(CASE WHEN exam_results.status = \'pass\' THEN 1 ELSE 0 END) as passed'),
                 DB::raw('SUM(CASE WHEN exam_results.status = \'fail\' THEN 1 ELSE 0 END) as failed'),
                 DB::raw('SUM(exam_results.marks_obtained) as total_marks_obtained'),
                 DB::raw('SUM(exams.maximum_marks) as total_max_marks'),
             ])
-            ->groupBy('class_section.id', 'school_classes.name', 'sections.name')
+            ->groupBy('class_section.id', 'classes.name', 'sections.name')
             ->get();
 
         $classPerformance = [];

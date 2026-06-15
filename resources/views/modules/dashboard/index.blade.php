@@ -8,286 +8,408 @@
 @endsection
 
 @section('content')
-    <!-- Welcome Greeting -->
-    <div class="erp-welcome">
-        <div class="d-flex align-items-center gap-3">
-            <div class="welcome-avatar">
+    <!-- Hero Welcome Bar -->
+    <div class="hero-welcome">
+        <div class="hw-left">
+            <div class="hw-avatar">
                 <i class="ti ti-sparkles"></i>
             </div>
-            <div class="flex-grow-1">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div>
-                        <div class="welcome-title">Welcome back, {{ auth()->user()->name ?? 'Admin' }}</div>
-                        <div class="welcome-subtitle">Manage your school operations efficiently.</div>
+            <div>
+                <div class="hw-greeting">Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 17 ? 'afternoon' : 'evening') }}, {{ auth()->user()->name ?? 'Admin' }}</div>
+                <div class="hw-sub">{{ \Carbon\Carbon::now()->format('l, F j, Y') }} &middot; {{ date('h:i A') }}</div>
+            </div>
+        </div>
+        <div class="hw-meta d-flex gap-3">
+            @if ($documentStats && ($documentStats['pending_count'] > 0 || $documentStats['expiring_count'] > 0))
+                <span class="badge bg-warning text-dark"><i class="ti ti-file-alert me-1"></i>{{ $documentStats['pending_count'] }} pending</span>
+                @if ($documentStats['expiring_count'] > 0)
+                    <span class="badge bg-danger"><i class="ti ti-clock-exclamation me-1"></i>{{ $documentStats['expiring_count'] }} expiring</span>
+                @endif
+            @endif
+        </div>
+    </div>
+
+    <!-- Hero KPI Row -->
+    @php
+        $totalStudents = $stats['students'] ?? 0;
+        $totalTeachers = $stats['teachers'] ?? 0;
+        $attendanceRate = $absentToday['percentage'] ?? 0;
+        $totalCollected = $feeStats['total_collected'] ?? 0;
+    @endphp
+    <div class="row g-3 mb-3">
+        <div class="col-xl-3 col-md-6">
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ number_format($totalStudents) }}</div>
+                    <div class="hero-label">Total Students</div>
+                    <div class="hero-sub">{{ $stats['active_classes'] ?? 0 }} active classes</div>
+                </div>
+                <div class="hero-icon" style="background:rgba(37,99,235,.1);color:#2563eb;">
+                    <i class="ti ti-school"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ number_format($totalTeachers) }}</div>
+                    <div class="hero-label">Teachers</div>
+                    <div class="hero-trend trend-up">
+                        <i class="ti ti-arrow-up"></i> {{ $stats['active_teachers'] ?? 0 }} active
                     </div>
-                    <div class="welcome-meta text-end">
-                        <div>{{ \Carbon\Carbon::now()->format('l, F j, Y') }}</div>
-                        <div><i class="ti ti-clock me-1"></i>{{ date('h:i A') }}</div>
+                </div>
+                <div class="hero-icon" style="background:rgba(100,116,139,.1);color:#64748b;">
+                    <i class="ti ti-presentation"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ $attendanceRate }}%</div>
+                    <div class="hero-label">Attendance Rate</div>
+                    <div class="hero-sub">{{ $absentToday['present'] ?? 0 }} present today</div>
+                </div>
+                <div class="hero-icon" style="background:rgba(22,163,74,.1);color:#16a34a;">
+                    <i class="ti ti-user-check"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ number_format($totalCollected, 0) }}</div>
+                    <div class="hero-label">Total Collected</div>
+                    <div class="hero-trend trend-up">
+                        <i class="ti ti-trending-up"></i> {{ number_format($feeStats['monthly_collection'] ?? 0, 0) }} this month
                     </div>
+                </div>
+                <div class="hero-icon" style="background:rgba(245,158,11,.12);color:#d97706;">
+                    <i class="ti ti-wallet"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Stat Cards -->
-    <div class="row g-3">
+    <!-- Secondary Stat Row (compact) -->
+    <div class="row g-3 mb-3">
         @foreach ([
-            ['Users', $stats['users'], 'users', 'primary'],
-            ['Students', $stats['students'], 'school', 'secondary'],
-            ['Teachers', $stats['teachers'], 'presentation', 'dark'],
-            ['Active Teachers', $stats['active_teachers'], 'user-check', 'success'],
-            ['Today Schedules', $stats['today_schedules'], 'calendar-event', 'info'],
-            ['Active Classes', $stats['active_classes'], 'building', 'secondary'],
-            ['Exams', $stats['exams'], 'books', 'info'],
-            ['Published Exams', $stats['published_exams'], 'file-check', 'success'],
-            ['Logins Today', $stats['login_today'], 'login', 'warning'],
-            ['Audit Events', $stats['activities'], 'clipboard-list', 'info'],
+            ['Active Classes', $stats['active_classes'] ?? 0, 'building', 'rgb(37,99,235)'],
+            ['Exams', $stats['exams'] ?? 0, 'books', 'rgb(14,165,233)'],
+            ['Today Schedules', $stats['today_schedules'] ?? 0, 'calendar-event', 'rgb(100,116,139)'],
+            ['Logins Today', $stats['login_today'] ?? 0, 'login', 'rgb(245,158,11)'],
         ] as [$label, $value, $icon, $color])
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="erp-stat-card">
-                    <div class="stat-info">
-                        <h4 @class(['text-zero' => $value == 0])>{{ number_format($value) }}</h4>
-                        <p>{{ $label }}</p>
-                    </div>
-                    <div class="stat-icon {{ $color }}">
+            <div class="col-6 col-xl-3">
+                <div class="nav-card-compact">
+                    <div class="nc-icon" style="background:{{ $color }}1a;color:{{ $color }};">
                         <i class="ti ti-{{ $icon }}"></i>
+                    </div>
+                    <div>
+                        <div class="nc-title">{{ number_format($value) }}</div>
+                        <div class="nc-sub">{{ $label }}</div>
                     </div>
                 </div>
             </div>
         @endforeach
     </div>
 
-    @if($absentToday)
-        <div class="row g-3 mt-2">
-            <div class="col-12">
-                <h5 class="fw-semibold text-secondary mb-0">Today's Attendance</h5>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="erp-stat-card">
-                    <div class="stat-info">
-                        <h4 @class(['text-zero' => $absentToday['absent'] == 0])>{{ $absentToday['absent'] }}</h4>
-                        <p>Absent Today</p>
-                    </div>
-                    <div class="stat-icon danger">
-                        <i class="ti ti-user-x"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="erp-stat-card">
-                    <div class="stat-info">
-                        <h4>{{ $absentToday['percentage'] }}%</h4>
-                        <p>Attendance Rate</p>
-                    </div>
-                    <div class="stat-icon primary">
-                        <i class="ti ti-percentage"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="erp-stat-card">
-                    <div class="stat-info">
-                        <h4>{{ $absentToday['present'] }}</h4>
-                        <p>Present Today</p>
-                    </div>
-                    <div class="stat-icon success">
-                        <i class="ti ti-user-check"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3 d-flex align-items-center">
-                <a href="{{ route('reports.attendance.absent_students') }}" class="btn btn-outline-danger w-100">
-                    <i class="ti ti-eye me-1"></i> View Details
-                </a>
-            </div>
-        </div>
-    @endif
-
-    @if($feeStats)
-        <div class="row g-3 mt-2">
-            <div class="col-12">
-                <h5 class="fw-semibold text-secondary mb-0">Fees Overview</h5>
-            </div>
-            @foreach ([
-                ['Total Collected', $feeStats['total_collected'], 'wallet', 'success'],
-                ['Pending Fees', $feeStats['pending_fees'], 'hourglass', 'warning'],
-                ['This Month', $feeStats['monthly_collection'], 'calendar-event', 'primary'],
-            ] as [$label, $value, $icon, $color])
-                <div class="col-12 col-sm-6 col-xl-4">
-                    <div class="erp-stat-card">
-                        <div class="stat-info">
-                            <h4>{{ number_format($value, 2) }}</h4>
-                            <p>{{ $label }}</p>
-                        </div>
-                        <div class="stat-icon {{ $color }}">
-                            <i class="ti ti-{{ $icon }}"></i>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    @endif
-
-    <div class="row g-3 mt-2">
-        <div class="col-lg-8">
+    <!-- Analytics Row -->
+    <div class="row g-3 mb-3">
+        <div class="col-xl-7">
             <div class="card">
-                <div class="card-header d-flex align-items-center">
-                    <h3 class="card-title mb-0">Activity Overview</h3>
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h3 class="card-title mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>Platform Overview</h3>
+                    <span class="badge bg-primary-subtle text-primary fs-13">{{ $stats['activities'] ?? 0 }} total activities</span>
                 </div>
-                <div class="card-body">
-                    <canvas id="activityChart" height="120"></canvas>
+                <div class="card-body" style="height:260px;">
+                    <canvas id="activityChart"></canvas>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 d-flex flex-column gap-3">
+        <div class="col-xl-5">
             <div class="card">
-                <div class="card-header d-flex align-items-center">
-                    <h3 class="card-title mb-0">Recent Logins</h3>
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h3 class="card-title mb-0"><i class="ti ti-login text-primary me-2"></i>Recent Logins</h3>
+                    <span class="badge bg-secondary-subtle text-secondary fs-13">{{ $recentLogins->count() }} entries</span>
                 </div>
                 <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
+                    <div class="compact-widget px-3 py-2">
                         @forelse ($recentLogins as $login)
-                            <div class="list-group-item px-3 py-2">
-                                <div class="fw-semibold small">{{ $login->user?->name ?? $login->email }}</div>
-                                <div class="small text-secondary">{{ $login->ip_address }} · {{ $login->created_at->diffForHumans() }}</div>
+                            <div class="compact-widget-item">
+                                <div class="cw-avatar">
+                                    {{ strtoupper(substr($login->user?->name ?? $login->email, 0, 2)) }}
+                                </div>
+                                <div class="cw-info">
+                                    <div class="cw-name">{{ $login->user?->name ?? $login->email }}</div>
+                                    <div class="cw-meta">{{ $login->ip_address }} &middot; {{ $login->created_at->diffForHumans() }}</div>
+                                </div>
                             </div>
                         @empty
-                            <div class="list-group-item px-3 py-4 text-center text-secondary">
-                                <i class="ti ti-inbox d-block fs-3 mb-2 opacity-25"></i>
-                                No login activity yet.
+                            <div class="text-center text-secondary py-4">
+                                <i class="ti ti-inbox d-block fs-3 mb-1 opacity-25"></i>
+                                <small>No login activity yet.</small>
                             </div>
                         @endforelse
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            @if ($upcomingEvents)
-                <div class="card">
+    <!-- Bottom Row: Attendance + Fees + Upcoming Events -->
+    <div class="row g-3">
+        @if ($absentToday)
+            <div class="col-xl-4">
+                <div class="card h-100">
                     <div class="card-header d-flex align-items-center">
-                        <h3 class="card-title mb-0">Upcoming Events</h3>
-                        @can('academic_calendar.view')
-                            <a href="{{ route('admin.calendar.index') }}" class="btn btn-sm btn-outline-primary ms-auto">
-                                <i class="ti ti-calendar me-1"></i> View All
-                            </a>
-                        @endcan
+                        <h3 class="card-title mb-0"><i class="ti ti-user-check text-primary me-2"></i>Today's Attendance</h3>
+                        <a href="{{ route('reports.attendance.absent_students') }}" class="btn btn-sm btn-outline-primary ms-auto">
+                            <i class="ti ti-eye me-1"></i>Details
+                        </a>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            @forelse ($upcomingEvents as $event)
-                                <div class="list-group-item px-3 py-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="badge {{ $event->event_type_badge }}" style="width:8px;height:8px;padding:0;border-radius:50%"></span>
-                                        <div class="flex-grow-1 min-w-0">
-                                            <div class="fw-semibold small text-truncate">{{ $event->title }}</div>
-                                            <div class="small text-secondary">
-                                                {{ $event->start_date->format('d M') }}
-                                                @if ($event->end_date && $event->end_date->format('Y-m-d') !== $event->start_date->format('Y-m-d'))
-                                                    - {{ $event->end_date->format('d M') }}
-                                                @endif
-                                                @if ($event->location)
-                                                    · {{ $event->location }}
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="list-group-item px-3 py-4 text-center text-secondary">
-                                    <i class="ti ti-calendar-off d-block fs-3 mb-2 opacity-25"></i>
-                                    No upcoming events.
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if ($documentStats)
-                <div class="card">
-                    <div class="card-header d-flex align-items-center">
-                        <h3 class="card-title mb-0">Documents</h3>
-                        @can('student_documents.view')
-                            <a href="{{ route('admin.documents.index') }}" class="btn btn-sm btn-outline-primary ms-auto">
-                                <i class="ti ti-file-text me-1"></i> View All
-                            </a>
-                        @endcan
-                    </div>
-                    <div class="card-body p-0">
-                        @if ($documentStats['pending_count'] > 0 || $documentStats['expiring_count'] > 0)
-                            <div class="px-3 py-2 border-bottom">
-                                <div class="d-flex gap-3">
-                                    @if ($documentStats['pending_count'] > 0)
-                                        <div class="small">
-                                            <span class="badge bg-warning text-dark">{{ $documentStats['pending_count'] }}</span> pending verification
-                                        </div>
-                                    @endif
-                                    @if ($documentStats['expiring_count'] > 0)
-                                        <div class="small">
-                                            <span class="badge bg-danger">{{ $documentStats['expiring_count'] }}</span> expiring soon
-                                        </div>
-                                    @endif
+                    <div class="card-body py-3">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="position-relative" style="width:90px;height:90px;">
+                                <canvas id="attendanceDonut" width="90" height="90"></canvas>
+                                <div class="donut-center">
+                                    <div class="donut-value">{{ $absentToday['percentage'] }}%</div>
+                                    <div class="donut-label">Rate</div>
                                 </div>
                             </div>
-                        @endif
-                        <div class="list-group list-group-flush">
-                            @forelse ($documentStats['recent'] as $doc)
-                                <div class="list-group-item px-3 py-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="ti ti-file text-secondary fs-5"></i>
-                                        <div class="flex-grow-1 min-w-0">
-                                            <div class="fw-semibold small text-truncate">{{ $doc['title'] ?? 'Untitled' }}</div>
-                                            <div class="small text-secondary">
-                                                {{ \Illuminate\Support\Str::limit($doc['student']['full_name'] ?? 'Unknown', 30) }}
-                                                @if (isset($doc['expiry_date']))
-                                                    · Expires {{ \Carbon\Carbon::parse($doc['expiry_date'])->format('d M') }}
-                                                @endif
-                                            </div>
+                            <div class="flex-grow-1 ps-3">
+                                <div class="stat-inline-row flex-wrap">
+                                    <div class="stat-inline-item">
+                                        <span class="stat-inline-dot" style="background:#16a34a;"></span>
+                                        <div>
+                                            <div class="stat-inline-value">{{ $absentToday['present'] }}</div>
+                                            <div class="stat-inline-label">Present</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-inline-item">
+                                        <span class="stat-inline-dot" style="background:#dc2626;"></span>
+                                        <div>
+                                            <div class="stat-inline-value">{{ $absentToday['absent'] }}</div>
+                                            <div class="stat-inline-label">Absent</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if ($feeStats)
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex align-items-center">
+                        <h3 class="card-title mb-0"><i class="ti ti-wallet text-primary me-2"></i>Fee Collection</h3>
+                        @can('fees.view')
+                            <a href="{{ route('reports.fees.index') }}" class="btn btn-sm btn-outline-primary ms-auto">
+                                <i class="ti ti-chart-bar me-1"></i>Overview
+                            </a>
+                        @endcan
+                    </div>
+                    <div class="card-body py-3">
+                        @php
+                            $feeTotal = ($feeStats['total_collected'] ?? 0) + ($feeStats['pending_fees'] ?? 0);
+                            $feeCollectedPct = $feeTotal > 0 ? round(($feeStats['total_collected'] / $feeTotal) * 100) : 0;
+                        @endphp
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="position-relative" style="width:80px;height:80px;">
+                                <canvas id="feeDonut" width="80" height="80"></canvas>
+                                <div class="donut-center">
+                                    <div class="donut-value" style="font-size:1.2rem;">{{ $feeCollectedPct }}%</div>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-secondary">Collected</span>
+                                    <span class="small fw-semibold">{{ number_format($feeStats['total_collected'] ?? 0, 0) }}</span>
+                                </div>
+                                <div class="mini-progress-bar mb-2">
+                                    <div class="mp-fill" style="width:{{ $feeCollectedPct }}%;background:#16a34a;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-secondary">Pending</span>
+                                    <span class="small fw-semibold">{{ number_format($feeStats['pending_fees'] ?? 0, 0) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="small text-secondary text-center mt-2">
+                            <i class="ti ti-calendar me-1"></i>{{ number_format($feeStats['monthly_collection'] ?? 0, 0) }} collected this month
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if ($upcomingEvents)
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex align-items-center">
+                        <h3 class="card-title mb-0"><i class="ti ti-calendar-event text-primary me-2"></i>Upcoming Events</h3>
+                        @can('academic_calendar.view')
+                            <a href="{{ route('admin.calendar.index') }}" class="btn btn-sm btn-outline-primary ms-auto">
+                                <i class="ti ti-arrow-right me-1"></i>View All
+                            </a>
+                        @endcan
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="compact-widget px-3 py-2">
+                            @forelse ($upcomingEvents as $event)
+                                <div class="compact-widget-item">
+                                    <span class="badge {{ $event->event_type_badge }}" style="width:10px;height:10px;padding:0;border-radius:50%;flex-shrink:0;"></span>
+                                    <div class="cw-info">
+                                        <div class="cw-name">{{ $event->title }}</div>
+                                        <div class="cw-meta">
+                                            {{ $event->start_date->format('d M') }}
+                                            @if ($event->end_date && $event->end_date->format('Y-m-d') !== $event->start_date->format('Y-m-d'))
+                                                - {{ $event->end_date->format('d M') }}
+                                            @endif
+                                            @if ($event->location)
+                                                &middot; {{ $event->location }}
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
                             @empty
-                                <div class="list-group-item px-3 py-4 text-center text-secondary">
-                                    <i class="ti ti-inbox d-block fs-3 mb-2 opacity-25"></i>
-                                    No documents uploaded yet.
+                                <div class="text-center text-secondary py-4">
+                                    <i class="ti ti-calendar-off d-block fs-3 mb-1 opacity-25"></i>
+                                    <small>No upcoming events.</small>
                                 </div>
                             @endforelse
                         </div>
                     </div>
                 </div>
-            @endif
-        </div>
+            </div>
+        @endif
+
+        @if ($documentStats && !$upcomingEvents)
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex align-items-center">
+                        <h3 class="card-title mb-0"><i class="ti ti-file text-primary me-2"></i>Documents</h3>
+                        @can('student_documents.view')
+                            <a href="{{ route('admin.documents.index') }}" class="btn btn-sm btn-outline-primary ms-auto">
+                                <i class="ti ti-arrow-right me-1"></i>View All
+                            </a>
+                        @endcan
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="compact-widget px-3 py-2">
+                            @forelse ($documentStats['recent'] as $doc)
+                                <div class="compact-widget-item">
+                                    <i class="ti ti-file text-secondary fs-5"></i>
+                                    <div class="cw-info">
+                                        <div class="cw-name">{{ \Illuminate\Support\Str::limit($doc['student']['full_name'] ?? 'Unknown', 25) }}</div>
+                                        <div class="cw-meta">{{ $doc['title'] ?? 'Untitled' }}</div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center text-secondary py-4">
+                                    <i class="ti ti-inbox d-block fs-3 mb-1 opacity-25"></i>
+                                    <small>No documents uploaded yet.</small>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 @endsection
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const canvas = document.getElementById('activityChart');
-            if (!canvas) return;
-            new Chart(canvas, {
-                type: 'line',
-                data: {
-                    labels: ['Users', 'Students', 'Teachers', 'Active Teachers', 'Exams', 'Published Exams', 'Roles', 'Logins', 'Audit'],
-                    datasets: [{
-                        label: 'Current counts',
-                        data: @json(array_values($stats)),
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37,99,235,.1)',
-                        fill: true,
-                        tension: .35,
-                        pointRadius: 3,
-                        pointBackgroundColor: '#2563eb',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' } },
-                        x: { grid: { display: false } }
+        document.addEventListener('DOMContentLoaded', async () => {
+            const Chart = await window.lazyChart();
+            // Activity Overview Chart
+            const actCanvas = document.getElementById('activityChart');
+            if (actCanvas) {
+                new Chart(actCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Users', 'Students', 'Teachers', 'Active Teachers', 'Exams', 'Published', 'Logins Today'],
+                        datasets: [{
+                            label: 'Count',
+                            data: [
+                                {{ $stats['users'] ?? 0 }},
+                                {{ $stats['students'] ?? 0 }},
+                                {{ $stats['teachers'] ?? 0 }},
+                                {{ $stats['active_teachers'] ?? 0 }},
+                                {{ $stats['exams'] ?? 0 }},
+                                {{ $stats['published_exams'] ?? 0 }},
+                                {{ $stats['login_today'] ?? 0 }},
+                            ],
+                            backgroundColor: [
+                                'rgba(37,99,235,.7)', 'rgba(100,116,139,.7)', 'rgba(30,41,59,.7)',
+                                'rgba(22,163,74,.7)', 'rgba(14,165,233,.7)', 'rgba(16,185,129,.7)',
+                                'rgba(245,158,11,.7)'
+                            ],
+                            borderRadius: 4,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' } },
+                            x: { grid: { display: false } }
+                        }
                     }
-                }
-            });
+                });
+            }
+
+            // Attendance Donut
+            const attCanvas = document.getElementById('attendanceDonut');
+            if (attCanvas) {
+                new Chart(attCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Present', 'Absent'],
+                        datasets: [{
+                            data: [{{ $absentToday['present'] ?? 0 }}, {{ $absentToday['absent'] ?? 0 }}],
+                            backgroundColor: ['#16a34a', '#dc2626'],
+                            borderWidth: 0,
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        cutout: '75%',
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                    }
+                });
+            }
+
+            // Fee Donut
+            const feeCanvas = document.getElementById('feeDonut');
+            if (feeCanvas) {
+                @php
+                    $feeTotal2 = ($feeStats['total_collected'] ?? 0) + ($feeStats['pending_fees'] ?? 0);
+                    $feeCollected = $feeStats['total_collected'] ?? 0;
+                    $feePending = $feeStats['pending_fees'] ?? 0;
+                @endphp
+                new Chart(feeCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Collected', 'Pending'],
+                        datasets: [{
+                            data: [{{ $feeCollected }}, {{ $feePending }}],
+                            backgroundColor: ['#16a34a', '#f59e0b'],
+                            borderWidth: 0,
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        cutout: '75%',
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                    }
+                });
+            }
         });
     </script>
 @endpush

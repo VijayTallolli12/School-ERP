@@ -74,7 +74,7 @@
                             <div class="card bg-success text-white">
                                 <div class="card-body text-center">
                                     <h3 class="mb-0" id="statTotalSent">--</h3>
-                                    <small>Total Sent</small>
+                                    <small><i class="ti ti-check-circle me-1"></i>Total Sent</small>
                                 </div>
                             </div>
                         </div>
@@ -82,7 +82,7 @@
                             <div class="card bg-warning text-dark">
                                 <div class="card-body text-center">
                                     <h3 class="mb-0" id="statPending">--</h3>
-                                    <small>Pending (Draft)</small>
+                                    <small><i class="ti ti-clock me-1"></i>Pending (Draft)</small>
                                 </div>
                             </div>
                         </div>
@@ -90,7 +90,7 @@
                             <div class="card bg-danger text-white">
                                 <div class="card-body text-center">
                                     <h3 class="mb-0" id="statFailed">--</h3>
-                                    <small>Failed</small>
+                                    <small><i class="ti ti-alert-triangle me-1"></i>Failed</small>
                                 </div>
                             </div>
                         </div>
@@ -98,7 +98,7 @@
                             <div class="card bg-info text-white">
                                 <div class="card-body text-center">
                                     <h3 class="mb-0" id="statUnread">--</h3>
-                                    <small>Unread</small>
+                                    <small><i class="ti ti-mail me-1"></i>Unread</small>
                                 </div>
                             </div>
                         </div>
@@ -175,7 +175,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
                     <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save</button>
                 </div>
             </form>
@@ -185,9 +185,8 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => { (async () => { const DataTable = await window.lazyDT();
             const notificationModal = new bootstrap.Modal('#notificationModal');
-
             const table = $('#notificationsTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -252,7 +251,8 @@
             });
 
             // Send
-            $('#notificationsTable').on('click', '.send-notification', function () {
+            $('#notificationsTable').on('click', '.send-notification', async function () {
+                const Swal = await window.lazySwal();
                 Swal.fire({
                     title: 'Send notification?',
                     text: 'This will deliver the notification to all target recipients.',

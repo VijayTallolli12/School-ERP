@@ -135,6 +135,7 @@ class FeeDefaulterReportRepository
                 'class_section' => $classLabel,
                 'parent_name' => $parentName,
                 'parent_mobile' => $parentMobile,
+                'parent_id' => $primaryGuardian?->id ?? null,
                 'fee_structure' => $feeStructureName,
                 'total_fee' => round($totalFee, 2),
                 'amount_paid' => round($totalPaid, 2),

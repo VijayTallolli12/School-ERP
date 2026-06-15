@@ -11,7 +11,7 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Student Timetable</h5>
+            <h5 class="mb-0"><i class="ti ti-calendar text-primary me-2"></i>Student Timetable</h5>
         </div>
         <div class="card-body">
             @foreach($students as $student)

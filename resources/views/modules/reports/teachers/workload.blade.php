@@ -123,7 +123,7 @@
     <div class="row g-3 mb-4">
         <div class="col-xl-7">
             <div class="card h-100">
-                <div class="card-header"><h5 class="card-title mb-0">Workload Distribution</h5></div>
+                <div class="card-header"><h5 class="card-title mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>Workload Distribution</h5></div>
                 <div class="card-body chart-container">
                     <canvas id="workloadChart"></canvas>
                     <div id="noWorkloadChart" class="text-center text-muted py-5 d-none"><i class="ti ti-cloud-off fs-32 d-block mb-2"></i> No data</div>
@@ -132,7 +132,7 @@
         </div>
         <div class="col-xl-5">
             <div class="card h-100">
-                <div class="card-header"><h5 class="card-title mb-0">Subject Allocation</h5></div>
+                <div class="card-header"><h5 class="card-title mb-0"><i class="ti ti-book text-primary me-2"></i>Subject Allocation</h5></div>
                 <div class="card-body chart-container d-flex align-items-center justify-content-center">
                     <canvas id="subjectChart"></canvas>
                     <div id="noSubjectChart" class="text-center text-muted d-none"><i class="ti ti-cloud-off fs-32 d-block mb-2"></i> No data</div>
@@ -143,7 +143,7 @@
 
     {{-- DataTable --}}
     <div class="card">
-        <div class="card-header"><h5 class="card-title mb-0">Teacher Workload Breakdown</h5></div>
+        <div class="card-header"><h5 class="card-title mb-0"><i class="ti ti-table text-primary me-2"></i>Teacher Workload Breakdown</h5></div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover" id="workloadTable">
@@ -167,7 +167,9 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
+        const Chart = await window.lazyChart();
+        const DataTable = await window.lazyDT();
         var summary = @json($summary ?? []);
         var chartData = @json($chartData ?? []);
 

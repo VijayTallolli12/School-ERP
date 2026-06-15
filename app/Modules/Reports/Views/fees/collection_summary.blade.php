@@ -10,22 +10,22 @@
 
     <div class="row mb-3">
         <div class="col-md-12">
-            <form id="filterForm" class="form-inline">
-                <div class="form-group mr-2 mb-2">
-                    <label for="academic_year_id" class="mr-2">Academic Year:</label>
-                    <select name="academic_year_id" id="academic_year_id" class="form-control">
+            <form id="filterForm" class="row g-3 align-items-end">
+                <div class="me-2 mb-2">
+                    <label for="academic_year_id" class="form-label me-2">Academic Year:</label>
+                    <select name="academic_year_id" id="academic_year_id" class="form-select">
                         <option value="">All</option>
                         @foreach($academicYears as $year)
                             <option value="{{ $year->id }}">{{ $year->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group mb-2">
-                    <button type="button" id="filterBtn" class="btn btn-primary mr-2">Filter</button>
-                    <button type="button" id="resetBtn" class="btn btn-secondary mr-2">Reset</button>
-                    <a id="exportExcel" href="{{ route('reports.fees.export.excel', ['type' => 'collection_summary']) }}" class="btn btn-success mr-2">Export Excel</a>
-                    <a id="exportPdf" href="{{ route('reports.fees.export.pdf', ['type' => 'collection_summary']) }}" class="btn btn-danger mr-2">Export PDF</a>
-                    <a id="exportPrint" href="{{ route('reports.fees.print', ['type' => 'collection_summary']) }}" class="btn btn-warning" target="_blank">Print</a>
+                <div class="mb-2">
+                    <button type="button" id="filterBtn" class="btn btn-primary me-2"><i class="ti ti-filter me-1"></i> Filter</button>
+                    <button type="button" id="resetBtn" class="btn btn-secondary me-2"><i class="ti ti-refresh me-1"></i> Reset</button>
+                    <a id="exportExcel" href="{{ route('reports.fees.export.excel', ['type' => 'collection_summary']) }}" class="btn btn-success me-2"><i class="ti ti-file-spreadsheet me-1"></i> Export Excel</a>
+                    <a id="exportPdf" href="{{ route('reports.fees.export.pdf', ['type' => 'collection_summary']) }}" class="btn btn-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
+                    <a id="exportPrint" href="{{ route('reports.fees.print', ['type' => 'collection_summary']) }}" class="btn btn-warning" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
                 </div>
             </form>
         </div>
@@ -55,7 +55,8 @@
 
 @push("scripts")
 <script type="text/javascript">
-    $(function () {
+    $(async function () {
+        const DataTable = await window.lazyDT();
         var table = $("#summaryTable").DataTable({
             processing: true,
             serverSide: true,

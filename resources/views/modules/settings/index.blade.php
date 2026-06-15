@@ -30,19 +30,19 @@
             <div class="card-header p-0 border-bottom-0">
                 <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="school-tab" data-bs-toggle="tab" data-bs-target="#school-pane" type="button" role="tab">School</button>
+                        <button class="nav-link active" id="school-tab" data-bs-toggle="tab" data-bs-target="#school-pane" type="button" role="tab"><i class="ti ti-school me-1"></i>School</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="academic-tab" data-bs-toggle="tab" data-bs-target="#academic-pane" type="button" role="tab">Academic</button>
+                        <button class="nav-link" id="academic-tab" data-bs-toggle="tab" data-bs-target="#academic-pane" type="button" role="tab"><i class="ti ti-book me-1"></i>Academic</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system-pane" type="button" role="tab">System</button>
+                        <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system-pane" type="button" role="tab"><i class="ti ti-settings me-1"></i>System</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-pane" type="button" role="tab">Email</button>
+                        <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-pane" type="button" role="tab"><i class="ti ti-mail me-1"></i>Email</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment-pane" type="button" role="tab">Payment</button>
+                        <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment-pane" type="button" role="tab"><i class="ti ti-credit-card me-1"></i>Payment</button>
                     </li>
                 </ul>
             </div>
@@ -53,7 +53,7 @@
                         <div class="row g-3">
                             <div class="col-lg-8">
                                 <div class="card mb-3">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0">School Details</h5></div>
+                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-school text-primary me-2"></i>School Details</h5></div>
                                     <div class="card-body">
                                         <div class="row g-3">
                                             <div class="col-md-6">
@@ -86,7 +86,7 @@
                             </div>
                             <div class="col-lg-4">
                                 <div class="card mb-3">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0">Brand Assets</h5></div>
+                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-palette text-primary me-2"></i>Brand Assets</h5></div>
                                     <div class="card-body">
                                         <div class="mb-3">
                                             <label class="form-label">Logo</label>
@@ -114,7 +114,7 @@
                         <div class="row g-3">
                             <div class="col-lg-6">
                                 <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0">Academic Settings</h5></div>
+                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-book text-primary me-2"></i>Academic Settings</h5></div>
                                     <div class="card-body">
                                         <div class="mb-3">
                                             <label class="form-label">Current Academic Year</label>
@@ -138,7 +138,7 @@
                             </div>
                             <div class="col-lg-6">
                                 <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0">Attendance Settings</h5></div>
+                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-user-check text-primary me-2"></i>Attendance Settings</h5></div>
                                     <div class="card-body">
                                         <div class="mb-3">
                                             <label class="form-label">Default Attendance Status</label>
@@ -164,7 +164,7 @@
 
                     <div class="tab-pane fade" id="system-pane" role="tabpanel" aria-labelledby="system-tab">
                         <div class="card">
-                            <div class="card-header"><h5 class="fw-semibold mb-0">System Settings</h5></div>
+                            <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-settings text-primary me-2"></i>System Settings</h5></div>
                             <div class="card-body">
                                 <div class="row g-3">
                                     <div class="col-md-4">
@@ -198,7 +198,7 @@
 
                     <div class="tab-pane fade" id="email-pane" role="tabpanel" aria-labelledby="email-tab">
                         <div class="card">
-                            <div class="card-header"><h5 class="fw-semibold mb-0">SMTP Settings</h5></div>
+                            <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-mail text-primary me-2"></i>SMTP Settings</h5></div>
                             <div class="card-body">
                                 <div class="row g-3">
                                     <div class="col-md-6">
@@ -235,7 +235,7 @@
                             <div class="col-lg-6">
                                 <div class="card">
                                     <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="fw-semibold mb-0">Razorpay</h5>
+                                        <h5 class="fw-semibold mb-0"><i class="ti ti-credit-card text-primary me-2"></i>Razorpay</h5>
                                         <div class="form-check form-switch mb-0">
                                             <input type="hidden" name="payment[razorpay][enabled]" value="0">
                                             <input class="form-check-input" type="checkbox" name="payment[razorpay][enabled]" value="1" id="razorpayEnabled" @checked((bool) old('payment.razorpay.enabled', data_get($paymentSettings, 'razorpay.enabled', false)))>
@@ -256,7 +256,7 @@
                             <div class="col-lg-6">
                                 <div class="card">
                                     <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="fw-semibold mb-0">Stripe</h5>
+                                        <h5 class="fw-semibold mb-0"><i class="ti ti-credit-card text-primary me-2"></i>Stripe</h5>
                                         <div class="form-check form-switch mb-0">
                                             <input type="hidden" name="payment[stripe][enabled]" value="0">
                                             <input class="form-check-input" type="checkbox" name="payment[stripe][enabled]" value="1" id="stripeEnabled" @checked((bool) old('payment.stripe.enabled', data_get($paymentSettings, 'stripe.enabled', false)))>
