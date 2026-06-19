@@ -67,8 +67,13 @@
         const DataTable = await window.lazyDT();
         var table = $("#overdueTable").DataTable({
             processing: true,
-            serverSide: false,
-            data: [],
+            serverSide: true,
+            ajax: {
+                url: "{{ route('reports.fees.overdue') }}",
+                data: function(d) {
+                    d.academic_year_id = $('#academic_year_id').val();
+                }
+            },
             columns: [
                 {data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false},
                 {data: "student", name: "student"},
@@ -87,14 +92,6 @@
             pageLength: 25,
         });
 
-        function loadData() {
-            var params = { academic_year_id: $('#academic_year_id').val() };
-            $.get("{{ route('reports.fees.overdue') }}", params, function(data) {
-                table.clear().rows.add(data).draw();
-                updateExportLinks();
-            });
-        }
-
         function updateExportLinks() {
             var qs = $.param({ academic_year_id: $('#academic_year_id').val() });
             var baseExcel = "{{ route('reports.fees.export.excel', ['type' => 'overdue']) }}";
@@ -105,13 +102,17 @@
             $('#exportPrint').off('click').on('click', function() { window.open(basePrint + (qs ? '?' + qs : ''), '_blank'); });
         }
 
-        $('#filterBtn').on('click', loadData);
+        $('#filterBtn').on('click', function() {
+            table.ajax.reload();
+            updateExportLinks();
+        });
         $('#resetBtn').on('click', function() {
             $('#filterForm')[0].reset();
-            loadData();
+            table.ajax.reload();
+            updateExportLinks();
         });
 
-        loadData();
+        updateExportLinks();
     });
 </script>
 @endpush

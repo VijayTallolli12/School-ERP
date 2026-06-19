@@ -23,6 +23,12 @@ use App\Modules\Academics\Policies\SectionPolicy;
 use App\Modules\Academics\Policies\SubjectPolicy;
 use App\Modules\Academics\Repositories\AcademicRepository;
 use App\Modules\Academics\Repositories\AcademicRepositoryInterface;
+use App\Modules\Library\Models\Book;
+use App\Modules\Library\Models\BookIssue;
+use App\Modules\Library\Policies\BookPolicy;
+use App\Modules\Library\Policies\BookIssuePolicy;
+use App\Modules\Library\Repositories\LibraryRepository;
+use App\Modules\Library\Repositories\LibraryRepositoryInterface;
 use App\Modules\Transport\Models\Driver;
 use App\Modules\Transport\Models\Route;
 use App\Modules\Transport\Models\RouteStop;
@@ -137,6 +143,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CalendarRepositoryInterface::class, CalendarRepository::class);
         $this->app->bind(DocumentRepositoryInterface::class, DocumentRepository::class);
         $this->app->bind(TransportRepositoryInterface::class, TransportRepository::class);
+        $this->app->bind(LibraryRepositoryInterface::class, LibraryRepository::class);
     }
 
     /**
@@ -181,5 +188,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Route::class, RoutePolicy::class);
         Gate::policy(RouteStop::class, RouteStopPolicy::class);
         Gate::policy(TransportAssignment::class, TransportAssignmentPolicy::class);
+        Gate::policy(Book::class, BookPolicy::class);
+        Gate::policy(BookIssue::class, BookIssuePolicy::class);
     }
 }

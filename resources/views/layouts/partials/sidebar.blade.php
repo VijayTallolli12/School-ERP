@@ -428,6 +428,15 @@
                     </li>
                 @endcan
 
+                @can('library.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.library.index') }}" class="nav-link @if(request()->routeIs('admin.library.*')) active @endif">
+                            <i class="nav-icon ti ti-book"></i>
+                            <p>Library</p>
+                        </a>
+                    </li>
+                @endcan
+
                 @can('academic_calendar.view')
                     <li class="nav-item">
                         <a href="{{ route('admin.calendar.index') }}" class="nav-link @if(request()->routeIs('admin.calendar.*')) active @endif">

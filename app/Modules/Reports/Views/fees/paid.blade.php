@@ -83,8 +83,16 @@
         const DataTable = await window.lazyDT();
         var table = $("#paidTable").DataTable({
             processing: true,
-            serverSide: false,
-            data: [],
+            serverSide: true,
+            ajax: {
+                url: "{{ route('reports.fees.paid') }}",
+                data: function(d) {
+                    d.from_date = $('#from_date').val();
+                    d.to_date = $('#to_date').val();
+                    d.class_section_id = $('#class_section_id').val();
+                    d.payment_mode = $('#payment_mode').val();
+                }
+            },
             columns: [
                 {data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false},
                 {data: "receipt_number", name: "receipt_number"},
@@ -98,19 +106,6 @@
             order: [[1, 'desc']],
             pageLength: 25,
         });
-
-        function loadData() {
-            var params = {
-                from_date: $('#from_date').val(),
-                to_date: $('#to_date').val(),
-                class_section_id: $('#class_section_id').val(),
-                payment_mode: $('#payment_mode').val(),
-            };
-            $.get("{{ route('reports.fees.paid') }}", params, function(data) {
-                table.clear().rows.add(data).draw();
-                updateExportLinks();
-            });
-        }
 
         function updateExportLinks() {
             var qs = $.param({
@@ -127,13 +122,17 @@
             $('#exportPrint').off('click').on('click', function() { window.open(basePrint + (qs ? '?' + qs : ''), '_blank'); });
         }
 
-        $('#filterBtn').on('click', loadData);
+        $('#filterBtn').on('click', function() {
+            table.ajax.reload();
+            updateExportLinks();
+        });
         $('#resetBtn').on('click', function() {
             $('#filterForm')[0].reset();
-            loadData();
+            table.ajax.reload();
+            updateExportLinks();
         });
 
-        loadData();
+        updateExportLinks();
     });
 </script>
 @endpush
