@@ -18,12 +18,16 @@
                     'assignments' => 'ti-clipboard-check',
                     'collections' => 'ti-cash',
                     'dues' => 'ti-alert-triangle',
-                    'reports' => 'ti-chart-bar',
                 ] as $id => $icon)
                     <li class="nav-item" role="presentation">
                         <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"><i class="ti {{ $icon }} me-1"></i>{{ ucfirst($id === 'dues' ? 'Due Tracking' : ($id === 'collections' ? 'Collections' : ucfirst($id))) }}</button>
                     </li>
                 @endforeach
+                @can('fees.reports')
+                    <li class="nav-item" role="presentation">
+                        <a href="{{ route('reports.fees.index') }}" class="nav-link" target="_blank"><i class="ti ti-external-link me-1"></i>View Fee Reports</a>
+                    </li>
+                @endcan
             </ul>
         </div>
         <div class="card-body">
@@ -143,98 +147,16 @@
                 </div>
 
                 <div class="tab-pane fade" id="reportsPane">
-                    @can('fees.reports')
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-cash text-primary me-1"></i>Collection report</h5></div>
-                                    <div class="card-body">
-                                        <form class="row g-2" method="get" action="{{ route('admin.fees.reports.collection') }}" target="_blank">
-                                            <div class="col-6"><input type="date" name="from_date" class="form-control form-control-sm" placeholder="From"></div>
-                                            <div class="col-6"><input type="date" name="to_date" class="form-control form-control-sm"></div>
-                                            <div class="col-12">
-                                                <select name="class_section_id" class="form-select form-select-sm">
-                                                    <option value="">All classes</option>
-                                                    @foreach ($classSections as $cs)
-                                                        <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="col-12">
-                                                <select name="payment_mode" class="form-select form-select-sm">
-                                                    <option value="">All modes</option>
-                                                    @foreach ($paymentModes as $k => $label)
-                                                        <option value="{{ $k }}">{{ $label }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="ti ti-printer me-1"></i>Print</button></div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="button" id="collectionPdfBtn"><i class="ti ti-file-type-pdf me-1"></i>PDF</button></div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-clock text-primary me-1"></i>Due report</h5></div>
-                                    <div class="card-body">
-                                        <form class="row g-2" method="get" action="{{ route('admin.fees.reports.due') }}" target="_blank" id="dueReportForm">
-                                            <div class="col-12">
-                                                <select name="academic_year_id" class="form-select form-select-sm">
-                                                    <option value="">All years</option>
-                                                    @foreach ($academicYears as $y)
-                                                        <option value="{{ $y->id }}">{{ $y->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" name="overdue_only" value="1" id="overdueOnly">
-                                                    <label class="form-check-label" for="overdueOnly">Overdue only</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="ti ti-printer me-1"></i>Print</button></div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="submit" formaction="{{ route('admin.fees.reports.due.pdf') }}"><i class="ti ti-file-type-pdf me-1"></i>PDF</button></div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-school text-primary me-1"></i>Class-wise summary</h5></div>
-                                    <div class="card-body">
-                                        <form class="row g-2" method="get" action="{{ route('admin.fees.reports.class-wise') }}" target="_blank">
-                                            <div class="col-12">
-                                                <select name="academic_year_id" class="form-select form-select-sm" required>
-                                                    @foreach ($academicYears as $y)
-                                                        <option value="{{ $y->id }}">{{ $y->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="ti ti-printer me-1"></i>Print</button></div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="submit" formaction="{{ route('admin.fees.reports.class-wise.pdf') }}"><i class="ti ti-file-type-pdf me-1"></i>PDF</button></div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-calendar text-primary me-1"></i>Daily collection</h5></div>
-                                    <div class="card-body">
-                                        <form class="row g-2" method="get" action="{{ route('admin.fees.reports.daily') }}" target="_blank">
-                                            <div class="col-12">
-                                                <input type="date" name="report_date" class="form-control form-control-sm" value="{{ now()->toDateString() }}">
-                                            </div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="ti ti-printer me-1"></i>Print</button></div>
-                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="submit" formaction="{{ route('admin.fees.reports.daily.pdf') }}"><i class="ti ti-file-type-pdf me-1"></i>PDF</button></div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="ti ti-external-link" style="font-size:3rem;opacity:0.3;"></i>
                         </div>
-                    @else
-                        <p class="text-secondary">You do not have permission to view fee reports.</p>
-                    @endcan
+                        <h5>Fee Reports Moved</h5>
+                        <p class="text-secondary mb-4">Fee reports are now available under the main Reports section.</p>
+                        <a href="{{ route('reports.fees.index') }}" class="btn btn-primary" target="_blank">
+                            <i class="ti ti-external-link me-1"></i>Open Fee Reports Dashboard
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -694,13 +616,6 @@
                     url: $(this).data('url'),
                     onSuccess: () => tables.collections?.ajax.reload(null, false)
                 });
-            });
-
-            $('#collectionPdfBtn').on('click', function (e) {
-                e.preventDefault();
-                const f = $(this).closest('form');
-                const q = f.serialize();
-                window.open(`{{ route('admin.fees.reports.collection.pdf') }}?${q}`, '_blank');
             });
 
             function createFeeTable(selector, opts) {

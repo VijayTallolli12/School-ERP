@@ -437,6 +437,15 @@
                     </li>
                 @endcan
 
+                @can('payroll.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.payroll.index') }}" class="nav-link @if(request()->routeIs('admin.payroll.*')) active @endif">
+                            <i class="nav-icon ti ti-cash"></i>
+                            <p>Payroll</p>
+                        </a>
+                    </li>
+                @endcan
+
                 @can('academic_calendar.view')
                     <li class="nav-item">
                         <a href="{{ route('admin.calendar.index') }}" class="nav-link @if(request()->routeIs('admin.calendar.*')) active @endif">

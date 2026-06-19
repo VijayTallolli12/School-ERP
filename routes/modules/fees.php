@@ -39,14 +39,13 @@ Route::prefix('fees')
         Route::get('collections/{fee_payment}/receipt', [FeesController::class, 'receiptPrint'])->name('collections.receipt.print');
         Route::get('collections/{fee_payment}/receipt/pdf', [FeesController::class, 'receiptPdf'])->name('collections.receipt.pdf');
 
-        Route::middleware('permission:fees.reports')->group(function (): void {
-            Route::get('reports/collection', [FeesController::class, 'reportCollection'])->name('reports.collection');
-            Route::get('reports/collection/pdf', [FeesController::class, 'reportCollectionPdf'])->name('reports.collection.pdf');
-            Route::get('reports/due', [FeesController::class, 'reportDue'])->name('reports.due');
-            Route::get('reports/due/pdf', [FeesController::class, 'reportDuePdf'])->name('reports.due.pdf');
-            Route::get('reports/class-wise', [FeesController::class, 'reportClassWise'])->name('reports.class-wise');
-            Route::get('reports/class-wise/pdf', [FeesController::class, 'reportClassWisePdf'])->name('reports.class-wise.pdf');
-            Route::get('reports/daily', [FeesController::class, 'reportDaily'])->name('reports.daily');
-            Route::get('reports/daily/pdf', [FeesController::class, 'reportDailyPdf'])->name('reports.daily.pdf');
-        });
+        // Legacy fee report routes — permanently redirect to Reports module
+        Route::permanentRedirect('reports/collection', '/reports/fees/paid')->name('reports.collection');
+        Route::permanentRedirect('reports/collection/pdf', '/reports/fees/paid')->name('reports.collection.pdf');
+        Route::permanentRedirect('reports/due', '/reports/fees/pending')->name('reports.due');
+        Route::permanentRedirect('reports/due/pdf', '/reports/fees/pending')->name('reports.due.pdf');
+        Route::permanentRedirect('reports/class-wise', '/reports/fees/collection-summary')->name('reports.class-wise');
+        Route::permanentRedirect('reports/class-wise/pdf', '/reports/fees/collection-summary')->name('reports.class-wise.pdf');
+        Route::permanentRedirect('reports/daily', '/reports/fees/paid')->name('reports.daily');
+        Route::permanentRedirect('reports/daily/pdf', '/reports/fees/paid')->name('reports.daily.pdf');
     });

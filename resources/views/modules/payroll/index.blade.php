@@ -1,0 +1,270 @@
+@extends('layouts.admin')
+
+@section('title', 'Payroll Management')
+@section('page-title', 'Payroll Management')
+
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Payroll</li>
+@endsection
+
+@section('content')
+    <div class="card">
+        <div class="card-header p-0 border-bottom-0">
+            <ul class="nav nav-tabs" id="payrollTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#departmentsPane" type="button"><i class="ti ti-building me-1"></i>Departments</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#designationsPane" type="button"><i class="ti ti-badge me-1"></i>Designations</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#salaryComponentsPane" type="button"><i class="ti ti-calculator me-1"></i>Salary Components</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payGradesPane" type="button"><i class="ti ti-stairs me-1"></i>Pay Grades</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#salaryStructuresPane" type="button"><i class="ti ti-report-money me-1"></i>Salary Structures</button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="departmentsPane">
+                    <div class="d-flex mb-3">
+                        @can('payroll.create')
+                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#departmentModal">
+                                <i class="ti ti-plus me-1"></i> Add Department
+                            </button>
+                        @endcan
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="departmentsTable">
+                        <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Sort Order</th><th>Designations</th><th>Status</th><th width="120">Actions</th></tr></thead>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="designationsPane">
+                    <div class="d-flex mb-3">
+                        @can('payroll.create')
+                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#designationModal">
+                                <i class="ti ti-plus me-1"></i> Add Designation
+                            </button>
+                        @endcan
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="designationsTable">
+                        <thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Description</th><th>Status</th><th width="120">Actions</th></tr></thead>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="salaryComponentsPane">
+                    <div class="d-flex mb-3">
+                        @can('payroll.create')
+                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#salaryComponentModal">
+                                <i class="ti ti-plus me-1"></i> Add Salary Component
+                            </button>
+                        @endcan
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="salaryComponentsTable">
+                        <thead><tr><th>ID</th><th>Name</th><th>Display Name</th><th>Type</th><th>Calculation</th><th>Value</th><th>Sort Order</th><th>Status</th><th width="120">Actions</th></tr></thead>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="payGradesPane">
+                    <div class="d-flex mb-3">
+                        @can('payroll.create')
+                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#payGradeModal">
+                                <i class="ti ti-plus me-1"></i> Add Pay Grade
+                            </button>
+                        @endcan
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="payGradesTable">
+                        <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Min Salary</th><th>Max Salary</th><th>Status</th><th width="120">Actions</th></tr></thead>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="salaryStructuresPane">
+                    <div class="d-flex mb-3">
+                        @can('payroll.create')
+                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#salaryStructureModal">
+                                <i class="ti ti-plus me-1"></i> Add Salary Structure
+                            </button>
+                        @endcan
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="salaryStructuresTable">
+                        <thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Pay Grade</th><th>Effective From</th><th>Effective To</th><th>Total CTC</th><th>Status</th><th width="120">Actions</th></tr></thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('modals')
+    <div class="modal fade" id="departmentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content ajax-form payroll-form" method="POST" action="{{ route('admin.payroll.departments.store') }}">
+                @csrf <input type="hidden" name="_method" value="POST">
+                <div class="modal-header"><h5 class="modal-title">Department</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-12"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
+                    <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
+                    <div class="col-md-6"><label class="form-label">Sort Order</label><input class="form-control" type="number" name="sort_order" min="0" value="0"></div>
+                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="designationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content ajax-form payroll-form" method="POST" action="{{ route('admin.payroll.designations.store') }}">
+                @csrf <input type="hidden" name="_method" value="POST">
+                <div class="modal-header"><h5 class="modal-title">Designation</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-12"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
+                    <div class="col-12"><label class="form-label">Department</label><select class="form-select" name="department_id"><option value="">Select</option>@foreach($departments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach</select></div>
+                    <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
+                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="salaryComponentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <form class="modal-content ajax-form payroll-form" method="POST" action="{{ route('admin.payroll.salary-components.store') }}">
+                @csrf <input type="hidden" name="_method" value="POST">
+                <div class="modal-header"><h5 class="modal-title">Salary Component</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-6"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
+                    <div class="col-md-6"><label class="form-label required">Display Name</label><input class="form-control" name="name_display" required></div>
+                    <div class="col-md-4"><label class="form-label required">Component Type</label><select class="form-select" name="component_type"><option value="earning">Earning</option><option value="deduction">Deduction</option></select></div>
+                    <div class="col-md-4"><label class="form-label required">Calculation Type</label><select class="form-select" name="calculation_type"><option value="fixed">Fixed</option><option value="percentage">Percentage</option></select></div>
+                    <div class="col-md-4"><label class="form-label required">Value</label><input class="form-control" type="number" name="value" step="0.01" min="0" value="0" required></div>
+                    <div class="col-md-6"><label class="form-label">Sort Order</label><input class="form-control" type="number" name="sort_order" min="0" value="0"></div>
+                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                    <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="payGradeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content ajax-form payroll-form" method="POST" action="{{ route('admin.payroll.pay-grades.store') }}">
+                @csrf <input type="hidden" name="_method" value="POST">
+                <div class="modal-header"><h5 class="modal-title">Pay Grade</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-12"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
+                    <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
+                    <div class="col-md-6"><label class="form-label">Min Salary</label><input class="form-control" type="number" name="min_salary" step="0.01" min="0"></div>
+                    <div class="col-md-6"><label class="form-label">Max Salary</label><input class="form-control" type="number" name="max_salary" step="0.01" min="0"></div>
+                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="salaryStructureModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content ajax-form payroll-form" method="POST" action="{{ route('admin.payroll.salary-structures.store') }}">
+                @csrf <input type="hidden" name="_method" value="POST">
+                <div class="modal-header"><h5 class="modal-title">Employee Salary Structure</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-6"><label class="form-label required">Employee ID</label><input class="form-control" name="employee_id" required></div>
+                    <div class="col-md-6"><label class="form-label required">Employee Type</label><select class="form-select" name="employee_type"><option value="">Select</option><option value="teacher">Teacher</option><option value="staff">Staff</option></select></div>
+                    <div class="col-12"><label class="form-label">Pay Grade</label><select class="form-select" name="pay_grade_id"><option value="">Select</option>@foreach($payGrades as $g)<option value="{{ $g->id }}">{{ $g->name }}</option>@endforeach</select></div>
+                    <div class="col-md-6"><label class="form-label required">Effective From</label><input class="form-control" type="date" name="effective_from" required></div>
+                    <div class="col-md-6"><label class="form-label">Effective To</label><input class="form-control" type="date" name="effective_to"></div>
+                    <div class="col-md-6"><label class="form-label required">Total CTC</label><input class="form-control" type="number" name="total_ctc" step="0.01" min="0" value="0" required></div>
+                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
+            </form>
+        </div>
+    </div>
+@endpush
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
+            const tables = {
+                departments: $('#departmentsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.payroll.departments.data') }}', columns: [
+                    {data:'id'}, {data:'name'}, {data:'description'}, {data:'sort_order'}, {data:'designations_count', searchable:false}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
+                ]}),
+                designations: $('#designationsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.payroll.designations.data') }}', columns: [
+                    {data:'id'}, {data:'name'}, {data:'department_name', orderable:false, searchable:false}, {data:'description'}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
+                ]}),
+                salaryComponents: $('#salaryComponentsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.payroll.salary-components.data') }}', columns: [
+                    {data:'id'}, {data:'name'}, {data:'name_display'}, {data:'component_type'}, {data:'calculation_type'}, {data:'value'}, {data:'sort_order'}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
+                ]}),
+                payGrades: $('#payGradesTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.payroll.pay-grades.data') }}', columns: [
+                    {data:'id'}, {data:'name'}, {data:'description'}, {data:'min_salary'}, {data:'max_salary'}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
+                ]}),
+                salaryStructures: $('#salaryStructuresTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.payroll.salary-structures.data') }}', columns: [
+                    {data:'id'}, {data:'employee_name', orderable:false, searchable:false}, {data:'employee_type', orderable:false, searchable:false}, {data:'pay_grade_name', orderable:false, searchable:false}, {data:'effective_from'}, {data:'effective_to'}, {data:'total_ctc'}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
+                ]})
+            };
+            initTabPersistence('#payrollTabs');
+
+            const config = {
+                department: {modal: '#departmentModal', store: '{{ route('admin.payroll.departments.store') }}', table: tables.departments},
+                designation: {modal: '#designationModal', store: '{{ route('admin.payroll.designations.store') }}', table: tables.designations},
+                'salary-component': {modal: '#salaryComponentModal', store: '{{ route('admin.payroll.salary-components.store') }}', table: tables.salaryComponents},
+                'pay-grade': {modal: '#payGradeModal', store: '{{ route('admin.payroll.pay-grades.store') }}', table: tables.payGrades},
+                'salary-structure': {modal: '#salaryStructureModal', store: '{{ route('admin.payroll.salary-structures.store') }}', table: tables.salaryStructures}
+            };
+
+            $('.open-modal').on('click', function () {
+                const modalId = $(this).data('modal');
+                const form = $(`${modalId} form`);
+                const setup = Object.values(config).find(item => item.modal === modalId);
+                form[0].reset();
+                form.attr('action', setup.store);
+                form.find('[name="_method"]').val('POST');
+                form.find('.is-invalid').removeClass('is-invalid');
+                form.find('.invalid-feedback.dynamic').remove();
+                bootstrap.Modal.getOrCreateInstance(document.querySelector(modalId)).show();
+            });
+
+            $('.payroll-form').on('erp:success', function () {
+                bootstrap.Modal.getInstance($(this).closest('.modal')[0]).hide();
+                Object.values(tables).forEach(table => table.ajax.reload(null, false));
+            });
+
+            $(document).on('click', '.edit-payroll', function () {
+                const type = $(this).data('type');
+                const setup = config[type];
+                const form = $(`${setup.modal} form`);
+                $.get($(this).data('url'), (response) => {
+                    form[0].reset();
+                    form.attr('action', $(this).data('update-url'));
+                    form.find('[name="_method"]').val('PUT');
+                    form.find('.is-invalid').removeClass('is-invalid');
+                    form.find('.invalid-feedback.dynamic').remove();
+                    Object.entries(response.data).forEach(([key, value]) => {
+                        const field = form.find(`[name="${key}"]`);
+                        if (field.attr('type') === 'checkbox') {
+                            field.prop('checked', Boolean(value));
+                        } else {
+                            field.val(value);
+                        }
+                    });
+                    bootstrap.Modal.getOrCreateInstance(document.querySelector(setup.modal)).show();
+                });
+            });
+
+            $(document).on('click', '.delete-payroll', function () {
+                App.confirmDelete({
+                    url: $(this).data('url'),
+                    onSuccess: () => Object.values(tables).forEach(table => table.ajax.reload(null, false))
+                });
+            });
+        })(); });
+    </script>
+@endpush

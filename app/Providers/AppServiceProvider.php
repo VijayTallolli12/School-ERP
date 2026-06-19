@@ -29,6 +29,15 @@ use App\Modules\Library\Policies\BookPolicy;
 use App\Modules\Library\Policies\BookIssuePolicy;
 use App\Modules\Library\Repositories\LibraryRepository;
 use App\Modules\Library\Repositories\LibraryRepositoryInterface;
+use App\Modules\Payroll\Models\PayrollDepartment;
+use App\Modules\Payroll\Models\PayrollDesignation;
+use App\Modules\Payroll\Models\SalaryComponent;
+use App\Modules\Payroll\Models\PayGrade;
+use App\Modules\Payroll\Models\EmployeeSalaryStructure;
+use App\Modules\Payroll\Policies\PayrollDepartmentPolicy;
+use App\Modules\Payroll\Policies\PayrollPolicy;
+use App\Modules\Payroll\Repositories\PayrollRepository;
+use App\Modules\Payroll\Repositories\PayrollRepositoryInterface;
 use App\Modules\Transport\Models\Driver;
 use App\Modules\Transport\Models\Route;
 use App\Modules\Transport\Models\RouteStop;
@@ -105,6 +114,7 @@ use App\Modules\Timetable\Models\TimetableSlot;
 use App\Modules\Timetable\Policies\TimetableSlotPolicy;
 use App\Modules\Timetable\Repositories\TimetableRepository;
 use App\Modules\Timetable\Repositories\TimetableRepositoryInterface;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
@@ -144,6 +154,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DocumentRepositoryInterface::class, DocumentRepository::class);
         $this->app->bind(TransportRepositoryInterface::class, TransportRepository::class);
         $this->app->bind(LibraryRepositoryInterface::class, LibraryRepository::class);
+        $this->app->bind(PayrollRepositoryInterface::class, PayrollRepository::class);
     }
 
     /**
@@ -155,6 +166,11 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
         view()->addNamespace('Reports', app_path('Modules/Reports/Views'));
+
+        Relation::morphMap([
+            'teacher' => \App\Modules\Teachers\Models\Teacher::class,
+            'staff' => \App\Modules\Teachers\Models\Teacher::class,
+        ]);
 
         Gate::before(function ($user, string $ability) {
             return $user->isSuperAdmin() ? true : null;
@@ -190,5 +206,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(TransportAssignment::class, TransportAssignmentPolicy::class);
         Gate::policy(Book::class, BookPolicy::class);
         Gate::policy(BookIssue::class, BookIssuePolicy::class);
+        Gate::policy(PayrollDepartment::class, PayrollDepartmentPolicy::class);
+        Gate::policy(PayrollDesignation::class, PayrollPolicy::class);
+        Gate::policy(SalaryComponent::class, PayrollPolicy::class);
+        Gate::policy(PayGrade::class, PayrollPolicy::class);
+        Gate::policy(EmployeeSalaryStructure::class, PayrollPolicy::class);
     }
 }
