@@ -10,4 +10,7 @@ class PayrollPolicy
     public function create(User $user): bool { return $user->can('payroll.create'); }
     public function update(User $user, $model): bool { return $user->can('payroll.update'); }
     public function delete(User $user, $model): bool { return $user->can('payroll.delete'); }
+    public function process(User $user): bool { return $user->can('payroll.process'); }
+    public function lock(User $user): bool { return $user->can('payroll.lock'); }
+    public function export(User $user): bool { return $user->can('payroll.export'); }
 }

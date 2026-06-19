@@ -44,6 +44,14 @@ Route::prefix('payroll')
         Route::put('salary-structures/{salaryStructure}', [PayrollController::class, 'updateSalaryStructure'])->middleware('permission:payroll.update')->name('salary-structures.update');
         Route::delete('salary-structures/{salaryStructure}', [PayrollController::class, 'destroySalaryStructure'])->middleware('permission:payroll.delete')->name('salary-structures.destroy');
 
+        // Payroll Runs (Processing)
+        Route::get('runs/data', [PayrollController::class, 'payrollRunsData'])->name('runs.data');
+        Route::post('runs/generate', [PayrollController::class, 'generatePayroll'])->middleware('permission:payroll.process')->name('runs.generate');
+        Route::get('runs/{payrollRun}', [PayrollController::class, 'showPayrollRun'])->name('runs.show');
+        Route::post('runs/{payrollRun}/lock', [PayrollController::class, 'lockPayrollRun'])->middleware('permission:payroll.lock')->name('runs.lock');
+        Route::delete('runs/{payrollRun}', [PayrollController::class, 'destroyPayrollRun'])->middleware('permission:payroll.delete')->name('runs.destroy');
+        Route::get('runs/{runId}/items/data', [PayrollController::class, 'payRunItemsData'])->name('runs.items.data');
+
         // Reports
         Route::get('reports', [PayrollController::class, 'reports'])->name('reports.index');
         Route::get('reports/departments/data', [PayrollController::class, 'departmentsReportData'])->name('reports.departments.data');
@@ -52,8 +60,11 @@ Route::prefix('payroll')
         Route::get('reports/pay-grades/data', [PayrollController::class, 'payGradesReportData'])->name('reports.pay-grades.data');
         Route::get('reports/salary-structures/data', [PayrollController::class, 'salaryStructuresReportData'])->name('reports.salary-structures.data');
         Route::get('reports/employee-list/data', [PayrollController::class, 'employeeListReportData'])->name('reports.employee-list.data');
+        Route::get('reports/run-summary/data', [PayrollController::class, 'runSummaryReportData'])->name('reports.run-summary.data');
+        Route::get('reports/employee-payroll/data', [PayrollController::class, 'employeePayrollReportData'])->name('reports.employee-payroll.data');
+        Route::get('reports/gross-vs-net/data', [PayrollController::class, 'grossVsNetReportData'])->name('reports.gross-vs-net.data');
 
-        Route::get('reports/{report}/export/excel', [PayrollController::class, 'exportExcel'])->middleware('permission:payroll.view')->name('reports.export.excel');
-        Route::get('reports/{report}/export/pdf', [PayrollController::class, 'exportPdf'])->middleware('permission:payroll.view')->name('reports.export.pdf');
-        Route::get('reports/{report}/print', [PayrollController::class, 'printReport'])->middleware('permission:payroll.view')->name('reports.print');
+        Route::get('reports/{report}/export/excel', [PayrollController::class, 'exportExcel'])->middleware('permission:payroll.export')->name('reports.export.excel');
+        Route::get('reports/{report}/export/pdf', [PayrollController::class, 'exportPdf'])->middleware('permission:payroll.export')->name('reports.export.pdf');
+        Route::get('reports/{report}/print', [PayrollController::class, 'printReport'])->middleware('permission:payroll.export')->name('reports.print');
     });

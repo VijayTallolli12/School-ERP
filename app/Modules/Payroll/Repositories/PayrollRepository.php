@@ -7,6 +7,8 @@ use App\Modules\Payroll\Models\PayrollDesignation;
 use App\Modules\Payroll\Models\SalaryComponent;
 use App\Modules\Payroll\Models\PayGrade;
 use App\Modules\Payroll\Models\EmployeeSalaryStructure;
+use App\Modules\Payroll\Models\PayrollRun;
+use App\Modules\Payroll\Models\PayrollItem;
 use Illuminate\Database\Eloquent\Builder;
 
 class PayrollRepository implements PayrollRepositoryInterface
@@ -34,6 +36,16 @@ class PayrollRepository implements PayrollRepositoryInterface
     public function salaryStructures(): Builder
     {
         return EmployeeSalaryStructure::query()->with(['payGrade', 'employee'])->latest();
+    }
+
+    public function payrollRuns(): Builder
+    {
+        return PayrollRun::query()->withCount('items')->latest();
+    }
+
+    public function payrollItems(int $runId): Builder
+    {
+        return PayrollItem::query()->where('payroll_run_id', $runId);
     }
 
     public function createDepartment(array $data): PayrollDepartment
@@ -89,5 +101,28 @@ class PayrollRepository implements PayrollRepositoryInterface
     {
         $salaryStructure->fill($data)->save();
         return $salaryStructure->refresh();
+    }
+
+    public function createPayrollRun(array $data): PayrollRun
+    {
+        return PayrollRun::query()->create($data);
+    }
+
+    public function updatePayrollRun(PayrollRun $run, array $data): PayrollRun
+    {
+        $run->fill($data)->save();
+        return $run->refresh();
+    }
+
+    public function createPayrollItems(iterable $items): void
+    {
+        foreach ($items as $item) {
+            PayrollItem::query()->create($item);
+        }
+    }
+
+    public function deletePayrollItems(int $runId): void
+    {
+        PayrollItem::query()->where('payroll_run_id', $runId)->delete();
     }
 }

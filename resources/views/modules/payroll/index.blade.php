@@ -27,6 +27,9 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#salaryStructuresPane" type="button"><i class="ti ti-report-money me-1"></i>Salary Structures</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payrollRunsPane" type="button"><i class="ti ti-settings-dollar me-1"></i>Payroll Runs</button>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -95,10 +98,58 @@
                         <thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Pay Grade</th><th>Effective From</th><th>Effective To</th><th>Total CTC</th><th>Status</th><th width="120">Actions</th></tr></thead>
                     </table>
                 </div>
+
+                <div class="tab-pane fade" id="payrollRunsPane">
+                    <div class="d-flex mb-3">
+                        @can('payroll.process')
+                            <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#generatePayrollModal">
+                                <i class="ti ti-calculator me-1"></i> Generate Payroll
+                            </button>
+                        @endcan
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="payrollRunsTable">
+                        <thead><tr><th>ID</th><th>Period</th><th>Status</th><th>Generated At</th><th>Employees</th><th width="120">Actions</th></tr></thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 @endsection
+
+<div class="modal fade" id="generatePayrollModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content ajax-form" method="POST" action="{{ route('admin.payroll.runs.generate') }}">
+            @csrf
+            <div class="modal-header"><h5 class="modal-title">Generate Payroll</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
+            <div class="modal-body row g-3">
+                <div class="col-md-6"><label class="form-label required">Month</label><select class="form-select" name="month" required>@foreach(range(1,12) as $m)<option value="{{ $m }}" {{ date('n') == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::createFromDate(null, $m, 1)->format('F') }}</option>@endforeach</select></div>
+                <div class="col-md-6"><label class="form-label required">Year</label><input class="form-control" type="number" name="year" min="2020" max="2099" value="{{ date('Y') }}" required></div>
+                <div class="col-12"><label class="form-label">Notes</label><textarea class="form-control" name="notes" rows="2" maxlength="500"></textarea></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-calculator me-1"></i> Generate</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="runDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Payroll Run Details</h5>
+                <button class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 mb-3" id="runSummary"></div>
+                <table class="table table-striped table-bordered w-100" id="runItemsTable">
+                    <thead><tr><th>Employee</th><th>Type</th><th>Gross</th><th>Deductions</th><th>Net</th><th>Status</th></tr></thead>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @push('modals')
     <div class="modal fade" id="departmentModal" tabindex="-1" aria-hidden="true">
@@ -193,6 +244,8 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
+            let runItemsTable = null;
+
             const tables = {
                 departments: $('#departmentsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.payroll.departments.data') }}', columns: [
                     {data:'id'}, {data:'name'}, {data:'description'}, {data:'sort_order'}, {data:'designations_count', searchable:false}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
@@ -208,6 +261,9 @@
                 ]}),
                 salaryStructures: $('#salaryStructuresTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.payroll.salary-structures.data') }}', columns: [
                     {data:'id'}, {data:'employee_name', orderable:false, searchable:false}, {data:'employee_type', orderable:false, searchable:false}, {data:'pay_grade_name', orderable:false, searchable:false}, {data:'effective_from'}, {data:'effective_to'}, {data:'total_ctc'}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
+                ]}),
+                payrollRuns: $('#payrollRunsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.payroll.runs.data') }}', columns: [
+                    {data:'id'}, {data:'period', orderable:false}, {data:'status'}, {data:'generated_at'}, {data:'items_count', searchable:false}, {data:'actions', orderable:false, searchable:false}
                 ]})
             };
             initTabPersistence('#payrollTabs');
@@ -263,6 +319,65 @@
                 App.confirmDelete({
                     url: $(this).data('url'),
                     onSuccess: () => Object.values(tables).forEach(table => table.ajax.reload(null, false))
+                });
+            });
+
+            // Payroll Runs: Generate success
+            $('#generatePayrollModal form').on('erp:success', function () {
+                bootstrap.Modal.getInstance(document.querySelector('#generatePayrollModal')).hide();
+                tables.payrollRuns.ajax.reload(null, false);
+            });
+
+            // Payroll Runs: View details
+            $(document).on('click', '.view-run', function () {
+                const btn = $(this);
+                const url = btn.data('url');
+                const itemsUrl = btn.data('items-url');
+
+                $.get(url, (response) => {
+                    const r = response.data;
+                    $('#runSummary').html(`
+                        <div class="col-md-3"><small class="text-muted">Period</small><div class="fw-bold">${r.month_name} ${r.year}</div></div>
+                        <div class="col-md-3"><small class="text-muted">Status</small><div><span class="badge bg-${r.status === 'draft' ? 'warning' : 'success'}">${r.status}</span></div></div>
+                        <div class="col-md-3"><small class="text-muted">Employees</small><div class="fw-bold">${r.items_count}</div></div>
+                        <div class="col-md-3"><small class="text-muted">Generated At</small><div>${r.generated_at ?? '-'}</div></div>
+                    `);
+
+                    if (runItemsTable) { runItemsTable.destroy(); }
+                    runItemsTable = $('#runItemsTable').DataTable({
+                        processing: true,
+                        serverSide: true,
+                        responsive: true,
+                        ajax: itemsUrl,
+                        columns: [
+                            {data:'employee_name', orderable:false},
+                            {data:'employee_type', orderable:false},
+                            {data:'gross_salary'},
+                            {data:'total_deductions'},
+                            {data:'net_salary'},
+                            {data:'status'}
+                        ]
+                    });
+
+                    bootstrap.Modal.getOrCreateInstance(document.querySelector('#runDetailModal')).show();
+                });
+            });
+
+            // Payroll Runs: Lock
+            $(document).on('click', '.lock-run', function () {
+                const btn = $(this);
+                if (!confirm(`Lock payroll run for ${btn.data('period')}? This action cannot be undone.`)) return;
+                $.ajax({
+                    url: btn.data('url'),
+                    method: 'POST',
+                    headers: {'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? ''},
+                    success: function () {
+                        tables.payrollRuns.ajax.reload(null, false);
+                    },
+                    error: function (xhr) {
+                        const msg = xhr.responseJSON?.message || 'Failed to lock payroll run.';
+                        alert(msg);
+                    }
                 });
             });
         })(); });

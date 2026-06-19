@@ -31,6 +31,15 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#employeeListPane" type="button"><i class="ti ti-users me-1"></i>Employee List</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#runSummaryPane" type="button"><i class="ti ti-summary me-1"></i>Run Summary</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#employeePayrollPane" type="button"><i class="ti ti-users me-1"></i>Employee Payroll</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#grossVsNetPane" type="button"><i class="ti ti-chart-bar me-1"></i>Gross vs Net</button>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -130,6 +139,53 @@
                         <thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Pay Grade</th><th>Effective From</th><th>Effective To</th><th>Total CTC</th><th>Status</th></tr></thead>
                     </table>
                 </div>
+
+                <div class="tab-pane fade" id="runSummaryPane">
+                    <div class="row g-2 mb-3">
+                        <div class="col-auto"><select class="form-select form-select-sm" id="rsFilterStatus"><option value="">All Status</option><option value="draft">Draft</option><option value="locked">Locked</option></select></div>
+                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="rsFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto ms-auto">
+                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'run_summary') }}" id="rsExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
+                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'run_summary') }}" id="rsPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'run_summary') }}" target="_blank" id="rsPrint"><i class="ti ti-printer me-1"></i>Print</a>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="runSummaryTable">
+                        <thead><tr><th>ID</th><th>Period</th><th>Status</th><th>Generated At</th><th>Employees</th></tr></thead>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="employeePayrollPane">
+                    <div class="row g-2 mb-3">
+                        <div class="col-auto"><select class="form-select form-select-sm" id="epFilterRun"><option value="">All Runs</option>@foreach($payrollRuns as $r)<option value="{{ $r->id }}">{{ $r->month_name }} {{ $r->year }} ({{ $r->status }})</option>@endforeach</select></div>
+                        <div class="col-auto"><select class="form-select form-select-sm" id="epFilterType"><option value="">All Types</option><option value="teacher">Teacher</option><option value="staff">Staff</option></select></div>
+                        <div class="col-auto"><select class="form-select form-select-sm" id="epFilterStatus"><option value="">All Status</option><option value="active">Active</option></select></div>
+                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="epFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto ms-auto">
+                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'employee_payroll') }}" id="epExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
+                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'employee_payroll') }}" id="epPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'employee_payroll') }}" target="_blank" id="epPrint"><i class="ti ti-printer me-1"></i>Print</a>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="employeePayrollTable">
+                        <thead><tr><th>ID</th><th>Period</th><th>Employee</th><th>Type</th><th>Gross</th><th>Deductions</th><th>Net</th><th>Status</th></tr></thead>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="grossVsNetPane">
+                    <div class="row g-2 mb-3">
+                        <div class="col-auto"><select class="form-select form-select-sm" id="gvFilterStatus"><option value="">All Status</option><option value="draft">Draft</option><option value="locked">Locked</option></select></div>
+                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="gvFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto ms-auto">
+                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'gross_vs_net') }}" id="gvExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
+                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'gross_vs_net') }}" id="gvPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'gross_vs_net') }}" target="_blank" id="gvPrint"><i class="ti ti-printer me-1"></i>Print</a>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="grossVsNetTable">
+                        <thead><tr><th>ID</th><th>Period</th><th>Total Gross</th><th>Total Deductions</th><th>Total Net</th><th>Employees</th><th>Status</th></tr></thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -179,6 +235,21 @@
                 {data:'id'}, {data:'employee_name', orderable:false}, {data:'employee_type', orderable:false}, {data:'pay_grade_name', orderable:false}, {data:'effective_from'}, {data:'effective_to'}, {data:'total_ctc'}, {data:'status'}
             ]});
             $('#elFilterBtn').on('click', () => { elTable.ajax.reload(); updateExportLinks('el', 'employee_list', {pay_grade_id: $('#elFilterPayGrade').val(), employee_type: $('#elFilterType').val(), status: $('#elFilterStatus').val()}); });
+
+            const rsTable = $('#runSummaryTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: {url: '{{ route('admin.payroll.reports.run-summary.data') }}', data: d => { d.status = $('#rsFilterStatus').val(); }}, columns: [
+                {data:'id'}, {data:'period', orderable:false}, {data:'status'}, {data:'generated_at'}, {data:'items_count', searchable:false}
+            ]});
+            $('#rsFilterBtn').on('click', () => { rsTable.ajax.reload(); updateExportLinks('rs', 'run_summary', {status: $('#rsFilterStatus').val()}); });
+
+            const epTable = $('#employeePayrollTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: {url: '{{ route('admin.payroll.reports.employee-payroll.data') }}', data: d => { d.payroll_run_id = $('#epFilterRun').val(); d.employee_type = $('#epFilterType').val(); d.status = $('#epFilterStatus').val(); }}, columns: [
+                {data:'id'}, {data:'period', orderable:false}, {data:'employee_name', orderable:false}, {data:'employee_type', orderable:false}, {data:'gross_salary'}, {data:'total_deductions'}, {data:'net_salary'}, {data:'status'}
+            ]});
+            $('#epFilterBtn').on('click', () => { epTable.ajax.reload(); updateExportLinks('ep', 'employee_payroll', {payroll_run_id: $('#epFilterRun').val(), employee_type: $('#epFilterType').val(), status: $('#epFilterStatus').val()}); });
+
+            const gvTable = $('#grossVsNetTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: {url: '{{ route('admin.payroll.reports.gross-vs-net.data') }}', data: d => { d.status = $('#gvFilterStatus').val(); }}, columns: [
+                {data:'id'}, {data:'period', orderable:false}, {data:'total_gross'}, {data:'total_deductions'}, {data:'total_net'}, {data:'items_count', searchable:false}, {data:'status'}
+            ]});
+            $('#gvFilterBtn').on('click', () => { gvTable.ajax.reload(); updateExportLinks('gv', 'gross_vs_net', {status: $('#gvFilterStatus').val()}); });
 
             initTabPersistence('#reportTabs');
         })(); });

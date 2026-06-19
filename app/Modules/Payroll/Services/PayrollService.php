@@ -8,6 +8,7 @@ use App\Modules\Payroll\Models\PayrollDesignation;
 use App\Modules\Payroll\Models\SalaryComponent;
 use App\Modules\Payroll\Models\PayGrade;
 use App\Modules\Payroll\Models\EmployeeSalaryStructure;
+use App\Modules\Payroll\Models\PayrollRun;
 use App\Modules\Payroll\Repositories\PayrollRepositoryInterface;
 
 class PayrollService
@@ -99,5 +100,98 @@ class PayrollService
         activity()->causedBy(auth()->user())->performedOn($salaryStructure)->event('updated')->log('Employee salary structure updated');
 
         return $salaryStructure;
+    }
+
+    // ─── Payroll Processing ───────────────────────────────────────────────
+
+    public function generatePayroll(int $month, int $year, ?string $notes = null): PayrollRun
+    {
+        $schoolId = app(SchoolContext::class)->id();
+
+        $structures = EmployeeSalaryStructure::query()
+            ->where('school_id', $schoolId)
+            ->where('status', 'active')
+            ->get();
+
+        $components = SalaryComponent::query()
+            ->where('school_id', $schoolId)
+            ->where('status', 'active')
+            ->orderBy('sort_order')
+            ->get();
+
+        $run = $this->payroll->createPayrollRun([
+            'school_id' => $schoolId,
+            'month' => $month,
+            'year' => $year,
+            'status' => 'draft',
+            'generated_by' => auth()->id(),
+            'generated_at' => now(),
+            'notes' => $notes,
+        ]);
+
+        $items = [];
+        foreach ($structures as $structure) {
+            $monthlyCtc = $structure->total_ctc / 12;
+
+            $gross = 0;
+            $deductions = 0;
+
+            foreach ($components as $component) {
+                $amount = match ($component->calculation_type) {
+                    'fixed' => (float) $component->value,
+                    'percentage' => ((float) $component->value / 100) * $monthlyCtc,
+                    default => 0,
+                };
+
+                if ($component->component_type === 'earning') {
+                    $gross += $amount;
+                } else {
+                    $deductions += $amount;
+                }
+            }
+
+            $net = $gross - $deductions;
+
+            $items[] = [
+                'school_id' => $schoolId,
+                'payroll_run_id' => $run->id,
+                'employee_type' => $structure->employee_type,
+                'employee_id' => $structure->employee_id,
+                'gross_salary' => round($gross, 2),
+                'total_deductions' => round($deductions, 2),
+                'net_salary' => round(max($net, 0), 2),
+                'status' => 'active',
+            ];
+        }
+
+        $this->payroll->createPayrollItems($items);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($run)
+            ->event('generated')
+            ->log("Payroll generated for {$month}/{$year}");
+
+        return $run->loadCount('items');
+    }
+
+    public function lockRun(PayrollRun $run, ?string $notes = null): PayrollRun
+    {
+        if ($run->isLocked()) {
+            throw new \RuntimeException('Payroll run is already locked.');
+        }
+
+        $run = $this->payroll->updatePayrollRun($run, [
+            'status' => 'locked',
+            'notes' => $notes ?? $run->notes,
+        ]);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($run)
+            ->event('locked')
+            ->log("Payroll run for {$run->month}/{$run->year} locked");
+
+        return $run;
     }
 }

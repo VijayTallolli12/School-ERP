@@ -9,6 +9,8 @@ use App\Modules\Payroll\Models\PayrollDesignation;
 use App\Modules\Payroll\Models\SalaryComponent;
 use App\Modules\Payroll\Models\PayGrade;
 use App\Modules\Payroll\Models\EmployeeSalaryStructure;
+use App\Modules\Payroll\Models\PayrollRun;
+use App\Modules\Payroll\Models\PayrollItem;
 use App\Modules\Payroll\Repositories\PayrollRepositoryInterface;
 use App\Modules\Payroll\Requests\StorePayrollDepartmentRequest;
 use App\Modules\Payroll\Requests\StorePayrollDesignationRequest;
@@ -20,6 +22,8 @@ use App\Modules\Payroll\Requests\UpdatePayrollDesignationRequest;
 use App\Modules\Payroll\Requests\UpdateSalaryComponentRequest;
 use App\Modules\Payroll\Requests\UpdatePayGradeRequest;
 use App\Modules\Payroll\Requests\UpdateEmployeeSalaryStructureRequest;
+use App\Modules\Payroll\Requests\GeneratePayrollRequest;
+use App\Modules\Payroll\Requests\LockPayrollRunRequest;
 use App\Modules\Payroll\Services\PayrollService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -227,6 +231,69 @@ class PayrollController extends Controller
         return $this->jsonMessage('Employee salary structure deleted successfully.');
     }
 
+    // ─── Payroll Runs ─────────────────────────────────────────────────────
+
+    public function payrollRunsData(): JsonResponse
+    {
+        return DataTables::of($this->payroll->payrollRuns())
+            ->addColumn('period', fn (PayrollRun $r) => $r->month_name.' '.$r->year)
+            ->editColumn('status', fn (PayrollRun $r) => '<span class="badge bg-'.($r->status === 'draft' ? 'warning' : 'success').'">'.$r->status.'</span>')
+            ->editColumn('generated_at', fn (PayrollRun $r) => $r->generated_at?->format('d M Y H:i') ?? '-')
+            ->addColumn('items_count', fn (PayrollRun $r) => $r->items_count)
+            ->addColumn('actions', fn (PayrollRun $r) => view('modules.payroll._run_actions', ['run' => $r])->render())
+            ->rawColumns(['status', 'actions'])
+            ->toJson();
+    }
+
+    public function generatePayroll(GeneratePayrollRequest $request): JsonResponse
+    {
+        $run = $this->service->generatePayroll($request->month, $request->year, $request->notes);
+
+        return $this->jsonCreated('Payroll generated successfully.', $run);
+    }
+
+    public function showPayrollRun(PayrollRun $payrollRun): JsonResponse
+    {
+        $payrollRun->loadCount('items');
+
+        return $this->jsonData($payrollRun);
+    }
+
+    public function lockPayrollRun(LockPayrollRunRequest $request, PayrollRun $payrollRun): JsonResponse
+    {
+        try {
+            $run = $this->service->lockRun($payrollRun, $request->notes);
+
+            return $this->jsonCreated('Payroll run locked successfully.', $run);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function destroyPayrollRun(PayrollRun $payrollRun): JsonResponse
+    {
+        $this->authorize('delete', $payrollRun);
+        $payrollRun->items()->delete();
+        $payrollRun->delete();
+
+        return $this->jsonMessage('Payroll run deleted successfully.');
+    }
+
+    public function payRunItemsData(int $runId): JsonResponse
+    {
+        $run = PayrollRun::query()->findOrFail($runId);
+        $query = PayrollItem::query()->where('payroll_run_id', $runId);
+
+        return DataTables::of($query)
+            ->addColumn('employee_name', fn (PayrollItem $i) => $i->employee?->full_name ?? $i->employee_id)
+            ->editColumn('gross_salary', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->gross_salary, 2).'</span>')
+            ->editColumn('total_deductions', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->total_deductions, 2).'</span>')
+            ->editColumn('net_salary', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->net_salary, 2).'</span>')
+            ->editColumn('status', fn (PayrollItem $i) => '<span class="badge bg-'.($i->status === 'active' ? 'success' : 'secondary').'">'.$i->status.'</span>')
+            ->rawColumns(['gross_salary', 'total_deductions', 'net_salary', 'status'])
+            ->toJson();
+    }
+
     // ─── Reports ─────────────────────────────────────────────────────────
 
     public function reports()
@@ -237,6 +304,7 @@ class PayrollController extends Controller
             'departments' => PayrollDepartment::query()->orderBy('name')->get(),
             'designations' => PayrollDesignation::query()->orderBy('name')->get(),
             'salaryStructures' => EmployeeSalaryStructure::query()->with(['payGrade', 'employee'])->latest()->get(),
+            'payrollRuns' => PayrollRun::query()->latest()->get(),
         ]);
     }
 
@@ -359,6 +427,69 @@ class PayrollController extends Controller
             ->toJson();
     }
 
+    // ─── Processing Reports ──────────────────────────────────────────────
+
+    public function runSummaryReportData(Request $request): JsonResponse
+    {
+        $query = PayrollRun::query()->withCount('items');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        return DataTables::of($query)
+            ->addColumn('period', fn (PayrollRun $r) => $r->month_name.' '.$r->year)
+            ->editColumn('status', fn (PayrollRun $r) => '<span class="badge bg-'.($r->status === 'draft' ? 'warning' : 'success').'">'.$r->status.'</span>')
+            ->editColumn('generated_at', fn (PayrollRun $r) => $r->generated_at?->format('d M Y H:i') ?? '-')
+            ->addColumn('items_count', fn (PayrollRun $r) => $r->items_count)
+            ->rawColumns(['status'])
+            ->toJson();
+    }
+
+    public function employeePayrollReportData(Request $request): JsonResponse
+    {
+        $query = PayrollItem::query()->with(['payrollRun']);
+
+        if ($request->filled('payroll_run_id')) {
+            $query->where('payroll_run_id', $request->payroll_run_id);
+        }
+        if ($request->filled('employee_type')) {
+            $query->where('employee_type', $request->employee_type);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        return DataTables::of($query)
+            ->addColumn('period', fn (PayrollItem $i) => $i->payrollRun?->month_name.' '.$i->payrollRun?->year)
+            ->addColumn('employee_name', fn (PayrollItem $i) => $i->employee?->full_name ?? $i->employee_id)
+            ->editColumn('gross_salary', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->gross_salary, 2).'</span>')
+            ->editColumn('total_deductions', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->total_deductions, 2).'</span>')
+            ->editColumn('net_salary', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->net_salary, 2).'</span>')
+            ->editColumn('status', fn (PayrollItem $i) => '<span class="badge bg-'.($i->status === 'active' ? 'success' : 'secondary').'">'.$i->status.'</span>')
+            ->rawColumns(['gross_salary', 'total_deductions', 'net_salary', 'status'])
+            ->toJson();
+    }
+
+    public function grossVsNetReportData(Request $request): JsonResponse
+    {
+        $query = PayrollRun::query()->withCount('items');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        return DataTables::of($query)
+            ->addColumn('period', fn (PayrollRun $r) => $r->month_name.' '.$r->year)
+            ->addColumn('total_gross', fn (PayrollRun $r) => '<span class="text-end d-block">'.number_format((float) $r->items()->sum('gross_salary'), 2).'</span>')
+            ->addColumn('total_deductions', fn (PayrollRun $r) => '<span class="text-end d-block">'.number_format((float) $r->items()->sum('total_deductions'), 2).'</span>')
+            ->addColumn('total_net', fn (PayrollRun $r) => '<span class="text-end d-block">'.number_format((float) $r->items()->sum('net_salary'), 2).'</span>')
+            ->addColumn('items_count', fn (PayrollRun $r) => $r->items_count)
+            ->editColumn('status', fn (PayrollRun $r) => '<span class="badge bg-'.($r->status === 'draft' ? 'warning' : 'success').'">'.$r->status.'</span>')
+            ->rawColumns(['total_gross', 'total_deductions', 'total_net', 'status'])
+            ->toJson();
+    }
+
     // ─── Exports ─────────────────────────────────────────────────────────
 
     public function exportExcel(Request $request, string $report)
@@ -467,6 +598,45 @@ class PayrollController extends Controller
                     'effective_to' => $s->effective_to?->format('d M Y') ?? '-',
                     'total_ctc' => number_format((float) $s->total_ctc, 2),
                     'status' => $s->status,
+                ])->toArray(),
+
+            'run_summary' => PayrollRun::query()->withCount('items')
+                ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+                ->get()
+                ->map(fn (PayrollRun $r) => [
+                    'period' => $r->month_name.' '.$r->year,
+                    'status' => $r->status,
+                    'generated_by' => $r->generator?->name ?? '-',
+                    'generated_at' => $r->generated_at?->format('d M Y H:i') ?? '-',
+                    'employees' => $r->items_count,
+                    'notes' => $r->notes ?? '-',
+                ])->toArray(),
+
+            'employee_payroll' => PayrollItem::query()->with(['payrollRun', 'employee'])
+                ->when($request->filled('payroll_run_id'), fn ($q) => $q->where('payroll_run_id', $request->payroll_run_id))
+                ->when($request->filled('employee_type'), fn ($q) => $q->where('employee_type', $request->employee_type))
+                ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+                ->get()
+                ->map(fn (PayrollItem $i) => [
+                    'period' => $i->payrollRun?->month_name.' '.$i->payrollRun?->year,
+                    'employee' => $i->employee?->full_name ?? $i->employee_id,
+                    'employee_type' => $i->employee_type,
+                    'gross' => number_format((float) $i->gross_salary, 2),
+                    'deductions' => number_format((float) $i->total_deductions, 2),
+                    'net' => number_format((float) $i->net_salary, 2),
+                    'status' => $i->status,
+                ])->toArray(),
+
+            'gross_vs_net' => PayrollRun::query()->withCount('items')
+                ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+                ->get()
+                ->map(fn (PayrollRun $r) => [
+                    'period' => $r->month_name.' '.$r->year,
+                    'total_gross' => number_format((float) $r->items()->sum('gross_salary'), 2),
+                    'total_deductions' => number_format((float) $r->items()->sum('total_deductions'), 2),
+                    'total_net' => number_format((float) $r->items()->sum('net_salary'), 2),
+                    'employees' => $r->items_count,
+                    'status' => $r->status,
                 ])->toArray(),
 
             default => [],
