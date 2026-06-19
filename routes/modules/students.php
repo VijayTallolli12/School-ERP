@@ -9,6 +9,7 @@ Route::prefix('students')
     ->group(function (): void {
         Route::get('/', [StudentController::class, 'index'])->name('index');
         Route::get('data', [StudentController::class, 'data'])->name('data');
+        Route::get('search', [StudentController::class, 'search'])->name('search');
         Route::post('/', [StudentController::class, 'store'])->middleware('permission:students.create')->name('store');
         Route::get('{student}', [StudentController::class, 'show'])->name('show');
         Route::put('{student}', [StudentController::class, 'update'])->middleware('permission:students.update')->name('update');

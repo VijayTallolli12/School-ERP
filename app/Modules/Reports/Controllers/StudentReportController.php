@@ -107,27 +107,37 @@ class StudentReportController extends Controller
             $filters = $request->only(['academic_year_id', 'class_section_id', 'status', 'gender', 'start_date', 'end_date']);
             $query = $this->studentReportService->getDirectoryData($filters);
 
+            // Cache per student ID to avoid calling formatDirectoryRow N times per row
+            $formatCache = [];
+
+            $format = function ($student) use (&$formatCache) {
+                $id = $student->id;
+                if (!isset($formatCache[$id])) {
+                    $formatCache[$id] = $this->studentReportService->formatDirectoryRow($student);
+                }
+                return $formatCache[$id];
+            };
+
             return DataTables::of($query)
                 ->addIndexColumn()
-                ->addColumn('photo', fn($s) => $this->studentReportService->formatDirectoryRow($s)['photo'])
-                ->addColumn('student_name', fn($s) => $this->studentReportService->formatDirectoryRow($s)['student_name'])
-                ->addColumn('class_section', fn($s) => $this->studentReportService->formatDirectoryRow($s)['class_section'])
-                ->addColumn('gender', fn($s) => $this->studentReportService->formatDirectoryRow($s)['gender'])
-                ->addColumn('date_of_birth', fn($s) => $this->studentReportService->formatDirectoryRow($s)['date_of_birth'])
-                ->addColumn('parent_name', fn($s) => $this->studentReportService->formatDirectoryRow($s)['parent_name'])
-                ->addColumn('parent_mobile', fn($s) => $this->studentReportService->formatDirectoryRow($s)['parent_mobile'])
-                ->addColumn('email', fn($s) => $this->studentReportService->formatDirectoryRow($s)['email'])
-                ->addColumn('status_badge', fn($s) => $this->studentReportService->formatDirectoryRow($s)['status'] === 'Active'
+                ->addColumn('photo', fn($s) => $format($s)['photo'])
+                ->addColumn('student_name', fn($s) => $format($s)['student_name'])
+                ->addColumn('class_section', fn($s) => $format($s)['class_section'])
+                ->addColumn('gender', fn($s) => $format($s)['gender'])
+                ->addColumn('date_of_birth', fn($s) => $format($s)['date_of_birth'])
+                ->addColumn('parent_name', fn($s) => $format($s)['parent_name'])
+                ->addColumn('parent_mobile', fn($s) => $format($s)['parent_mobile'])
+                ->addColumn('email', fn($s) => $format($s)['email'])
+                ->addColumn('status_badge', fn($s) => $format($s)['status'] === 'Active'
                     ? '<span class="badge bg-success">Active</span>'
                     : '<span class="badge bg-danger">Inactive</span>')
-                ->addColumn('actions', function ($s) {
-                    $row = $this->studentReportService->formatDirectoryRow($s);
-                    $profileUrl = $row['profile_url'];
-                    $contactJs = "window.location.href='tel:" . $row['parent_mobile'] . "'";
+                ->addColumn('actions', function ($s) use ($format) {
+                    $row = $format($s);
+                    $contactJs = "window.location.href='tel:" . e($row['parent_mobile']) . "'";
                     return '<div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="' . $profileUrl . '"><i class="ti ti-eye me-2"></i>View Profile</a></li>
+                            <li><a class="dropdown-item" href="' . e($row['profile_url']) . '"><i class="ti ti-eye me-2"></i>View Profile</a></li>
                             <li><a class="dropdown-item" href="#" onclick="' . $contactJs . '"><i class="ti ti-phone me-2"></i>Call Parent</a></li>
                         </ul></div>';
                 })

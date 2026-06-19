@@ -442,6 +442,6 @@
                 addResultButton.prop('disabled', true);
                 resultsTable.ajax.reload();
             });
-        });
+        })(); });
     </script>
 @endpush

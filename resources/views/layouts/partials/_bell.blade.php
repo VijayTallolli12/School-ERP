@@ -1,12 +1,12 @@
 {{-- Notification Bell Partial --}}
 <li class="nav-item dropdown" id="notificationBellContainer">
-    <a class="nav-link position-relative" data-bs-toggle="dropdown" href="#" role="button" aria-label="Notifications" style="overflow:visible">
-        <i class="ti ti-bell"></i>
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notificationBadge" style="font-size:0.6rem;min-width:18px;padding:2px 5px;box-shadow:0 0 0 2px var(--bs-body-bg,#fff);line-height:1.2">
-            0
+    <a class="nav-link" data-bs-toggle="dropdown" href="#" role="button" aria-label="Notifications">
+        <span class="position-relative d-inline-block">
+            <i class="ti ti-bell"></i>
+            <span class="position-absolute top-0 end-0 notification-badge d-none" id="notificationBadge" aria-hidden="true"></span>
         </span>
     </a>
-    <div class="dropdown-menu dropdown-menu-end p-0" style="min-width: 300px; max-width: calc(100vw - 16px); max-height: 420px; overflow: hidden;">
+    <div class="dropdown-menu dropdown-menu-end p-0 notification-dropdown">
         <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
             <strong class="small">Notifications</strong>
             <button type="button" class="btn btn-link btn-sm text-decoration-none small" id="markAllReadBtn">

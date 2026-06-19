@@ -81,7 +81,7 @@
             <div class="card">
                 <div class="card-header d-flex align-items-center">
                     <h5 class="mb-0"><i class="ti ti-book text-primary me-2"></i>Recent Homework</h5>
-                    <a href="{{ route('parent-portal.homework') }}" class="btn btn-sm btn-outline-primary ms-auto"><i class="ti ti-arrow-right me-1"></i>View All</a>
+                    <a href="{{ route('admin.parent-portal.homework') }}" class="btn btn-sm btn-outline-primary ms-auto"><i class="ti ti-arrow-right me-1"></i>View All</a>
                 </div>
                 <div class="card-body">
                     @php $recentHomework = $homework_summary['recent'] ?? collect(); @endphp
@@ -113,7 +113,7 @@
             <div class="card">
                 <div class="card-header d-flex align-items-center">
                     <h5 class="mb-0"><i class="ti ti-bell text-primary me-2"></i>Recent Notifications</h5>
-                    <a href="{{ route('parent-portal.notifications') }}" class="btn btn-sm btn-outline-primary ms-auto"><i class="ti ti-arrow-right me-1"></i>View All</a>
+                    <a href="{{ route('admin.parent-portal.notifications') }}" class="btn btn-sm btn-outline-primary ms-auto"><i class="ti ti-arrow-right me-1"></i>View All</a>
                 </div>
                 <div class="card-body">
                     @if($notifications->count() > 0)
@@ -139,31 +139,31 @@
                 <div class="card-body">
                     <div class="row g-2">
                         <div class="col-6">
-                            <a href="{{ route('parent-portal.attendance') }}" class="btn btn-outline-primary w-100">
+                            <a href="{{ route('admin.parent-portal.attendance') }}" class="btn btn-outline-primary w-100">
                                 <i class="ti ti-calendar-check fs-2 d-block mb-2"></i>
                                 View Attendance
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('parent-portal.fees') }}" class="btn btn-outline-success w-100">
+                            <a href="{{ route('admin.parent-portal.fees') }}" class="btn btn-outline-success w-100">
                                 <i class="ti ti-cash fs-2 d-block mb-2"></i>
                                 View Fees
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('parent-portal.homework') }}" class="btn btn-outline-dark w-100">
+                            <a href="{{ route('admin.parent-portal.homework') }}" class="btn btn-outline-dark w-100">
                                 <i class="ti ti-books fs-2 d-block mb-2"></i>
                                 Homework
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('parent-portal.exam-results') }}" class="btn btn-outline-info w-100">
+                            <a href="{{ route('admin.parent-portal.exam-results') }}" class="btn btn-outline-info w-100">
                                 <i class="ti ti-school fs-2 d-block mb-2"></i>
                                 Exam Results
                             </a>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('parent-portal.timetable') }}" class="btn btn-outline-warning w-100">
+                            <a href="{{ route('admin.parent-portal.timetable') }}" class="btn btn-outline-warning w-100">
                                 <i class="ti ti-clock fs-2 d-block mb-2"></i>
                                 Timetable
                             </a>

@@ -126,6 +126,6 @@
                 modal.hide();
                 table.ajax.reload(null, false);
             });
-        });
+        })(); });
     </script>
 @endpush

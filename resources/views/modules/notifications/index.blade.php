@@ -73,7 +73,7 @@
                         <div class="col-md-3">
                             <div class="card bg-success text-white">
                                 <div class="card-body text-center">
-                                    <h3 class="mb-0" id="statTotalSent">--</h3>
+                                    <h3 class="mb-0 text-white" id="statTotalSent">--</h3>
                                     <small><i class="ti ti-check-circle me-1"></i>Total Sent</small>
                                 </div>
                             </div>
@@ -81,7 +81,7 @@
                         <div class="col-md-3">
                             <div class="card bg-warning text-dark">
                                 <div class="card-body text-center">
-                                    <h3 class="mb-0" id="statPending">--</h3>
+                                    <h3 class="mb-0 text-white" id="statPending">--</h3>
                                     <small><i class="ti ti-clock me-1"></i>Pending (Draft)</small>
                                 </div>
                             </div>
@@ -89,7 +89,7 @@
                         <div class="col-md-3">
                             <div class="card bg-danger text-white">
                                 <div class="card-body text-center">
-                                    <h3 class="mb-0" id="statFailed">--</h3>
+                                    <h3 class="mb-0 text-white" id="statFailed">--</h3>
                                     <small><i class="ti ti-alert-triangle me-1"></i>Failed</small>
                                 </div>
                             </div>
@@ -97,7 +97,7 @@
                         <div class="col-md-3">
                             <div class="card bg-info text-white">
                                 <div class="card-body text-center">
-                                    <h3 class="mb-0" id="statUnread">--</h3>
+                                    <h3 class="mb-0 text-white" id="statUnread">--</h3>
                                     <small><i class="ti ti-mail me-1"></i>Unread</small>
                                 </div>
                             </div>
@@ -190,12 +190,17 @@
             const table = $('#notificationsTable').DataTable({
                 processing: true,
                 serverSide: true,
-                responsive: true,
+                responsive: true, stateSave: true,
                 ajax: {
                     url: '{{ route('admin.notifications.data') }}',
+                    timeout: 15000,
                     data: function (d) {
                         d.type = $('#filterType').val();
                         d.status = $('#filterStatus').val();
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.error('[Notif DT] AJAX error:', error, thrown, xhr.responseJSON);
+                        try { $('#notificationsTable').DataTable().processing(false); } catch (_) {}
                     }
                 },
                 columns: [
@@ -209,7 +214,10 @@
                     { data: 'status_badge', orderable: false, searchable: false },
                     { data: 'created_by_name', orderable: false, searchable: false },
                     { data: 'actions', orderable: false, searchable: false }
-                ]
+                ],
+                initComplete: function(settings, json) {
+                    console.log('[Notif DT] init:', this.api().data().length, 'rows, total:', json?.recordsTotal);
+                }
             });
 
             $('#filterType, #filterStatus').on('change', () => table.ajax.reload());
@@ -278,8 +286,16 @@
 
             // Form success handler
             $('#notificationForm').on('erp:success', () => {
-                notificationModal.hide();
-                table.ajax.reload(null, false);
+                try {
+                    notificationModal.hide();
+                } catch (e) {
+                    console.error('[Notif] modal hide error:', e);
+                }
+                try {
+                    table.ajax.reload(null, false);
+                } catch (e) {
+                    console.error('[Notif] table reload error:', e);
+                }
             });
 
             // Dashboard stats when tab shown
@@ -293,6 +309,7 @@
                     }
                 });
             });
-        });
+        })(); });
+        initTabPersistence('#notificationsTabs');
     </script>
 @endpush

@@ -309,5 +309,6 @@ $(function () {
         reader.readAsDataURL(file);
     });
 });
+initTabPersistence('#settingsTabs');
 </script>
 @endpush

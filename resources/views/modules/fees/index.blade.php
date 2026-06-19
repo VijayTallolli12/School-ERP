@@ -21,7 +21,7 @@
                     'reports' => 'ti-chart-bar',
                 ] as $id => $icon)
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"><i class="{{ $icon }} me-1"></i>{{ ucfirst($id === 'dues' ? 'Due Tracking' : ($id === 'collections' ? 'Collections' : ucfirst($id))) }}</button>
+                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"><i class="ti {{ $icon }} me-1"></i>{{ ucfirst($id === 'dues' ? 'Due Tracking' : ($id === 'collections' ? 'Collections' : ucfirst($id))) }}</button>
                     </li>
                 @endforeach
             </ul>
@@ -169,7 +169,7 @@
                                                 </select>
                                             </div>
                                             <div class="col-6"><button class="btn btn-sm btn-outline-secondary w-100" type="submit"><i class="ti ti-printer me-1"></i>Print</button></div>
-                                            <div class="col-6"><a class="btn btn-sm btn-outline-danger w-100" href="#" id="collectionPdfBtn"><i class="ti ti-file-type-pdf me-1"></i>PDF</a></div>
+                                            <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100" type="button" id="collectionPdfBtn"><i class="ti ti-file-type-pdf me-1"></i>PDF</button></div>
                                         </form>
                                     </div>
                                 </div>
@@ -346,11 +346,8 @@
                 <div class="modal-body row g-3">
                     <div class="col-12">
                         <label class="form-label required">Student</label>
-                        <select class="form-select" name="student_id" required>
-                            <option value="">Select</option>
-                            @foreach ($students as $st)
-                                <option value="{{ $st->id }}">{{ $st->full_name }} ({{ $st->admission_no }})</option>
-                            @endforeach
+                        <select class="form-select searchable-select" name="student_id" required data-ajax-url="{{ route('admin.students.search') }}" data-placeholder="Search student by name or admission no...">
+                            <option value=""></option>
                         </select>
                     </div>
                     <div class="col-12">
@@ -468,15 +465,12 @@
                 </div>
                 <div class="modal-body">
                     <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Student</label>
-                            <select class="form-select" name="student_id" id="collectStudentId" required>
-                                <option value="">Select</option>
-                                @foreach ($students as $st)
-                                    <option value="{{ $st->id }}">{{ $st->full_name }} ({{ $st->admission_no }})</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div class="col-md-6">
+                        <label class="form-label required">Student</label>
+                        <select class="form-select searchable-select" name="student_id" id="collectStudentId" required data-ajax-url="{{ route('admin.students.search') }}" data-placeholder="Search student by name or admission no...">
+                            <option value=""></option>
+                        </select>
+                    </div>
                         <div class="col-md-6">
                             <label class="form-label required">Academic Year</label>
                             <select class="form-select" name="academic_year_id" id="collectYearId" required>
@@ -578,7 +572,7 @@
             $('#categoriesTable').on('click', '.delete-fee-category', function () {
                 App.confirmDelete({
                     url: $(this).data('url'),
-                    onSuccess: () => tables.categories.ajax.reload(null, false)
+                    onSuccess: () => tables.categories?.ajax.reload(null, false)
                 });
             });
 
@@ -618,7 +612,7 @@
             $('#structuresTable').on('click', '.delete-fee-structure', function () {
                 App.confirmDelete({
                     url: $(this).data('url'),
-                    onSuccess: () => tables.structures.ajax.reload(null, false)
+                    onSuccess: () => tables.structures?.ajax.reload(null, false)
                 });
             });
 
@@ -668,7 +662,7 @@
             $('#assignmentsTable').on('click', '.delete-assignment', function () {
                 App.confirmDelete({
                     url: $(this).data('url'),
-                    onSuccess: () => tables.assignments.ajax.reload(null, false)
+                    onSuccess: () => tables.assignments?.ajax.reload(null, false)
                 });
             });
 
@@ -698,7 +692,7 @@
             $('#collectionsTable').on('click', '.delete-collection', function () {
                 App.confirmDelete({
                     url: $(this).data('url'),
-                    onSuccess: () => tables.collections.ajax.reload(null, false)
+                    onSuccess: () => tables.collections?.ajax.reload(null, false)
                 });
             });
 
@@ -709,17 +703,31 @@
                 window.open(`{{ route('admin.fees.reports.collection.pdf') }}?${q}`, '_blank');
             });
 
+            function createFeeTable(selector, opts) {
+                try {
+                    opts.error = function(xhr, error, thrown) {
+                        console.error('[Fee DT] ' + selector + ' error:', error, thrown, xhr.responseJSON);
+                    };
+                    opts.initComplete = function(settings, json) {
+                        console.log('[Fee DT] ' + selector + ' init:', this.api().data().length, 'rows, total:', json?.recordsTotal);
+                    };
+                    return $(selector).DataTable(opts);
+                } catch (e) {
+                    console.error('[Fee DT] ' + selector + ' failed to initialize:', e);
+                    return null;
+                }
+            }
             const tables = {
-                categories: $('#categoriesTable').DataTable({
-                    processing: true, serverSide: true, responsive: true,
+                categories: createFeeTable('#categoriesTable', {
+                    processing: true, serverSide: true, responsive: true, stateSave: true,
                     ajax: '{{ route('admin.fees.categories.data') }}',
                     columns: [
                         {data: 'id'}, {data: 'code'}, {data: 'name'}, {data: 'sort_order'},
                         {data: 'actions', orderable: false, searchable: false}
                     ]
                 }),
-                structures: $('#structuresTable').DataTable({
-                    processing: true, serverSide: true, responsive: true,
+                structures: createFeeTable('#structuresTable', {
+                    processing: true, serverSide: true, responsive: true, stateSave: true,
                     ajax: '{{ route('admin.fees.structures.data') }}',
                     columns: [
                         {data: 'id'}, {data: 'name'}, {data: 'academic_year', orderable: false, searchable: false},
@@ -729,8 +737,8 @@
                         {data: 'actions', orderable: false, searchable: false}
                     ]
                 }),
-                assignments: $('#assignmentsTable').DataTable({
-                    processing: true, serverSide: true, responsive: true,
+                assignments: createFeeTable('#assignmentsTable', {
+                    processing: true, serverSide: true, responsive: true, stateSave: true,
                     ajax: '{{ route('admin.fees.assignments.data') }}',
                     columns: [
                         {data: 'id'}, {data: 'student', orderable: false, searchable: false},
@@ -741,8 +749,8 @@
                         {data: 'status'}, {data: 'actions', orderable: false, searchable: false}
                     ]
                 }),
-                collections: $('#collectionsTable').DataTable({
-                    processing: true, serverSide: true, responsive: true,
+                collections: createFeeTable('#collectionsTable', {
+                    processing: true, serverSide: true, responsive: true, stateSave: true,
                     ajax: '{{ route('admin.fees.collections.data') }}',
                     columns: [
                         {data: 'id'}, {data: 'receipt_number'}, {data: 'student', orderable: false, searchable: false},
@@ -751,8 +759,8 @@
                         {data: 'paid_on'}, {data: 'actions', orderable: false, searchable: false}
                     ]
                 }),
-                dues: $('#duesTable').DataTable({
-                    processing: true, serverSide: false, responsive: true,
+                dues: createFeeTable('#duesTable', {
+                    processing: true, serverSide: false, responsive: true, stateSave: true,
                     ajax: '{{ route('admin.fees.dues.data') }}',
                     columns: [
                         {data: 'student_name'}, {data: 'admission_no'}, {data: 'academic_year'},
@@ -761,34 +769,36 @@
                     ]
                 })
             };
+            console.log('[Fee DT] Tables initialized:', Object.keys(tables).filter(k => tables[k] !== null).join(', '));
+            initTabPersistence('#feesTabs');
 
             $('.fees-category-form').on('erp:success', () => {
                 categoryModal.hide();
-                tables.categories.ajax.reload(null, false);
+                tables.categories?.ajax.reload(null, false);
             });
 
             $('.fees-structure-form').on('erp:success', () => {
                 structureModal.hide();
-                tables.structures.ajax.reload(null, false);
+                tables.structures?.ajax.reload(null, false);
                 window.location.reload();
             });
 
             $('#assignForm, #bulkAssignForm').on('erp:success', () => {
                 bootstrap.Modal.getInstance(document.getElementById('assignModal'))?.hide();
                 bootstrap.Modal.getInstance(document.getElementById('bulkAssignModal'))?.hide();
-                tables.assignments.ajax.reload(null, false);
+                tables.assignments?.ajax.reload(null, false);
             });
 
             $('#editAssignForm').on('erp:success', () => {
                 editAssignModal.hide();
-                tables.assignments.ajax.reload(null, false);
+                tables.assignments?.ajax.reload(null, false);
             });
 
             $('#collectForm').on('erp:success', () => {
                 collectModal.hide();
-                tables.collections.ajax.reload(null, false);
-                tables.dues.ajax.reload(null, false);
+                tables.collections?.ajax.reload(null, false);
+                tables.dues?.ajax.reload(null, false);
             });
-        });
+        })(); });
     </script>
 @endpush

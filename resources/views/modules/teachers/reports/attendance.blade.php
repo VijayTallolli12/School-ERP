@@ -12,7 +12,7 @@
 @section('content')
     <div class="card mb-3">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.teachers.attendance.report') }}" class="row g-3">
+            <form method="GET" action="{{ route('admin.teachers.reports.attendance') }}" class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Teacher</label>
                     <select class="form-select" name="teacher_id">

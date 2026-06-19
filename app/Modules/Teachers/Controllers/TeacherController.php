@@ -18,6 +18,7 @@ use App\Modules\Teachers\Requests\UpdateTeacherLeaveRequest;
 use App\Modules\Teachers\Requests\TeacherAttendanceReportFilterRequest;
 use App\Modules\Teachers\Services\TeacherService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -100,6 +101,30 @@ class TeacherController extends Controller
             'success' => true,
             'message' => 'Teacher profile updated successfully.',
             'data' => $teacher,
+        ]);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $q = $request->get('q', '');
+        $limit = min((int) $request->get('limit', 20), 50);
+
+        $teachers = Teacher::query()
+            ->where(function ($query) use ($q): void {
+                $query->where('first_name', 'like', "%{$q}%")
+                    ->orWhere('middle_name', 'like', "%{$q}%")
+                    ->orWhere('last_name', 'like', "%{$q}%")
+                    ->orWhere('employee_id', 'like', "%{$q}%");
+            })
+            ->orderBy('first_name')
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'results' => $teachers->map(fn (Teacher $t) => [
+                'id' => $t->id,
+                'text' => sprintf('%s (%s)', $t->full_name, $t->employee_id),
+            ]),
         ]);
     }
 

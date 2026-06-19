@@ -15,6 +15,11 @@ use App\Modules\Teachers\Models\TeacherAttendance;
 use App\Modules\Exams\Models\Exam;
 use App\Modules\Timetable\Services\TimetableService;
 use App\Modules\Reports\Services\AbsentStudentReportService;
+use App\Modules\Transport\Models\Driver;
+use App\Modules\Transport\Models\Route;
+use App\Modules\Transport\Models\TransportAssignment;
+use App\Modules\Transport\Models\Vehicle;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\DB;
@@ -91,6 +96,19 @@ class DashboardController extends Controller
 
         $stats['active_classes'] = $timetableStats['active_classes'] ?? 0;
         $stats['today_schedules'] = $timetableStats['today_schedules'] ?? 0;
+
+        // Transport stats (guard against missing tables)
+        if ($user?->can('transport.view') && Schema::hasTable('vehicles')) {
+            $stats['total_vehicles'] = Vehicle::query()->count();
+            $stats['total_drivers'] = Driver::query()->count();
+            $stats['active_routes'] = Route::query()->where('status', 'active')->count();
+            $stats['students_transport'] = TransportAssignment::query()->where('status', 'active')->count();
+        } else {
+            $stats['total_vehicles'] = 0;
+            $stats['total_drivers'] = 0;
+            $stats['active_routes'] = 0;
+            $stats['students_transport'] = 0;
+        }
 
         $stats['roles'] = Role::query()
             ->when($schoolId, fn ($query) => $query->where('school_id', $schoolId))

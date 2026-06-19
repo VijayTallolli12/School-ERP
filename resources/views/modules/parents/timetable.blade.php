@@ -4,7 +4,7 @@
 @section('page-title', 'Student Timetable')
 
 @section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('parent-portal.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.parent-portal.dashboard') }}">Dashboard</a></li>
     <li class="breadcrumb-item active">Timetable</li>
 @endsection
 

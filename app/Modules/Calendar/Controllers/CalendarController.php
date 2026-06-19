@@ -12,6 +12,7 @@ use App\Modules\Calendar\Services\CalendarService;
 use App\Modules\Calendar\Repositories\CalendarRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -42,8 +43,10 @@ class CalendarController extends Controller
         ]));
 
         return DataTables::of($query)
-            ->addColumn('event_type', fn (AcademicCalendar $event) => '<span class="badge bg-' . $event->event_type_color . '">' . e($event->event_type_label) . '</span>')
+            ->addColumn('event_type', fn (AcademicCalendar $event) => '<span class="badge ' . AcademicCalendar::badgeClass($event->event_type) . '">' . e($event->event_type_label) . '</span>')
             ->addColumn('audience', fn (AcademicCalendar $event) => '<span class="badge bg-info">' . e($event->audience_label) . '</span>')
+            ->editColumn('start_date', fn (AcademicCalendar $event) => $event->start_date?->format('d M Y'))
+            ->editColumn('end_date', fn (AcademicCalendar $event) => $event->end_date?->format('d M Y'))
             ->addColumn('date_range', fn (AcademicCalendar $event) => view('modules.calendar._date_range', ['event' => $event])->render())
             ->addColumn('status', fn (AcademicCalendar $event) => $event->is_published ? '<span class="badge bg-success">Published</span>' : '<span class="badge bg-warning">Draft</span>')
             ->addColumn('actions', fn (AcademicCalendar $event) => view('modules.calendar._actions', ['event' => $event])->render())
@@ -135,25 +138,32 @@ class CalendarController extends Controller
     {
         $this->authorize('viewAny', AcademicCalendar::class);
 
-        $start = $request->input('start');
-        $end = $request->input('end');
+        $year = $request->input('year', now()->year);
+        $month = $request->input('month', now()->month);
 
-        $query = AcademicCalendar::query()
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $end = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+
+        $events = AcademicCalendar::query()
             ->where('is_published', true)
-            ->when($start, fn ($q) => $q->where('end_date', '>=', $start))
-            ->when($end, fn ($q) => $q->where('start_date', '<=', $end));
+            ->where('start_date', '<=', $end)
+            ->where('end_date', '>=', $start)
+            ->get()
+            ->map(fn (AcademicCalendar $event) => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'start_date' => $event->start_date?->format('Y-m-d'),
+                'end_date' => $event->end_date?->format('Y-m-d'),
+                'badge_class' => AcademicCalendar::badgeClass($event->event_type),
+                'event_type_label' => $event->event_type_label,
+                'audience' => $event->audience,
+                'description' => $event->description,
+                'location' => $event->location,
+            ]);
 
-        $events = $query->get()->map(fn (AcademicCalendar $event) => [
-            'id' => $event->id,
-            'title' => $event->title,
-            'start' => $event->start_date?->toDateTimeString(),
-            'end' => $event->end_date?->copy()->addDay()->toDateTimeString(),
-            'color' => $event->event_type_color === 'primary' ? '#2563eb'
-                : ($event->event_type_color === 'success' ? '#16a34a'
-                : ($event->event_type_color === 'danger' ? '#dc2626' : '#f59e0b')),
-            'url' => route('admin.calendar.show', $event->id),
+        return response()->json([
+            'success' => true,
+            'events' => $events,
         ]);
-
-        return response()->json($events);
     }
 }

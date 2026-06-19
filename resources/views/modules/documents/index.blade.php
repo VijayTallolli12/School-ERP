@@ -366,6 +366,6 @@
                     onSuccess: () => table.ajax.reload(),
                 });
             });
-        });
+        })(); });
     </script>
 @endpush

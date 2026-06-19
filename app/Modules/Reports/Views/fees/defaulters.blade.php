@@ -85,15 +85,15 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <a id="exportExcel" href="#" class="btn btn-success me-2">
+                    <button type="button" id="exportExcel" class="btn btn-success me-2">
                         <i class="ti ti-file-type-xls me-1"></i> Export Excel
-                    </a>
-                    <a id="exportPdf" href="#" class="btn btn-danger me-2">
+                    </button>
+                    <button type="button" id="exportPdf" class="btn btn-danger me-2">
                         <i class="ti ti-file-type-pdf me-1"></i> Export PDF
-                    </a>
-                    <a id="exportPrint" href="#" class="btn btn-warning" target="_blank">
+                    </button>
+                    <button type="button" id="exportPrint" class="btn btn-warning">
                         <i class="ti ti-printer me-1"></i> Print
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -312,9 +312,12 @@
 
         function updateExportLinks() {
             var qs = $.param(getFilterParams());
-            $('#exportExcel').attr('href', "{{ route('reports.fees.defaulters.export.excel') }}" + (qs ? '?' + qs : ''));
-            $('#exportPdf').attr('href', "{{ route('reports.fees.defaulters.export.pdf') }}" + (qs ? '?' + qs : ''));
-            $('#exportPrint').attr('href', "{{ route('reports.fees.defaulters.print') }}" + (qs ? '?' + qs : ''));
+            var excelUrl = "{{ route('reports.fees.defaulters.export.excel') }}" + (qs ? '?' + qs : '');
+            var pdfUrl = "{{ route('reports.fees.defaulters.export.pdf') }}" + (qs ? '?' + qs : '');
+            var printUrl = "{{ route('reports.fees.defaulters.print') }}" + (qs ? '?' + qs : '');
+            $('#exportExcel').off('click').on('click', function() { window.location.href = excelUrl; });
+            $('#exportPdf').off('click').on('click', function() { window.open(pdfUrl, '_blank'); });
+            $('#exportPrint').off('click').on('click', function() { window.open(printUrl, '_blank'); });
         }
 
         function renderSummary(summary) {

@@ -4,7 +4,6 @@ import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
 import 'admin-lte/dist/js/adminlte.min.js';
 import toastr from 'toastr';
-
 const $ = window.jQuery;
 window.toastr = toastr;
 
@@ -30,6 +29,9 @@ let _dtPromise = null;
 window.lazyDT = function () {
     if (!_dtPromise) {
         _dtPromise = (async () => {
+            if (!window.jQuery) {
+                throw new Error('jQuery not loaded — lazyDT() called before CDN jQuery script executed');
+            }
             const { default: DataTable } = await import('datatables.net-bs5');
             await import('datatables.net-responsive-bs5');
             $.extend(true, DataTable.defaults, {
@@ -43,6 +45,9 @@ window.lazyDT = function () {
                         '<div class="spinner-border spinner-border-sm text-primary me-1" role="status"></div> Processing...',
                 },
             });
+            if (!$.fn.DataTable) {
+                throw new Error('DataTables plugin not registered on jQuery after import');
+            }
             return DataTable;
         })();
     }
@@ -106,9 +111,18 @@ window.App = {
         const button = $form.find('[type="submit"]').first();
         const original = button.html();
 
+        if ($form.data('erp-submitting')) return;
+        $form.data('erp-submitting', true);
+
         button
             .prop('disabled', true)
             .html('<span class="spinner-border spinner-border-sm me-1"></span> Saving');
+
+        // Safety net — restore button & release lock after 30 s no matter what
+        const safety = setTimeout(() => {
+            button.prop('disabled', false).html(original);
+            $form.removeData('erp-submitting');
+        }, 30000);
 
         $.ajax({
             url: $form.attr('action'),
@@ -117,6 +131,7 @@ window.App = {
             contentType: false,
             processData: false,
             success(response) {
+                clearTimeout(safety);
                 App.toast('success', response.message || 'Saved successfully.');
 
                 if (response.redirect) {
@@ -129,9 +144,14 @@ window.App = {
                     return;
                 }
 
-                $form.trigger('erp:success', response);
+                try {
+                    $form.trigger('erp:success', response);
+                } catch (e) {
+                    console.error('[submitAjaxForm] erp:success handler threw:', e);
+                }
             },
             error(xhr) {
+                clearTimeout(safety);
                 if (xhr.status === 422) {
                     App.handleValidation($form, xhr.responseJSON?.errors);
                     App.toast('error', 'Please correct the highlighted errors below.');
@@ -141,7 +161,9 @@ window.App = {
                 App.toast('error', xhr.responseJSON?.message || 'Something went wrong.');
             },
             complete() {
+                clearTimeout(safety);
                 button.prop('disabled', false).html(original);
+                $form.removeData('erp-submitting');
             },
         });
     },
@@ -195,6 +217,63 @@ window.App = {
         },
     },
 
+    initSearchableSelects(container = document) {
+        const $container = container instanceof $ ? container : $(container);
+        $container.find('select.searchable-select').each(function () {
+            const $select = $(this);
+
+            // Skip if already initialized
+            if ($select.data('select2')) return;
+
+            const isAjax = $select.data('ajax-url');
+            const minInput = $select.data('minimum-input') || 2;
+            const placeholder = $select.data('placeholder') || $select.find('option:first').text() || 'Search...';
+            const allowClear = $select.data('allow-clear') !== false;
+
+            const config = {
+                placeholder,
+                allowClear,
+                width: '100%',
+                language: {
+                    inputTooShort: () => `Enter ${minInput}+ characters`,
+                    searching: () => 'Searching...',
+                    noResults: () => 'No results found',
+                },
+            };
+
+            // If inside a modal, render dropdown inside the modal to fix z-index
+            const $modal = $select.closest('.modal');
+            if ($modal.length) {
+                config.dropdownParent = $modal;
+            }
+
+            if (isAjax) {
+                config.minimumInputLength = minInput;
+                config.ajax = {
+                    url: isAjax,
+                    dataType: 'json',
+                    delay: 400,
+                    data(params) {
+                        return { q: params.term || '' };
+                    },
+                    processResults(data) {
+                        return {
+                            results: (data.results || data.data || []).map(item => ({
+                                id: item.id,
+                                text: item.text,
+                            })),
+                        };
+                    },
+                    cache: true,
+                };
+                // Allow the server to handle all matching
+                config.matcher = () => true;
+            }
+
+            $select.select2(config);
+        });
+    },
+
     initTooltips(parent = document) {
         const root = parent || document;
         root.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
@@ -212,6 +291,32 @@ window.App = {
                 maximumFractionDigits: decimals,
             })
         );
+    },
+
+    refreshSelect2(selector) {
+        const $el = $(selector);
+        if ($el.data('select2')) {
+            $el.select2('destroy');
+        }
+        $el.find('option').remove();
+        this.initSearchableSelects($el.parent());
+    },
+
+    refreshSelect2Options(selector, options, keepPlaceholder = true) {
+        const $el = $(selector);
+        const selVal = $el.val();
+        if ($el.data('select2')) {
+            $el.select2('destroy');
+        }
+        $el.find('option').remove();
+        if (keepPlaceholder) {
+            $el.append('<option value="">' + ($el.data('placeholder') || 'Select...') + '</option>');
+        }
+        options.forEach(function (opt) {
+            $el.append('<option value="' + opt.id + '">' + opt.text + '</option>');
+        });
+        $el.val(selVal);
+        this.initSearchableSelects($el.parent());
     },
 
     debounce(fn, delay = 300) {
@@ -236,6 +341,42 @@ window.App = {
     },
 };
 
+// ─── Tab persistence (URL hash + localStorage) ──────────────────────────
+
+window.initTabPersistence = function (containerSelector) {
+    const $container = $(containerSelector);
+    if (!$container.length) return;
+
+    const storageKey = 'activeTab_' + window.location.pathname;
+
+    // Restore: URL hash > localStorage > default (first tab)
+    let targetId = window.location.hash.replace('#', '');
+    if (!targetId) {
+        targetId = localStorage.getItem(storageKey);
+    }
+    if (targetId) {
+        const $tab = $container.find('[data-bs-target="#' + targetId + '"]');
+        if ($tab.length) {
+            // Defer so Bootstrap has finished initializing the tab markup
+            setTimeout(function () {
+                bootstrap.Tab.getOrCreateInstance($tab[0]).show();
+            }, 50);
+        }
+    }
+
+    // Persist on every tab change
+    $container.on('shown.bs.tab', function (e) {
+        const target = $(e.target).attr('data-bs-target');
+        if (target) {
+            const id = target.replace('#', '');
+            window.location.hash = id;
+            try {
+                localStorage.setItem(storageKey, id);
+            } catch (_) {}
+        }
+    });
+};
+
 // Register toast shorthand methods
 ['success', 'error', 'warning', 'info'].forEach((level) => {
     App.toast[level] = (msg) => toastr[level](msg ?? 'Done');
@@ -254,6 +395,7 @@ $(document).on('click', '[data-bs-theme-value]', function () {
 
 $(function () {
     App.initTooltips();
+    App.initSearchableSelects();
 });
 
 document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('erp-theme') || 'light');

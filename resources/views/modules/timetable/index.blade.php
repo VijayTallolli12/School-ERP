@@ -779,6 +779,6 @@
                 this.querySelector('form').reset();
                 $(this).find('.is-invalid').removeClass('is-invalid');
             });
-        });
+        })(); });
     </script>
 @endpush

@@ -291,6 +291,6 @@
                 homeworkModal.hide();
                 table.ajax.reload(null, false);
             });
-        });
+        })(); });
     </script>
 @endpush

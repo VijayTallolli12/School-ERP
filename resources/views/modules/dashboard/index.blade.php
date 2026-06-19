@@ -91,6 +91,30 @@
         </div>
     </div>
 
+    <!-- Transport Stats Row -->
+    @can('transport.view')
+        <div class="row g-3 mb-3">
+            @foreach ([
+                ['Total Vehicles', $stats['total_vehicles'] ?? 0, 'bus', 'rgb(37,99,235)'],
+                ['Total Drivers', $stats['total_drivers'] ?? 0, 'user', 'rgb(22,163,74)'],
+                ['Active Routes', $stats['active_routes'] ?? 0, 'map', 'rgb(245,158,11)'],
+                ['Students Using Transport', $stats['students_transport'] ?? 0, 'users', 'rgb(14,165,233)'],
+            ] as [$label, $value, $icon, $color])
+                <div class="col-6 col-xl-3">
+                    <div class="nav-card-compact">
+                        <div class="nc-icon" style="background:{{ $color }}1a;color:{{ $color }};">
+                            <i class="ti ti-{{ $icon }}"></i>
+                        </div>
+                        <div>
+                            <div class="nc-title">{{ number_format($value) }}</div>
+                            <div class="nc-sub">{{ $label }}</div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endcan
+
     <!-- Secondary Stat Row (compact) -->
     <div class="row g-3 mb-3">
         @foreach ([

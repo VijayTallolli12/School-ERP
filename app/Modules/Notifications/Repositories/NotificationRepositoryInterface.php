@@ -12,7 +12,7 @@ interface NotificationRepositoryInterface
 
     public function update(Model $model, array $data): Model;
 
-    public function dataTableQuery(): Builder;
+    public function dataTableQuery(array $filters = []): Builder;
 
     public function markAsSent(Notification $notification): void;
 

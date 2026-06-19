@@ -32,4 +32,5 @@ Route::middleware(['auth', 'school'])
         require __DIR__.'/modules/users.php';
         require __DIR__.'/modules/calendar.php';
         require __DIR__.'/modules/documents.php';
+        require __DIR__.'/modules/transport.php';
     });

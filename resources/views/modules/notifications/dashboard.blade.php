@@ -90,6 +90,6 @@
                     { data: 'sent_at', orderable: false, searchable: false },
                 ]
             });
-        });
+        })(); });
     </script>
 @endpush

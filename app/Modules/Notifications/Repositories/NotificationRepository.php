@@ -13,14 +13,24 @@ class NotificationRepository extends BaseRepository implements NotificationRepos
         parent::__construct($model);
     }
 
-    public function dataTableQuery(): Builder
+    public function dataTableQuery(array $filters = []): Builder
     {
-        return $this->query()
+        $query = $this->query()
             ->with(['creator'])
             ->withCount([
                 'users as user_count',
                 'users as unread_count' => fn ($q) => $q->where('notification_user.is_read', false),
             ]);
+
+        if (! empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        return $query;
     }
 
     public function markAsSent(Notification $notification): void

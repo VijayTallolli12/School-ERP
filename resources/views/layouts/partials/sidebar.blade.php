@@ -419,6 +419,15 @@
                     </li>
                 @endcan
 
+                @can('transport.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.transport.index') }}" class="nav-link @if(request()->routeIs('admin.transport.*')) active @endif">
+                            <i class="nav-icon ti ti-bus"></i>
+                            <p>Transportation</p>
+                        </a>
+                    </li>
+                @endcan
+
                 @can('academic_calendar.view')
                     <li class="nav-item">
                         <a href="{{ route('admin.calendar.index') }}" class="nav-link @if(request()->routeIs('admin.calendar.*')) active @endif">

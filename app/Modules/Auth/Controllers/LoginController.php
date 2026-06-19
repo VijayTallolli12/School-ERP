@@ -37,7 +37,7 @@ class LoginController extends Controller
         $user = $request->user();
 
         if ($user->hasRole('Parent')) {
-            return redirect()->intended(route('parent-portal.dashboard'));
+            return redirect()->intended(route('admin.parent-portal.dashboard'));
         }
 
         return redirect()->intended(route('admin.dashboard'));

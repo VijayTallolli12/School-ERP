@@ -156,7 +156,7 @@ class Notification extends Model
 
     public function getUnreadCountAttribute(): int
     {
-        return $this->users()->where('notification_user.is_read', false)->count();
+        return (int) ($this->attributes['unread_count'] ?? $this->users()->where('notification_user.is_read', false)->count());
     }
 
     public function getDeliveredCountAttribute(): int

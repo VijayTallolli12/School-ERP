@@ -12,6 +12,7 @@ use App\Modules\Students\Requests\StoreStudentRequest;
 use App\Modules\Students\Requests\UpdateStudentRequest;
 use App\Modules\Students\Services\StudentService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
 class StudentController extends Controller
@@ -161,6 +162,30 @@ class StudentController extends Controller
             'success' => true,
             'message' => 'Student updated successfully.',
             'data' => $student,
+        ]);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $q = $request->get('q', '');
+        $limit = min((int) $request->get('limit', 20), 50);
+
+        $students = Student::query()
+            ->where(function ($query) use ($q): void {
+                $query->where('first_name', 'like', "%{$q}%")
+                    ->orWhere('middle_name', 'like', "%{$q}%")
+                    ->orWhere('last_name', 'like', "%{$q}%")
+                    ->orWhere('admission_no', 'like', "%{$q}%");
+            })
+            ->orderBy('first_name')
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'results' => $students->map(fn (Student $s) => [
+                'id' => $s->id,
+                'text' => sprintf('%s (%s)', $s->full_name, $s->admission_no),
+            ]),
         ]);
     }
 

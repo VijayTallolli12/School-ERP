@@ -159,7 +159,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="attendanceStudentId" class="form-label">Student <span class="text-danger">*</span></label>
-                        <select id="attendanceStudentId" name="student_id" class="form-select" required disabled>
+                        <select id="attendanceStudentId" name="student_id" class="form-select searchable-select" required disabled data-placeholder="Select class section first">
                             <option value="">Select class section first</option>
                         </select>
                     </div>
@@ -438,8 +438,10 @@
                 document.getElementById('markModalTitle').textContent = 'Mark Attendance';
                 document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
                 document.getElementById('attendanceStatus').value = 'present';
-                document.getElementById('attendanceStudentId').innerHTML = '<option value="">Select class section first</option>';
-                document.getElementById('attendanceStudentId').disabled = true;
+                const $as = $('#attendanceStudentId');
+                if ($as.data('select2')) $as.select2('destroy');
+                $as[0].innerHTML = '<option value="">Select class section first</option>';
+                $as.prop('disabled', true);
                 setMarkFieldsDisabled(false);
                 $(form).find('.is-invalid').removeClass('is-invalid');
                 $(form).find('.invalid-feedback.dynamic').remove();
@@ -455,7 +457,10 @@
             }
 
             function loadMarkStudents(classSectionId, afterLoad) {
-                const sel = document.getElementById('attendanceStudentId');
+                const $sel = $('#attendanceStudentId');
+                // Destroy Select2 before DOM manipulation
+                if ($sel.data('select2')) $sel.select2('destroy');
+                const sel = $sel[0];
                 if (!classSectionId) {
                     sel.innerHTML = '<option value="">Select class section first</option>';
                     sel.disabled = true;
@@ -478,6 +483,8 @@
                             sel.innerHTML = '<option value="">No students in this class</option>';
                             sel.disabled = true;
                         }
+                        // Re-init Select2
+                        App.initSearchableSelects($sel.parent());
                         afterLoad?.();
                     })
                     .catch(() => {
@@ -527,7 +534,7 @@
                         $(form).attr('action', attendanceItemUrl(attendanceId));
                         document.getElementById('attendanceClassSectionId').value = d.class_section_id;
                         loadMarkStudents(d.class_section_id, () => {
-                            document.getElementById('attendanceStudentId').value = String(d.student_id);
+                            $('#attendanceStudentId').val(String(d.student_id)).trigger('change');
                             document.getElementById('attendanceAcademicYearId').value = String(d.academic_year_id);
                             document.getElementById('attendanceDate').value = d.attendance_date;
                             document.getElementById('attendanceStatus').value = d.status;
@@ -639,6 +646,6 @@
             @endcan
 
             refreshStatistics();
-        });
+        })(); });
     </script>
 @endpush

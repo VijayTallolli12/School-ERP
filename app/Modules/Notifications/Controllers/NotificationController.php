@@ -40,7 +40,7 @@ class NotificationController extends Controller
 
     public function data(): JsonResponse
     {
-        return DataTables::of($this->notifications->dataTableQuery())
+        return DataTables::of($this->notifications->dataTableQuery(request()->only(['type', 'status'])))
             ->addColumn('type_label', fn (Notification $notification) => e($notification->type_label))
             ->addColumn('priority_badge', fn (Notification $notification) => $notification->priority_badge)
             ->addColumn('status_badge', fn (Notification $notification) => $notification->status_badge)
@@ -67,7 +67,7 @@ class NotificationController extends Controller
 
     public function show(Notification $notification): JsonResponse
     {
-        $notification->load(['creator', 'users']);
+        $notification->load(['creator', 'users'])->loadCount(['users as unread_count' => fn ($q) => $q->where('notification_user.is_read', false)]);
 
         return response()->json([
             'success' => true,

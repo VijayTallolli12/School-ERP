@@ -13,7 +13,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex flex-wrap align-items-center gap-3">
-                    <ul class="nav nav-tabs card-header-tabs flex-grow-1 mb-0" role="tablist">
+                    <ul class="nav nav-tabs card-header-tabs flex-grow-1 mb-0" id="calendarTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#listView" type="button" role="tab">
                                 <i class="ti ti-list me-1"></i> List View
@@ -199,7 +199,7 @@
             const eventsTable = $('#eventsTable').DataTable({
                 processing: true,
                 serverSide: true,
-                responsive: true,
+                responsive: true, stateSave: true,
                 ajax: {
                     url: '{{ route('admin.calendar.data') }}',
                     data: function (d) {
@@ -425,7 +425,8 @@
             if ($('#calendar-tab').hasClass('active')) {
                 loadCalendarEvents(currentYear, currentMonth);
             }
-        });
+        })(); });
+        initTabPersistence('#calendarTabs');
     </script>
 @endpush
 

@@ -47,6 +47,7 @@ class DocumentController extends Controller
             ->addColumn('student', fn (StudentDocument $doc) => view('modules.documents._student', ['doc' => $doc])->render())
             ->addColumn('class', fn (StudentDocument $doc) => $doc->student->sessions->where('status', 'active')->first()?->schoolClass?->name ?? '-')
             ->addColumn('document_type', fn (StudentDocument $doc) => '<span class="badge bg-secondary">' . e($doc->document_type_label) . '</span>')
+            ->addColumn('uploaded_at', fn (StudentDocument $doc) => $doc->created_at?->format('d M Y h:i A') ?? '-')
             ->addColumn('issue_date', fn (StudentDocument $doc) => $doc->issue_date?->format('d M Y') ?? '-')
             ->addColumn('expiry_date', fn (StudentDocument $doc) => $doc->expiry_date?->format('d M Y') ?? '-')
             ->addColumn('status', fn (StudentDocument $doc) => view('modules.documents._status', ['doc' => $doc])->render())

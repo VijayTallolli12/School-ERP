@@ -26,9 +26,9 @@
                 </div>
             </form>
             <div class="mt-3">
-                <a id="exportExcel" href="#" class="btn btn-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
-                <a id="exportPdf" href="#" class="btn btn-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
-                <a id="exportPrint" href="#" class="btn btn-warning" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+                <button type="button" id="exportExcel" class="btn btn-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</button>
+                <button type="button" id="exportPdf" class="btn btn-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</button>
+                <button type="button" id="exportPrint" class="btn btn-warning"><i class="ti ti-printer me-1"></i> Print</button>
             </div>
         </div>
     </div>
@@ -100,9 +100,9 @@
             var baseExcel = "{{ route('reports.fees.export.excel', ['type' => 'overdue']) }}";
             var basePdf = "{{ route('reports.fees.export.pdf', ['type' => 'overdue']) }}";
             var basePrint = "{{ route('reports.fees.print', ['type' => 'overdue']) }}";
-            $('#exportExcel').attr('href', baseExcel + (qs ? '?' + qs : ''));
-            $('#exportPdf').attr('href', basePdf + (qs ? '?' + qs : ''));
-            $('#exportPrint').attr('href', basePrint + (qs ? '?' + qs : ''));
+            $('#exportExcel').off('click').on('click', function() { window.location.href = baseExcel + (qs ? '?' + qs : ''); });
+            $('#exportPdf').off('click').on('click', function() { window.open(basePdf + (qs ? '?' + qs : ''), '_blank'); });
+            $('#exportPrint').off('click').on('click', function() { window.open(basePrint + (qs ? '?' + qs : ''), '_blank'); });
         }
 
         $('#filterBtn').on('click', loadData);

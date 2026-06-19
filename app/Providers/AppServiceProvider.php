@@ -23,6 +23,18 @@ use App\Modules\Academics\Policies\SectionPolicy;
 use App\Modules\Academics\Policies\SubjectPolicy;
 use App\Modules\Academics\Repositories\AcademicRepository;
 use App\Modules\Academics\Repositories\AcademicRepositoryInterface;
+use App\Modules\Transport\Models\Driver;
+use App\Modules\Transport\Models\Route;
+use App\Modules\Transport\Models\RouteStop;
+use App\Modules\Transport\Models\TransportAssignment;
+use App\Modules\Transport\Models\Vehicle;
+use App\Modules\Transport\Policies\DriverPolicy;
+use App\Modules\Transport\Policies\RoutePolicy;
+use App\Modules\Transport\Policies\RouteStopPolicy;
+use App\Modules\Transport\Policies\TransportAssignmentPolicy;
+use App\Modules\Transport\Policies\VehiclePolicy;
+use App\Modules\Transport\Repositories\TransportRepository;
+use App\Modules\Transport\Repositories\TransportRepositoryInterface;
 use App\Modules\Attendance\Models\Attendance;
 use App\Modules\Attendance\Policies\AttendancePolicy;
 use App\Modules\Attendance\Repositories\AttendanceRepository;
@@ -124,6 +136,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(LeaveRequestRepositoryInterface::class, LeaveRequestRepository::class);
         $this->app->bind(CalendarRepositoryInterface::class, CalendarRepository::class);
         $this->app->bind(DocumentRepositoryInterface::class, DocumentRepository::class);
+        $this->app->bind(TransportRepositoryInterface::class, TransportRepository::class);
     }
 
     /**
@@ -163,5 +176,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(LeaveRequest::class, LeaveRequestPolicy::class);
         Gate::policy(AcademicCalendar::class, CalendarPolicy::class);
         Gate::policy(StudentDocument::class, DocumentPolicy::class);
+        Gate::policy(Vehicle::class, VehiclePolicy::class);
+        Gate::policy(Driver::class, DriverPolicy::class);
+        Gate::policy(Route::class, RoutePolicy::class);
+        Gate::policy(RouteStop::class, RouteStopPolicy::class);
+        Gate::policy(TransportAssignment::class, TransportAssignmentPolicy::class);
     }
 }

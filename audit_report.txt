@@ -1,0 +1,45 @@
+﻿REGISTERED=400
+BLADE_FILES=162
+BLADE_ROUTE_LITERALS=287
+MISSING=11
+
+admin.academics.
+  resources/views/modules/academics/_actions.blade.php
+admin.teachers.attendance.report
+  resources/views/modules/teachers/reports/attendance.blade.php
+admin.transport.
+  resources/views/modules/transport/_actions.blade.php
+parent-portal.attendance
+  resources/views/modules/parents/dashboard.blade.php
+parent-portal.dashboard
+  resources/views/modules/parents/attendance.blade.php
+  resources/views/modules/parents/exam_results.blade.php
+  resources/views/modules/parents/fees.blade.php
+  resources/views/modules/parents/homework.blade.php
+  resources/views/modules/parents/notifications.blade.php
+  resources/views/modules/parents/timetable.blade.php
+parent-portal.exam-results
+  resources/views/modules/parents/dashboard.blade.php
+parent-portal.fees
+  resources/views/modules/parents/dashboard.blade.php
+parent-portal.homework
+  resources/views/modules/parents/dashboard.blade.php
+parent-portal.notifications
+  resources/views/modules/parents/dashboard.blade.php
+parent-portal.timetable
+  resources/views/modules/parents/dashboard.blade.php
+register
+  resources/views/welcome.blade.php
+
+=== DATATABLE_WITHOUT_LAZYDT ===
+
+=== SCRIPT_BRACE_ISSUES ===
+resources/views/modules/attendance/index.blade.php block#1 braces 3/0 parens 5/3
+resources/views/modules/dashboard/index.blade.php block#1 braces 22/20 parens 19/18
+resources/views/modules/fees/index.blade.php block#1 braces 2/0 parens 9/7
+resources/views/modules/parents/index.blade.php block#1 braces 15/12 parens 37/34
+resources/views/modules/reports/absent_students/index.blade.php block#1 braces 54/53 parens 136/135
+resources/views/modules/reports/attendance/index.blade.php block#1 braces 1/0 parens 3/2
+resources/views/modules/reports/students/gender_wise.blade.php block#1 braces 1/0 parens 3/2
+resources/views/modules/reports/teachers/workload.blade.php block#1 braces 1/0 parens 4/3
+app/Modules/Reports/Views/exams/pass_fail_analysis.blade.php block#1 braces 1/0 parens 4/3

@@ -21,7 +21,7 @@
                     'classSubjects' => 'ti-book-2',
                 ] as $id => $icon)
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"><i class="{{ $icon }} me-1"></i>{{ str_replace('classSections', 'Class Sections', str_replace('classSubjects', 'Class Subjects', ucfirst($id))) }}</button>
+                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"><i class="ti {{ $icon }} me-1"></i>{{ str_replace('classSections', 'Class Sections', str_replace('classSubjects', 'Class Subjects', ucfirst($id))) }}</button>
                     </li>
                 @endforeach
             </ul>
@@ -217,25 +217,26 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const tables = {
-                years: $('#yearsTable').DataTable({processing: true, serverSide: true, responsive: true, ajax: '{{ route('admin.academics.academic-years.data') }}', columns: [
+                years: $('#yearsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.academics.academic-years.data') }}', columns: [
                     {data:'id'}, {data:'name'}, {data:'starts_on'}, {data:'ends_on'}, {data:'active_badge', orderable:false, searchable:false}, {data:'status'}, {data:'terms_count', searchable:false}, {data:'actions', orderable:false, searchable:false}
                 ]}),
-                classes: $('#classesTable').DataTable({processing: true, serverSide: true, responsive: true, ajax: '{{ route('admin.academics.classes.data') }}', columns: [
+                classes: $('#classesTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.academics.classes.data') }}', columns: [
                     {data:'id'}, {data:'name'}, {data:'code'}, {data:'sort_order'}, {data:'status'}, {data:'sections_count', searchable:false}, {data:'class_subjects_count', searchable:false}, {data:'actions', orderable:false, searchable:false}
                 ]}),
-                sections: $('#sectionsTable').DataTable({processing: true, serverSide: true, responsive: true, ajax: '{{ route('admin.academics.sections.data') }}', columns: [
+                sections: $('#sectionsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.academics.sections.data') }}', columns: [
                     {data:'id'}, {data:'name'}, {data:'code'}, {data:'capacity'}, {data:'status'}, {data:'classes_count', searchable:false}, {data:'actions', orderable:false, searchable:false}
                 ]}),
-                classSections: $('#classSectionsTable').DataTable({processing: true, serverSide: true, responsive: true, ajax: '{{ route('admin.academics.class-sections.data') }}', columns: [
+                classSections: $('#classSectionsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.academics.class-sections.data') }}', columns: [
                     {data:'id'}, {data:'class_name'}, {data:'section_name'}, {data:'teacher_name', orderable:false, searchable:false}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
                 ]}),
-                subjects: $('#subjectsTable').DataTable({processing: true, serverSide: true, responsive: true, ajax: '{{ route('admin.academics.subjects.data') }}', columns: [
+                subjects: $('#subjectsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.academics.subjects.data') }}', columns: [
                     {data:'id'}, {data:'name'}, {data:'code'}, {data:'type_label', name:'type'}, {data:'credit_hours'}, {data:'status'}, {data:'class_subjects_count', searchable:false}, {data:'actions', orderable:false, searchable:false}
                 ]}),
-                classSubjects: $('#classSubjectsTable').DataTable({processing: true, serverSide: true, responsive: true, ajax: '{{ route('admin.academics.class-subjects.data') }}', columns: [
+                classSubjects: $('#classSubjectsTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.academics.class-subjects.data') }}', columns: [
                     {data:'id', name:'class_subjects.id'}, {data:'academic_year', name:'academicYear.name'}, {data:'class_name', name:'schoolClass.name'}, {data:'subject_name', name:'subject.name'}, {data:'teacher_name', orderable:false}, {data:'weekly_periods', name:'class_subjects.weekly_periods'}, {data:'status', name:'class_subjects.status'}, {data:'actions', orderable:false, searchable:false}
                 ]})
             };
+            initTabPersistence('#academicTabs');
 
             const classSubjectStoreUrl = '{{ route('admin.academics.class-subjects.store') }}';
             const config = {
@@ -292,6 +293,6 @@
                     onSuccess: () => Object.values(tables).forEach(table => table.ajax.reload(null, false))
                 });
             });
-        });
+        })(); });
     </script>
 @endpush

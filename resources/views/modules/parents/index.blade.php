@@ -275,6 +275,6 @@
                 parentModal.hide();
                 parentsTable.ajax.reload(null, false);
             });
-        });
+        })(); });
     </script>
 @endpush

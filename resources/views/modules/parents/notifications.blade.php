@@ -4,7 +4,7 @@
 @section('page-title', 'Notifications')
 
 @section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('parent-portal.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.parent-portal.dashboard') }}">Dashboard</a></li>
     <li class="breadcrumb-item active">Notifications</li>
 @endsection
 
