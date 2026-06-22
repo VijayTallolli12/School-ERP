@@ -36,6 +36,7 @@ use App\Modules\Payroll\Models\PayGrade;
 use App\Modules\Payroll\Models\EmployeeSalaryStructure;
 use App\Modules\Payroll\Models\PayrollRun;
 use App\Modules\Payroll\Models\PayrollItem;
+use App\Modules\Payroll\Models\EmployeePayslip;
 use App\Modules\Payroll\Policies\PayrollDepartmentPolicy;
 use App\Modules\Payroll\Policies\PayrollPolicy;
 use App\Modules\Payroll\Repositories\PayrollRepository;
@@ -215,5 +216,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(EmployeeSalaryStructure::class, PayrollPolicy::class);
         Gate::policy(PayrollRun::class, PayrollPolicy::class);
         Gate::policy(PayrollItem::class, PayrollPolicy::class);
+        Gate::policy(EmployeePayslip::class, PayrollPolicy::class);
     }
 }

@@ -40,6 +40,9 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#grossVsNetPane" type="button"><i class="ti ti-chart-bar me-1"></i>Gross vs Net</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payslipHistoryPane" type="button"><i class="ti ti-receipt me-1"></i>Payslip History</button>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -186,6 +189,16 @@
                         <thead><tr><th>ID</th><th>Period</th><th>Total Gross</th><th>Total Deductions</th><th>Total Net</th><th>Employees</th><th>Status</th></tr></thead>
                     </table>
                 </div>
+
+                <div class="tab-pane fade" id="payslipHistoryPane">
+                    <div class="row g-2 mb-3">
+                        <div class="col-auto"><input class="form-control form-control-sm" type="text" id="phSearch" placeholder="Search employee or payslip #" style="min-width:250px;"></div>
+                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="phFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="payslipHistoryTable">
+                        <thead><tr><th>Payslip #</th><th>Employee</th><th>Period</th><th>Gross</th><th>Deductions</th><th>Net</th><th>Generated At</th><th width="130">Actions</th></tr></thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -250,6 +263,11 @@
                 {data:'id'}, {data:'period', orderable:false}, {data:'total_gross'}, {data:'total_deductions'}, {data:'total_net'}, {data:'items_count', searchable:false}, {data:'status'}
             ]});
             $('#gvFilterBtn').on('click', () => { gvTable.ajax.reload(); updateExportLinks('gv', 'gross_vs_net', {status: $('#gvFilterStatus').val()}); });
+
+            const phTable = $('#payslipHistoryTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: {url: '{{ route('admin.payroll.payslips.history.data') }}', data: d => { d.search = $('#phSearch').val(); }}, columns: [
+                {data:'payslip_number'}, {data:'employee_name', orderable:false}, {data:'period', orderable:false}, {data:'gross_salary'}, {data:'total_deductions'}, {data:'net_salary'}, {data:'generated_at'}, {data:'actions', orderable:false, searchable:false}
+            ]});
+            $('#phFilterBtn').on('click', () => { phTable.ajax.reload(); });
 
             initTabPersistence('#reportTabs');
         })(); });

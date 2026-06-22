@@ -67,4 +67,13 @@ Route::prefix('payroll')
         Route::get('reports/{report}/export/excel', [PayrollController::class, 'exportExcel'])->middleware('permission:payroll.export')->name('reports.export.excel');
         Route::get('reports/{report}/export/pdf', [PayrollController::class, 'exportPdf'])->middleware('permission:payroll.export')->name('reports.export.pdf');
         Route::get('reports/{report}/print', [PayrollController::class, 'printReport'])->middleware('permission:payroll.export')->name('reports.print');
+
+        // Payslips
+        Route::get('payslips/data', [PayrollController::class, 'payslipsData'])->middleware('permission:payroll.payslip.view')->name('payslips.data');
+        Route::get('payslips/history/data', [PayrollController::class, 'payslipHistoryData'])->middleware('permission:payroll.payslip.view')->name('payslips.history.data');
+        Route::post('payslips/generate', [PayrollController::class, 'generatePayslip'])->middleware('permission:payroll.payslip.generate')->name('payslips.generate');
+        Route::post('payslips/bulk-generate', [PayrollController::class, 'bulkGeneratePayslips'])->middleware('permission:payroll.payslip.generate')->name('payslips.bulk-generate');
+        Route::get('payslips/{payslip}', [PayrollController::class, 'showPayslip'])->middleware('permission:payroll.payslip.view')->name('payslips.show');
+        Route::get('payslips/{payslip}/pdf', [PayrollController::class, 'downloadPayslipPdf'])->middleware('permission:payroll.payslip.export')->name('payslips.pdf');
+        Route::get('payslips/{payslip}/print', [PayrollController::class, 'printPayslip'])->middleware('permission:payroll.payslip.export')->name('payslips.print');
     });

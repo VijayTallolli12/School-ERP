@@ -13,4 +13,9 @@ class PayrollPolicy
     public function process(User $user): bool { return $user->can('payroll.process'); }
     public function lock(User $user): bool { return $user->can('payroll.lock'); }
     public function export(User $user): bool { return $user->can('payroll.export'); }
+
+    // Payslips
+    public function payslipView(User $user): bool { return $user->can('payroll.payslip.view'); }
+    public function payslipGenerate(User $user): bool { return $user->can('payroll.payslip.generate'); }
+    public function payslipExport(User $user): bool { return $user->can('payroll.payslip.export'); }
 }

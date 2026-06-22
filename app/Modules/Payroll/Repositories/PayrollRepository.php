@@ -9,7 +9,9 @@ use App\Modules\Payroll\Models\PayGrade;
 use App\Modules\Payroll\Models\EmployeeSalaryStructure;
 use App\Modules\Payroll\Models\PayrollRun;
 use App\Modules\Payroll\Models\PayrollItem;
+use App\Modules\Payroll\Models\EmployeePayslip;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class PayrollRepository implements PayrollRepositoryInterface
 {
@@ -124,5 +126,56 @@ class PayrollRepository implements PayrollRepositoryInterface
     public function deletePayrollItems(int $runId): void
     {
         PayrollItem::query()->where('payroll_run_id', $runId)->delete();
+    }
+
+    // ─── Payslips ────────────────────────────────────────────────────────
+
+    public function employeePayslips(?int $runId = null): Builder
+    {
+        $query = EmployeePayslip::query()->with(['payrollRun', 'payrollItem'])->latest();
+        if ($runId) {
+            $query->where('payroll_run_id', $runId);
+        }
+        return $query;
+    }
+
+    public function payslipHistory(): Builder
+    {
+        return EmployeePayslip::query()->with(['payrollRun', 'payrollItem'])->latest();
+    }
+
+    public function createPayslip(array $data): EmployeePayslip
+    {
+        return EmployeePayslip::query()->create($data);
+    }
+
+    public function getNextPayslipNumber(int $year, int $month): string
+    {
+        $prefix = sprintf('PS-%04d-%02d-', $year, $month);
+        $last = EmployeePayslip::query()
+            ->where('payslip_number', 'like', "$prefix%")
+            ->orderBy('payslip_number', 'desc')
+            ->value('payslip_number');
+
+        if ($last) {
+            $seq = (int) substr($last, -6) + 1;
+        } else {
+            $seq = 1;
+        }
+
+        return $prefix . str_pad((string) $seq, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function findPayslip(int $id): Model|EmployeePayslip|null
+    {
+        return EmployeePayslip::query()->with(['payrollRun', 'payrollItem'])->find($id);
+    }
+
+    public function payslipExists(int $runId, int $itemId): bool
+    {
+        return EmployeePayslip::query()
+            ->where('payroll_run_id', $runId)
+            ->where('payroll_item_id', $itemId)
+            ->exists();
     }
 }

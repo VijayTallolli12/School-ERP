@@ -62,6 +62,7 @@ class PermissionSeeder extends Seeder
             'transport' => ['view', 'create', 'update', 'delete', 'export'],
             'library' => ['view', 'create', 'update', 'delete', 'export'],
             'payroll' => ['view', 'create', 'update', 'delete', 'export', 'process', 'lock'],
+            'payroll.payslip' => ['view', 'generate', 'export'],
             'notifications' => ['view', 'create', 'update', 'delete', 'send'],
             'reports' => ['view', 'export'],
             'settings' => ['view', 'update'],

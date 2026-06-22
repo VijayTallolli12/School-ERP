@@ -9,7 +9,9 @@ use App\Modules\Payroll\Models\PayGrade;
 use App\Modules\Payroll\Models\EmployeeSalaryStructure;
 use App\Modules\Payroll\Models\PayrollRun;
 use App\Modules\Payroll\Models\PayrollItem;
+use App\Modules\Payroll\Models\EmployeePayslip;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 interface PayrollRepositoryInterface
 {
@@ -40,4 +42,13 @@ interface PayrollRepositoryInterface
     public function updatePayrollRun(PayrollRun $run, array $data): PayrollRun;
     public function createPayrollItems(iterable $items): void;
     public function deletePayrollItems(int $runId): void;
+
+    // ─── Payslips ────────────────────────────────────────────────────────
+
+    public function employeePayslips(?int $runId = null): Builder;
+    public function payslipHistory(): Builder;
+    public function createPayslip(array $data): EmployeePayslip;
+    public function getNextPayslipNumber(int $year, int $month): string;
+    public function findPayslip(int $id): Model|EmployeePayslip|null;
+    public function payslipExists(int $runId, int $itemId): bool;
 }

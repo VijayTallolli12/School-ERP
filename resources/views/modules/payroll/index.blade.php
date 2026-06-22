@@ -30,6 +30,9 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payrollRunsPane" type="button"><i class="ti ti-settings-dollar me-1"></i>Payroll Runs</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payslipsPane" type="button"><i class="ti ti-receipt me-1"></i>Payslips</button>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -109,6 +112,30 @@
                     </div>
                     <table class="table table-striped table-bordered w-100" id="payrollRunsTable">
                         <thead><tr><th>ID</th><th>Period</th><th>Status</th><th>Generated At</th><th>Employees</th><th width="120">Actions</th></tr></thead>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="payslipsPane">
+                    <div class="row g-2 mb-3 align-items-center">
+                        <div class="col-auto">
+                            <select class="form-select form-select-sm" id="psFilterRun" style="min-width:250px;">
+                                <option value="">Select a locked payroll run</option>
+                                @foreach($payrollRuns ?? [] as $r)
+                                    <option value="{{ $r->id }}">{{ $r->month_name }} {{ $r->year }} ({{ $r->status }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            @can('payroll.payslip.generate')
+                                <button class="btn btn-sm btn-success" id="bulkGenerateBtn" disabled><i class="ti ti-receipt me-1"></i> Generate All Payslips</button>
+                            @endcan
+                        </div>
+                        <div class="col-auto ms-auto">
+                            <small class="text-muted">Select a locked run to view or generate payslips</small>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="payslipsTable">
+                        <thead><tr><th>Payslip #</th><th>Employee</th><th>Period</th><th>Gross</th><th>Deductions</th><th>Net</th><th>Generated At</th><th width="150">Actions</th></tr></thead>
                     </table>
                 </div>
             </div>
@@ -380,6 +407,62 @@
                     }
                 });
             });
+            // Payslips
+            let payslipsTable = null;
+
+            function initPayslipsTable(runId) {
+                if (payslipsTable) { payslipsTable.destroy(); payslipsTable = null; }
+                if (!runId) { $('#payslipsTable tbody').html('<tr><td colspan="8" class="text-center text-muted">Select a locked payroll run to view payslips.</td></tr>'); return; }
+                payslipsTable = $('#payslipsTable').DataTable({
+                    processing: true, serverSide: true, responsive: true, stateSave: false,
+                    ajax: { url: '{{ route('admin.payroll.payslips.data') }}', data: d => { d.payroll_run_id = runId; }},
+                    columns: [
+                        {data:'payslip_number', orderable:false},
+                        {data:'employee_name', orderable:false},
+                        {data:'period', orderable:false},
+                        {data:'gross_salary'},
+                        {data:'total_deductions'},
+                        {data:'net_salary'},
+                        {data:'generated_at'},
+                        {data:'actions', orderable:false, searchable:false}
+                    ]
+                });
+            }
+
+            $('#psFilterRun').on('change', function () {
+                const runId = $(this).val();
+                const selectedText = $(this).find('option:selected').text();
+                const isLocked = selectedText.includes('locked');
+                $('#bulkGenerateBtn').prop('disabled', !(runId && isLocked));
+                initPayslipsTable(runId);
+            });
+
+            $('#bulkGenerateBtn').on('click', function () {
+                const runId = $('#psFilterRun').val();
+                if (!runId) return;
+                if (!confirm('Generate payslips for all employees in this run? Already generated payslips will be skipped.')) return;
+                $.ajax({
+                    url: '{{ route('admin.payroll.payslips.bulk-generate') }}',
+                    method: 'POST',
+                    data: { payroll_run_id: runId, _token: document.querySelector('meta[name="csrf-token"]')?.content ?? '' },
+                    success: function (response) {
+                        if (payslipsTable) payslipsTable.ajax.reload(null, false);
+                        if (response.message) App.notify?.(response.message, 'success');
+                    },
+                    error: function (xhr) {
+                        const msg = xhr.responseJSON?.message || 'Failed to generate payslips.';
+                        alert(msg);
+                    }
+                });
+            });
+
+            // Reset payslips table when tab changes
+            $('#payrollTabs button[data-bs-target="#payslipsPane"]').on('shown.bs.tab', function () {
+                if ($('#psFilterRun').val()) {
+                    initPayslipsTable($('#psFilterRun').val());
+                }
+            });
+
         })(); });
     </script>
 @endpush

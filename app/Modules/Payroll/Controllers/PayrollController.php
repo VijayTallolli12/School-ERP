@@ -11,12 +11,15 @@ use App\Modules\Payroll\Models\PayGrade;
 use App\Modules\Payroll\Models\EmployeeSalaryStructure;
 use App\Modules\Payroll\Models\PayrollRun;
 use App\Modules\Payroll\Models\PayrollItem;
+use App\Modules\Payroll\Models\EmployeePayslip;
 use App\Modules\Payroll\Repositories\PayrollRepositoryInterface;
 use App\Modules\Payroll\Requests\StorePayrollDepartmentRequest;
 use App\Modules\Payroll\Requests\StorePayrollDesignationRequest;
 use App\Modules\Payroll\Requests\StoreSalaryComponentRequest;
 use App\Modules\Payroll\Requests\StorePayGradeRequest;
 use App\Modules\Payroll\Requests\StoreEmployeeSalaryStructureRequest;
+use App\Modules\Payroll\Requests\GeneratePayslipRequest;
+use App\Modules\Payroll\Requests\BulkGeneratePayslipRequest;
 use App\Modules\Payroll\Requests\UpdatePayrollDepartmentRequest;
 use App\Modules\Payroll\Requests\UpdatePayrollDesignationRequest;
 use App\Modules\Payroll\Requests\UpdateSalaryComponentRequest;
@@ -47,6 +50,7 @@ class PayrollController extends Controller
             'salaryComponents' => SalaryComponent::query()->orderBy('name')->get(),
             'payGrades' => PayGrade::query()->orderBy('name')->get(),
             'salaryStructures' => EmployeeSalaryStructure::query()->with('payGrade')->latest()->get(),
+            'payrollRuns' => PayrollRun::query()->latest()->get(),
         ]);
     }
 
@@ -292,6 +296,107 @@ class PayrollController extends Controller
             ->editColumn('status', fn (PayrollItem $i) => '<span class="badge bg-'.($i->status === 'active' ? 'success' : 'secondary').'">'.$i->status.'</span>')
             ->rawColumns(['gross_salary', 'total_deductions', 'net_salary', 'status'])
             ->toJson();
+    }
+
+    // ─── Payslips ────────────────────────────────────────────────────────
+
+    public function payslipsData(Request $request): JsonResponse
+    {
+        $runId = $request->input('payroll_run_id');
+        $query = $this->payroll->employeePayslips($runId);
+
+        return DataTables::of($query)
+            ->addColumn('employee_name', fn (EmployeePayslip $p) => $p->employee_name)
+            ->addColumn('period', fn (EmployeePayslip $p) => $p->payrollRun?->month_name.' '.$p->payrollRun?->year)
+            ->editColumn('gross_salary', fn (EmployeePayslip $p) => '<span class="text-end d-block">'.number_format((float) $p->gross_salary, 2).'</span>')
+            ->editColumn('total_deductions', fn (EmployeePayslip $p) => '<span class="text-end d-block">'.number_format((float) $p->total_deductions, 2).'</span>')
+            ->editColumn('net_salary', fn (EmployeePayslip $p) => '<span class="text-end d-block">'.number_format((float) $p->net_salary, 2).'</span>')
+            ->editColumn('generated_at', fn (EmployeePayslip $p) => $p->generated_at?->format('d M Y H:i') ?? '-')
+            ->addColumn('actions', fn (EmployeePayslip $p) => '
+                <div class="btn-group btn-group-sm">
+                    <a class="btn btn-outline-primary" href="'.route('admin.payroll.payslips.print', $p->id).'" target="_blank" title="View"><i class="ti ti-eye"></i></a>
+                    <a class="btn btn-outline-danger" href="'.route('admin.payroll.payslips.pdf', $p->id).'" title="PDF"><i class="ti ti-file-pdf"></i></a>
+                    <a class="btn btn-outline-secondary" href="'.route('admin.payroll.payslips.print', $p->id).'" target="_blank" title="Print"><i class="ti ti-printer"></i></a>
+                </div>')
+            ->rawColumns(['gross_salary', 'total_deductions', 'net_salary', 'actions'])
+            ->toJson();
+    }
+
+    public function payslipHistoryData(Request $request): JsonResponse
+    {
+        $query = $this->payroll->payslipHistory();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('employee_name', 'like', "%{$search}%")
+                  ->orWhere('payslip_number', 'like', "%{$search}%");
+            });
+        }
+
+        return DataTables::of($query)
+            ->addColumn('payslip_number', fn (EmployeePayslip $p) => '<a href="'.route('admin.payroll.payslips.show', $p->id).'" class="view-payslip" data-id="'.$p->id.'">'.$p->payslip_number.'</a>')
+            ->addColumn('employee_name', fn (EmployeePayslip $p) => $p->employee_name)
+            ->addColumn('period', fn (EmployeePayslip $p) => $p->payrollRun?->month_name.' '.$p->payrollRun?->year)
+            ->editColumn('gross_salary', fn (EmployeePayslip $p) => '<span class="text-end d-block">'.number_format((float) $p->gross_salary, 2).'</span>')
+            ->editColumn('total_deductions', fn (EmployeePayslip $p) => '<span class="text-end d-block">'.number_format((float) $p->total_deductions, 2).'</span>')
+            ->editColumn('net_salary', fn (EmployeePayslip $p) => '<span class="text-end d-block">'.number_format((float) $p->net_salary, 2).'</span>')
+            ->editColumn('generated_at', fn (EmployeePayslip $p) => $p->generated_at?->format('d M Y H:i') ?? '-')
+            ->addColumn('actions', fn (EmployeePayslip $p) => '
+                <div class="btn-group btn-group-sm">
+                    <a class="btn btn-outline-primary" href="'.route('admin.payroll.payslips.show', $p->id).'" title="View"><i class="ti ti-eye"></i></a>
+                    <a class="btn btn-outline-danger" href="'.route('admin.payroll.payslips.pdf', $p->id).'" title="PDF"><i class="ti ti-file-pdf"></i></a>
+                    <a class="btn btn-outline-secondary" href="'.route('admin.payroll.payslips.print', $p->id).'" target="_blank" title="Print"><i class="ti ti-printer"></i></a>
+                </div>')
+            ->rawColumns(['payslip_number', 'gross_salary', 'total_deductions', 'net_salary', 'actions'])
+            ->toJson();
+    }
+
+    public function generatePayslip(GeneratePayslipRequest $request): JsonResponse
+    {
+        try {
+            $payslip = $this->service->generatePayslipItem(
+                $request->input('payroll_run_id'),
+                $request->input('payroll_item_id')
+            );
+            return $this->jsonCreated('Payslip generated successfully.', $payslip);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function bulkGeneratePayslips(BulkGeneratePayslipRequest $request): JsonResponse
+    {
+        try {
+            $payslips = $this->service->bulkGeneratePayslips($request->input('payroll_run_id'));
+            $count = count($payslips);
+            return $this->jsonCreated("{$count} payslip(s) generated successfully.", $payslips);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function showPayslip(EmployeePayslip $payslip): JsonResponse
+    {
+        $payslip->load(['payrollRun', 'payrollItem']);
+
+        return $this->jsonData($payslip);
+    }
+
+    public function downloadPayslipPdf(EmployeePayslip $payslip): \Illuminate\Http\Response
+    {
+        $data = $this->service->getPayslipData($payslip->id);
+
+        return Pdf::loadView('modules.payroll.payslip_pdf', $data)
+            ->setPaper('a4', 'portrait')
+            ->download("payslip_{$payslip->payslip_number}.pdf");
+    }
+
+    public function printPayslip(EmployeePayslip $payslip): \Illuminate\View\View
+    {
+        $data = $this->service->getPayslipData($payslip->id);
+
+        return view('modules.payroll.payslip_print', $data);
     }
 
     // ─── Reports ─────────────────────────────────────────────────────────
