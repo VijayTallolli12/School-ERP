@@ -48,6 +48,7 @@
         <strong>&copy; {{ now()->year }} {{ setting('school_name', 'School ERP') }}.</strong>
     </footer>
 </div>
+@include('modules.ai-assistant.modal')
 @stack('modals')
 @stack('scripts')
 </body>

@@ -35,4 +35,5 @@ Route::middleware(['auth', 'school'])
         require __DIR__.'/modules/transport.php';
         require __DIR__.'/modules/library.php';
         require __DIR__.'/modules/payroll.php';
+        require __DIR__.'/modules/ai_assistant.php';
     });
