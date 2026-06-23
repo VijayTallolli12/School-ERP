@@ -11,6 +11,7 @@ use App\Modules\Fees\Models\FeeStructure;
 use App\Modules\Fees\Models\StudentFee;
 use App\Modules\Fees\Models\StudentFeeItem;
 use App\Modules\Students\Models\Student;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,14 @@ class FeeService
     public function __construct(
         private readonly SchoolContext $schoolContext,
     ) {}
+
+    public function pendingFeeItemsQuery(): Builder
+    {
+        return StudentFeeItem::query()
+            ->whereHas('studentFee.student', fn ($q) => $q->where('school_id', $this->schoolContext->id()))
+            ->withSum(['paymentItems as paid_sum' => fn ($q) => $q->whereHas('feePayment')], 'amount')
+            ->havingRaw('COALESCE(paid_sum, 0) < student_fee_items.amount');
+    }
 
     public function createFeeCategory(array $data): FeeCategory
     {

@@ -463,6 +463,14 @@
                         </a>
                     </li>
                 @endcan
+
+                <li class="nav-header">AI</li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.agents.index') }}" class="nav-link @if(request()->routeIs('admin.agents.*')) active @endif">
+                        <i class="nav-icon ti ti-robot"></i>
+                        <p>AI Agents</p>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>

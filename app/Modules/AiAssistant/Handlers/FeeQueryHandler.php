@@ -5,6 +5,7 @@ namespace App\Modules\AiAssistant\Handlers;
 use App\Core\Tenant\SchoolContext;
 use App\Modules\Fees\Models\FeePayment;
 use App\Modules\Fees\Models\StudentFeeItem;
+use App\Modules\Fees\Services\FeeService;
 use App\Modules\Students\Models\Student;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,8 @@ use Illuminate\Support\Facades\DB;
 class FeeQueryHandler
 {
     public function __construct(
-        private readonly SchoolContext $schoolContext
+        private readonly SchoolContext $schoolContext,
+        private readonly FeeService $feeService,
     ) {}
 
     public function totalOutstanding(): string
@@ -34,14 +36,10 @@ class FeeQueryHandler
 
     public function studentsWithPendingAbove(string $amount = '1000'): string
     {
-        $schoolId = $this->schoolContext->id();
         $threshold = (float) $amount;
 
-        $items = StudentFeeItem::query()
+        $items = $this->feeService->pendingFeeItemsQuery()
             ->with(['studentFee.student', 'feeCategory'])
-            ->whereHas('studentFee.student', fn($q) => $q->where('school_id', $schoolId))
-            ->withSum(['paymentItems as paid_sum' => fn($q) => $q->whereHas('feePayment')], 'amount')
-            ->havingRaw('COALESCE(paid_sum, 0) < student_fee_items.amount')
             ->get();
 
         $studentBalances = [];
@@ -93,13 +91,8 @@ class FeeQueryHandler
 
     public function topDefaulters(): string
     {
-        $schoolId = $this->schoolContext->id();
-
-        $items = StudentFeeItem::query()
+        $items = $this->feeService->pendingFeeItemsQuery()
             ->with(['studentFee.student'])
-            ->whereHas('studentFee.student', fn($q) => $q->where('school_id', $schoolId))
-            ->withSum(['paymentItems as paid_sum' => fn($q) => $q->whereHas('feePayment')], 'amount')
-            ->havingRaw('COALESCE(paid_sum, 0) < student_fee_items.amount')
             ->get();
 
         $studentBalances = [];

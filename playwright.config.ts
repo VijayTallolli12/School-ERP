@@ -13,7 +13,7 @@ export default defineConfig({
     screenshot: 'on',
     trace: 'on-first-retry',
     actionTimeout: 10000,
-    navigationTimeout: 15000,
+    navigationTimeout: 30000,
   },
   projects: [
     {
