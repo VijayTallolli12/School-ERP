@@ -10,9 +10,9 @@
 
         <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item me-2">
-                <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" type="button" data-bs-toggle="modal" data-bs-target="#askErpModal">
-                    <i class="ti ti-robot"></i>
-                    <span class="d-none d-sm-inline">Ask ERP</span>
+                <button class="btn btn-sm btn-primary d-flex align-items-center gap-1 px-3" type="button" data-bs-toggle="modal" data-bs-target="#askErpModal" style="border-radius:var(--erp-btn-radius);">
+                    <i class="ti ti-sparkles"></i>
+                    <span class="d-none d-sm-inline fw-semibold">Ask ERP</span>
                 </button>
             </li>
             @include('layouts.partials._bell')

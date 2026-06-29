@@ -13,6 +13,29 @@ class AIService
 {
     private array $handlers;
 
+    private const INTENT_AGENT_MAP = [
+        'fee' => [
+            'agent' => 'fee_collection',
+            'label' => 'Fee Collection Agent',
+            'params' => ['days' => 30],
+        ],
+        'attendance' => [
+            'agent' => 'attendance',
+            'label' => 'Attendance Agent',
+            'params' => [],
+        ],
+        'library' => [
+            'agent' => 'library',
+            'label' => 'Library Agent',
+            'params' => ['days' => 1],
+        ],
+        'payroll' => [
+            'agent' => 'payroll',
+            'label' => 'Payroll Agent',
+            'params' => [],
+        ],
+    ];
+
     public function __construct(
         private readonly IntentResolver $resolver,
         StudentQueryHandler $studentHandler,
@@ -43,7 +66,8 @@ class AIService
             ];
         }
 
-        $intent = $this->resolver->resolve($trimmed);
+        $intentKey = $this->resolver->resolveKey($trimmed);
+        $intent = $intentKey ? $this->resolver->resolve($trimmed) : null;
 
         if (!$intent) {
             return [
@@ -73,16 +97,56 @@ class AIService
 
         try {
             $answer = $handler->{$method}();
-            return [
+
+            $response = [
                 'success' => true,
                 'answer' => $answer,
             ];
+
+            $recommendation = $this->getAgentRecommendation($intentKey);
+            if ($recommendation) {
+                $response['agent_recommendation'] = $recommendation;
+            }
+
+            return $response;
         } catch (\Exception $e) {
             return [
                 'success' => false,
                 'answer' => 'An error occurred while processing your request: ' . $e->getMessage(),
             ];
         }
+    }
+
+    private function getAgentRecommendation(?string $intentKey): ?array
+    {
+        if (!$intentKey) {
+            return null;
+        }
+
+        $category = explode('.', $intentKey)[0];
+
+        if (!isset(self::INTENT_AGENT_MAP[$category])) {
+            return null;
+        }
+
+        $map = self::INTENT_AGENT_MAP[$category];
+
+        $params = $map['params'];
+
+        if ($category === 'attendance') {
+            $params['date'] = now()->format('Y-m-d');
+        }
+
+        if ($category === 'payroll') {
+            $params['month'] = (int) now()->format('n');
+            $params['year'] = (int) now()->format('Y');
+        }
+
+        return [
+            'agent' => $map['agent'],
+            'label' => $map['label'],
+            'params' => $params,
+        ];
     }
 
     private function getSupportedPreview(): string

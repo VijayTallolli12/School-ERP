@@ -9,14 +9,16 @@
             'fine-setting' => 'fine-settings',
         ][$type] ?? $type;
     @endphp
-    @can('library.update')
-        <button type="button" class="btn btn-sm btn-outline-primary edit-library"
-                data-type="{{ $type }}"
-                data-url="{{ route('admin.library.'.$routeBase.'.show', $model) }}"
-                data-update-url="{{ route('admin.library.'.$routeBase.'.update', $model) }}">
-            <i class="ti ti-pencil"></i>
-        </button>
-    @endcan
+    @if ($type !== 'issue')
+        @can('library.update')
+            <button type="button" class="btn btn-sm btn-outline-primary edit-library"
+                    data-type="{{ $type }}"
+                    data-url="{{ route('admin.library.'.$routeBase.'.show', $model) }}"
+                    data-update-url="{{ route('admin.library.'.$routeBase.'.update', $model) }}">
+                <i class="ti ti-pencil"></i>
+            </button>
+        @endcan
+    @endif
     @if ($type === 'issue' && $model->status === 'issued')
         @can('library.update')
             <button type="button" class="btn btn-sm btn-outline-success return-book"

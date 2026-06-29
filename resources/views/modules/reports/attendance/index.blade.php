@@ -115,51 +115,74 @@
         </div>
     </div>
 
-    <!-- Navigation Cards (compact row) -->
-    <div class="row g-3">
-        <div class="col-6 col-xl-3">
-            <a href="{{ route('reports.attendance.daily') }}" class="nav-card-compact">
-                <div class="nc-icon" style="background:rgba(37,99,235,.1);color:#2563eb;">
-                    <i class="ti ti-calendar-check"></i>
+    <!-- Report Navigation Cards -->
+    <div class="mb-0">
+        <h5 class="fw-semibold mb-3" style="font-size:0.95rem;"><i class="ti ti-list me-1 text-primary"></i> Attendance Reports</h5>
+        <div class="report-grid">
+            <div class="report-card-saas" onclick="location.href='{{ route('reports.attendance.daily') }}'">
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <div class="rcs-icon" style="background:rgba(37,99,235,.08);color:#2563eb;"><i class="ti ti-calendar-check"></i></div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="rcs-title">Daily Report</div>
+                        <p class="rcs-desc">Attendance for a date</p>
+                    </div>
                 </div>
-                <div>
-                    <div class="nc-title">Daily Report</div>
-                    <div class="nc-sub">Attendance for a date</div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="rcs-stat"><i class="ti ti-circle-check"></i>{{ $todaySummary['present'] ?? 0 }} present today</span>
                 </div>
-            </a>
-        </div>
-        <div class="col-6 col-xl-3">
-            <a href="{{ route('reports.attendance.monthly') }}" class="nav-card-compact">
-                <div class="nc-icon" style="background:rgba(14,165,233,.1);color:#0ea5e9;">
-                    <i class="ti ti-calendar-month"></i>
+                <div class="rcs-footer">
+                    <span>View Report</span>
+                    <span class="rcs-arrow">→</span>
                 </div>
-                <div>
-                    <div class="nc-title">Monthly Report</div>
-                    <div class="nc-sub">Trends for a month</div>
+            </div>
+            <div class="report-card-saas" onclick="location.href='{{ route('reports.attendance.monthly') }}'">
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <div class="rcs-icon" style="background:rgba(14,165,233,.08);color:#0ea5e9;"><i class="ti ti-calendar-month"></i></div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="rcs-title">Monthly Report</div>
+                        <p class="rcs-desc">Trends for a month</p>
+                    </div>
                 </div>
-            </a>
-        </div>
-        <div class="col-6 col-xl-3">
-            <a href="{{ route('reports.attendance.class_wise') }}" class="nav-card-compact">
-                <div class="nc-icon" style="background:rgba(245,158,11,.12);color:#d97706;">
-                    <i class="ti ti-chart-bar"></i>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="rcs-stat"><i class="ti ti-trending-up"></i>{{ count($trendData ?? []) }} days tracked</span>
                 </div>
-                <div>
-                    <div class="nc-title">Class-wise Report</div>
-                    <div class="nc-sub">Across classes</div>
+                <div class="rcs-footer">
+                    <span>View Report</span>
+                    <span class="rcs-arrow">→</span>
                 </div>
-            </a>
-        </div>
-        <div class="col-6 col-xl-3">
-            <a href="{{ route('reports.attendance.absent_students') }}" class="nav-card-compact">
-                <div class="nc-icon" style="background:rgba(220,38,38,.1);color:#dc2626;">
-                    <i class="ti ti-user-cancel"></i>
+            </div>
+            <div class="report-card-saas" onclick="location.href='{{ route('reports.attendance.class_wise') }}'">
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <div class="rcs-icon" style="background:rgba(245,158,11,.08);color:#d97706;"><i class="ti ti-chart-bar"></i></div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="rcs-title">Class-wise Report</div>
+                        <p class="rcs-desc">Across classes</p>
+                    </div>
                 </div>
-                <div>
-                    <div class="nc-title">Absent Students</div>
-                    <div class="nc-sub">Track absent patterns</div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="rcs-stat"><i class="ti ti-database"></i>{{ count($classWiseData ?? []) }} classes</span>
                 </div>
-            </a>
+                <div class="rcs-footer">
+                    <span>View Report</span>
+                    <span class="rcs-arrow">→</span>
+                </div>
+            </div>
+            <div class="report-card-saas" onclick="location.href='{{ route('reports.attendance.absent_students') }}'">
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <div class="rcs-icon" style="background:rgba(220,38,38,.08);color:#dc2626;"><i class="ti ti-user-cancel"></i></div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="rcs-title">Absent Students</div>
+                        <p class="rcs-desc">Track absent patterns</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="rcs-stat"><i class="ti ti-alert-circle"></i>{{ $todaySummary['absent'] ?? 0 }} absent today</span>
+                </div>
+                <div class="rcs-footer">
+                    <span>View Report</span>
+                    <span class="rcs-arrow">→</span>
+                </div>
+            </div>
         </div>
     </div>
 @endsection

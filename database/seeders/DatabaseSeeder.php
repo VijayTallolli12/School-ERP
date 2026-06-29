@@ -19,5 +19,9 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             AdminUserSeeder::class,
         ]);
+
+        if (env('DEMO_DATASET', false)) {
+            $this->call(\Database\Seeders\Golden\GoldenSchoolSeeder::class);
+        }
     }
 }

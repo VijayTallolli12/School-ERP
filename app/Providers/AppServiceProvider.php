@@ -108,6 +108,7 @@ use App\Modules\Reports\Repositories\StudentReportRepository;
 use App\Modules\Reports\Repositories\StudentReportRepositoryInterface;
 use App\Modules\Reports\Repositories\TeacherReportRepository;
 use App\Modules\Reports\Repositories\TeacherReportRepositoryInterface;
+use App\Modules\Reports\ViewComposers\ReportDashboardComposer;
 use App\Modules\Settings\Repositories\SettingsRepository;
 use App\Modules\Settings\Repositories\SettingsRepositoryInterface;
 use App\Modules\Teachers\Policies\TeacherPolicy;
@@ -217,5 +218,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(PayrollRun::class, PayrollPolicy::class);
         Gate::policy(PayrollItem::class, PayrollPolicy::class);
         Gate::policy(EmployeePayslip::class, PayrollPolicy::class);
+
+        view()->composer([
+            'Reports::teachers.index',
+            'Reports::parents.index',
+            'Reports::exams.index',
+        ], ReportDashboardComposer::class);
     }
 }

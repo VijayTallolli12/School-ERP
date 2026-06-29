@@ -282,12 +282,29 @@ class PayrollService
         $school = app(SchoolContext::class)->school();
         $run = $payslip->payrollRun;
 
+        $earnings = $payslip->earnings_json;
+        $deductions = $payslip->deductions_json;
+
+        if (is_string($earnings)) {
+            $earnings = json_decode($earnings, true) ?? [];
+        }
+        if (is_string($deductions)) {
+            $deductions = json_decode($deductions, true) ?? [];
+        }
+
+        if (is_array($earnings) && isset($earnings[0]['name'])) {
+            $earnings = collect($earnings)->pluck('amount', 'name')->toArray();
+        }
+        if (is_array($deductions) && isset($deductions[0]['name'])) {
+            $deductions = collect($deductions)->pluck('amount', 'name')->toArray();
+        }
+
         return [
             'school' => $school,
             'payslip' => $payslip,
             'run' => $run,
-            'earnings' => $payslip->earnings_json,
-            'deductions' => $payslip->deductions_json,
+            'earnings' => $earnings ?? [],
+            'deductions' => $deductions ?? [],
         ];
     }
 

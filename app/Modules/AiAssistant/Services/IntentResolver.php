@@ -109,9 +109,24 @@ class IntentResolver
 
     public function resolve(string $question): ?array
     {
+        $result = $this->resolveWithKey($question);
+
+        return $result ? $result['config'] : null;
+    }
+
+    public function resolveKey(string $question): ?string
+    {
+        $result = $this->resolveWithKey($question);
+
+        return $result ? $result['key'] : null;
+    }
+
+    private function resolveWithKey(string $question): ?array
+    {
         $lower = mb_strtolower(trim($question));
 
-        $bestMatch = null;
+        $bestKey = null;
+        $bestConfig = null;
         $bestScore = 0;
 
         foreach (self::INTENTS as $intent => $config) {
@@ -119,12 +134,20 @@ class IntentResolver
                 $score = $this->matchScore($lower, $keyword);
                 if ($score > $bestScore) {
                     $bestScore = $score;
-                    $bestMatch = $config;
+                    $bestKey = $intent;
+                    $bestConfig = $config;
                 }
             }
         }
 
-        return $bestMatch;
+        if (!$bestKey) {
+            return null;
+        }
+
+        return [
+            'key' => $bestKey,
+            'config' => $bestConfig,
+        ];
     }
 
     private function matchScore(string $question, string $keyword): int

@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Firebase Cloud Messaging
+    |--------------------------------------------------------------------------
+    */
+    'fcm' => [
+        'server_key' => env('FCM_SERVER_KEY'),
+        'enabled' => env('FCM_ENABLED', false),
+        'timeout' => env('FCM_TIMEOUT', 10),
+    ],
+
 ];

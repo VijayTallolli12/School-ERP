@@ -21,14 +21,23 @@
     --erp-card-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --erp-btn-radius: 0.625rem;
     --erp-input-radius: 0.5rem;
+    --erp-border-color: #e2e8f0;
     --erp-bg: #f8fafc;
+    --erp-bg-card: #ffffff;
     --erp-text: #0f172a;
     --erp-text-secondary: #64748b;
+    --erp-text-muted: #94a3b8;
     --erp-primary: #2563eb;
+    --erp-primary-light: rgba(37,99,235,.08);
+    --erp-success: #16a34a;
+    --erp-warning: #d97706;
+    --erp-danger: #dc2626;
+    --erp-info: #0ea5e9;
     --erp-page-title: 2rem;
     --erp-section-title: 1.25rem;
     --erp-card-metric: 2.5rem;
     --erp-card-label: 0.8125rem;
+    --erp-sidebar-accent: #2563eb;
 }
 
 /* --- TYPOGRAPHY --- */
@@ -119,7 +128,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 /* --- CARDS --- */
 .card {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--erp-border-color);
     border-radius: var(--erp-card-radius);
     box-shadow: var(--erp-card-shadow);
     transition: box-shadow var(--erp-transition), transform var(--erp-transition);
@@ -201,6 +210,14 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     transform: translateY(-2px);
 }
 
+.report-card {
+    transition: box-shadow var(--erp-transition), transform var(--erp-transition);
+}
+.report-card:hover {
+    box-shadow: var(--erp-card-shadow-hover);
+    transform: translateY(-2px);
+}
+
 .erp-stat-card .stat-info h4 {
     font-size: var(--erp-card-metric);
     font-weight: 700;
@@ -258,6 +275,35 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .erp-stat-card[data-accent="info"]      { --stat-accent: #0ea5e9; }
 .erp-stat-card[data-accent="secondary"] { --stat-accent: #64748b; }
 .erp-stat-card[data-accent="dark"]      { --stat-accent: #1e293b; }
+
+/* --- KPI TREND INDICATORS --- */
+.kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    line-height: 1.4;
+}
+.kpi-trend.up   { color: var(--erp-success); background: rgba(22,163,74,.1); }
+.kpi-trend.down { color: var(--erp-danger);  background: rgba(220,38,38,.1); }
+.kpi-trend.flat { color: var(--erp-text-muted); background: rgba(148,163,184,.12); }
+
+.kpi-metric {
+    font-size: var(--erp-card-metric);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--erp-text);
+}
+.kpi-label {
+    font-size: var(--erp-card-label);
+    font-weight: 500;
+    color: var(--erp-text-secondary);
+    letter-spacing: -0.005em;
+}
 
 /* Premium KPI Card variant */
 .erp-kpi-card {
@@ -1479,11 +1525,24 @@ select.form-select.select2-hidden-accessible {
 
 .app-sidebar .nav-header {
     font-size: 0.68rem;
-    font-weight: 650;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
-    padding: 1.25rem 1.25rem 0.5rem;
-    color: #94a3b8;
+    letter-spacing: 0.08em;
+    padding: 1.25rem 1.25rem 0.375rem;
+    color: var(--erp-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.app-sidebar .nav-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--erp-border-color);
+    opacity: .5;
+}
+.app-sidebar .nav-header:first-child {
+    padding-top: 0.5rem;
 }
 
 /* Submenu slide animation */
@@ -1883,6 +1942,107 @@ select.form-select.select2-hidden-accessible {
     font-size: 1.35rem;
     color: #94a3b8;
     font-weight: 500;
+}
+
+/* ============================================================
+   REPORT CARDS – Premium SaaS Grid
+   Inspired by: Linear · Stripe · HubSpot
+   ============================================================ */
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.85rem;
+}
+@media (max-width: 991.98px) {
+    .report-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575.98px) {
+    .report-grid { grid-template-columns: 1fr; }
+}
+
+.report-card-saas {
+    background: #fff;
+    border: 1px solid var(--erp-border-color);
+    border-radius: 0.75rem;
+    padding: 1rem 1rem 0.85rem;
+    cursor: pointer;
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    overflow: hidden;
+}
+.report-card-saas:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.07);
+    border-color: #d0d9e8;
+}
+.report-card-saas:active {
+    transform: translateY(-2px);
+}
+
+.report-card-saas .rcs-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: transform 200ms ease;
+}
+.report-card-saas:hover .rcs-icon {
+    transform: scale(1.08);
+}
+
+.report-card-saas .rcs-title {
+    font-size: 0.95rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: #0f172a;
+    line-height: 1.3;
+    margin: 0;
+}
+.report-card-saas .rcs-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0.15rem 0 0;
+}
+.report-card-saas .rcs-stat {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.report-card-saas .rcs-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.6rem;
+    margin-top: auto;
+    border-top: 1px solid #f1f5f9;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--erp-primary);
+    transition: color 200ms ease;
+}
+.report-card-saas:hover .rcs-footer {
+    color: #1d4ed8;
+}
+.report-card-saas .rcs-footer .rcs-arrow {
+    transition: transform 200ms ease;
+    font-size: 0.85rem;
+}
+.report-card-saas:hover .rcs-footer .rcs-arrow {
+    transform: translateX(3px);
 }
 
 /* --- UTILITY --- */
@@ -2948,3 +3108,566 @@ select.form-select.select2-hidden-accessible {
 }
 
 .metadata-text, small, .small { font-size: 0.75rem; color: var(--erp-text-secondary); }
+
+/* ============================================================
+   AI WORKSPACE PRO MAX — Premium Ops Center Styling
+   Inspired by: Microsoft Copilot · Linear · Stripe · Notion AI
+   ============================================================ */
+
+/* --- Workspace Hero --- */
+.aiw-hero {
+    position: relative;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    border-radius: 1.25rem;
+    padding: 2.25rem 2.5rem;
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+    isolation: isolate;
+}
+.aiw-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(37,99,235,.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(14,165,233,.12) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(99,102,241,.08) 0%, transparent 60%);
+    z-index: 0;
+    pointer-events: none;
+}
+.aiw-hero > * { position: relative; z-index: 1; }
+.aiw-hero h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin: 0;
+}
+.aiw-hero p {
+    color: rgba(255,255,255,.6);
+    font-size: 0.9rem;
+    margin: 0.4rem 0 0;
+    max-width: 520px;
+}
+.aiw-hero .aiw-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.7);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,.06);
+}
+
+/* --- AI Workspace Metric Cards --- */
+.aiw-metric {
+    background: #fff;
+    border: 1px solid var(--erp-border-color);
+    border-radius: 0.875rem;
+    padding: 1.25rem 1.35rem;
+    transition: box-shadow .2s ease, transform .2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.aiw-metric:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    transform: translateY(-1px);
+}
+.aiw-metric .aiw-metric-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+.aiw-metric .aiw-metric-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+}
+.aiw-metric .aiw-metric-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #64748b;
+    margin-top: 0.2rem;
+}
+.aiw-metric .aiw-metric-sub {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 0.05rem;
+}
+
+/* --- AIW Quick Ask Card --- */
+.aiw-quick-ask {
+    background: #fff;
+    border: 1px solid var(--erp-border-color);
+    border-radius: 0.875rem;
+    padding: 1.1rem 1.35rem;
+    transition: box-shadow .2s ease;
+}
+.aiw-quick-ask:focus-within {
+    border-color: var(--erp-primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+.aiw-quick-ask input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.9rem;
+    color: #0f172a;
+    width: 100%;
+}
+.aiw-quick-ask input::placeholder {
+    color: #94a3b8;
+}
+
+/* --- Premium Agent Card --- */
+.aiw-agent-card {
+    background: #fff;
+    border: 1px solid var(--erp-border-color);
+    border-radius: 0.875rem;
+    padding: 1.35rem;
+    transition: box-shadow .2s ease, transform .2s ease;
+    cursor: pointer;
+    position: relative;
+}
+.aiw-agent-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,.07);
+    transform: translateY(-2px);
+}
+.aiw-agent-card .aiw-agent-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.aiw-agent-card .aiw-agent-name {
+    font-size: 0.95rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: #0f172a;
+}
+.aiw-agent-card .aiw-agent-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.aiw-agent-card .aiw-agent-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    color: #64748b;
+}
+.aiw-agent-card .aiw-agent-stat strong {
+    color: #0f172a;
+}
+.aiw-agent-card .aiw-agent-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+
+/* --- Ask ERP Structured Response --- */
+.aiw-response-section {
+    border: 1px solid var(--erp-border-color);
+    border-radius: 0.75rem;
+    padding: 1rem 1.15rem;
+    margin-bottom: 0.75rem;
+    background: #fff;
+}
+.aiw-response-section:last-child { margin-bottom: 0; }
+.aiw-response-section .section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.aiw-response-section .section-content {
+    font-size: 0.875rem;
+    color: #0f172a;
+    line-height: 1.55;
+}
+.aiw-response-section.section-analysis { border-left: 3px solid var(--erp-primary); }
+.aiw-response-section.section-findings { border-left: 3px solid #f59e0b; }
+.aiw-response-section.section-actions  { border-left: 3px solid #16a34a; }
+.aiw-response-section.section-impact   { border-left: 3px solid #0ea5e9; }
+.aiw-response-section.section-confidence { border-left: 3px solid #8b5cf6; }
+
+/* --- Recommendation Card --- */
+.aiw-recommendation {
+    background: linear-gradient(135deg, #f8fafc, #eff6ff);
+    border: 1px solid #bfdbfe;
+    border-radius: 0.875rem;
+    padding: 1.15rem 1.25rem;
+    margin-top: 0.75rem;
+}
+.aiw-recommendation .rec-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--erp-primary);
+    margin-bottom: 0.5rem;
+}
+.aiw-recommendation .rec-agent-name {
+    font-size: 1rem;
+    font-weight: 650;
+    color: #0f172a;
+}
+.aiw-recommendation .rec-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #64748b;
+    padding: 0.2rem 0;
+}
+.aiw-recommendation .rec-row strong {
+    color: #0f172a;
+    font-weight: 600;
+    min-width: 100px;
+}
+
+/* --- Timeline Execution Flow --- */
+.aiw-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+.aiw-timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--erp-border-color);
+}
+.aiw-timeline-step {
+    position: relative;
+    margin-bottom: 1.25rem;
+    padding-left: 0.75rem;
+}
+.aiw-timeline-step:last-child { margin-bottom: 0; }
+.aiw-timeline-step .step-dot {
+    position: absolute;
+    left: -1.55rem;
+    top: 0.15rem;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--erp-border-color);
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    color: #fff;
+    z-index: 1;
+    transition: all .3s ease;
+}
+.aiw-timeline-step.active .step-dot {
+    background: var(--erp-primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+}
+.aiw-timeline-step.completed .step-dot {
+    background: #16a34a;
+}
+.aiw-timeline-step .step-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: color .3s ease;
+}
+.aiw-timeline-step.active .step-label { color: var(--erp-primary); }
+.aiw-timeline-step.completed .step-label { color: #16a34a; }
+.aiw-timeline-step .step-content {
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+/* --- Confidence Indicator --- */
+.aiw-confidence {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.aiw-confidence .conf-bar {
+    width: 80px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--erp-border-color);
+    overflow: hidden;
+}
+.aiw-confidence .conf-bar .conf-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .6s ease;
+}
+.aiw-confidence .conf-bar .conf-fill.high   { background: #16a34a; }
+.aiw-confidence .conf-bar .conf-fill.medium { background: #f59e0b; }
+.aiw-confidence .conf-bar .conf-fill.low    { background: #ef4444; }
+
+/* --- Recent Executions Compact --- */
+.aiw-recent {
+    border: 1px solid var(--erp-border-color);
+    border-radius: 0.875rem;
+    overflow: hidden;
+}
+.aiw-recent-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .15s ease;
+    font-size: 0.82rem;
+}
+.aiw-recent-item:last-child { border-bottom: none; }
+.aiw-recent-item:hover { background: #f8fafc; }
+.aiw-recent-item .ri-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.aiw-recent-item .ri-name {
+    font-weight: 600;
+    color: #0f172a;
+    flex: 1;
+}
+.aiw-recent-item .ri-meta {
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+
+/* --- Empty State Premium --- */
+.aiw-empty {
+    text-align: center;
+    padding: 3rem 1.5rem;
+}
+.aiw-empty .aiw-empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+}
+.aiw-empty h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.35rem;
+}
+.aiw-empty p {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* --- AI Workspace Divider --- */
+.aiw-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.5rem 0 1rem;
+}
+.aiw-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--erp-border-color);
+}
+.aiw-divider span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+/* --- Agent Execution Modal Premium --- */
+.aiw-modal .modal-content {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 25px 60px rgba(0,0,0,.15);
+    overflow: hidden;
+}
+.aiw-modal .modal-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1rem 1.35rem;
+}
+.aiw-modal .modal-header .modal-title {
+    font-size: 1.05rem;
+    font-weight: 650;
+}
+.aiw-modal .modal-body {
+    padding: 1.35rem;
+}
+.aiw-modal .modal-footer {
+    border-top: 1px solid #f1f5f9;
+    padding: 0.85rem 1.35rem;
+}
+.aiw-modal .btn-execute {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.55rem 1.5rem;
+    border-radius: 0.625rem;
+    transition: all .2s ease;
+}
+.aiw-modal .btn-execute:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37,99,235,.3);
+}
+
+/* --- Agent execution field styling --- */
+.aiw-field {
+    margin-bottom: 1rem;
+}
+.aiw-field label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.3rem;
+    display: block;
+}
+.aiw-field select,
+.aiw-field input[type="date"] {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--erp-border-color);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #0f172a;
+    background: #fff;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.aiw-field select:focus,
+.aiw-field input[type="date"]:focus {
+    border-color: var(--erp-primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    outline: none;
+}
+
+/* --- Key Findings List --- */
+.aiw-findings-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.aiw-findings-list li {
+    position: relative;
+    padding: 0.25rem 0 0.25rem 1.25rem;
+    font-size: 0.84rem;
+    color: #334155;
+    line-height: 1.5;
+}
+.aiw-findings-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6rem;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--erp-primary);
+    opacity: .5;
+}
+
+/* --- Impact Badge --- */
+.aiw-impact-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+.aiw-impact-badge.high   { background: rgba(22,163,74,.1); color: #16a34a; }
+.aiw-impact-badge.medium { background: rgba(245,158,11,.1); color: #d97706; }
+.aiw-impact-badge.low    { background: rgba(239,68,68,.1); color: #ef4444; }
+
+/* --- Step indicator for execution modal --- */
+.aiw-step-indicator {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+.aiw-step-indicator .step-pip {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--erp-border-color);
+    transition: background .3s ease;
+}
+.aiw-step-indicator .step-pip.active { background: var(--erp-primary); }
+.aiw-step-indicator .step-pip.done    { background: #16a34a; }
+
+/* --- Summary Stat Grid in Execution --- */
+.aiw-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+.aiw-stat-grid .sg-item {
+    text-align: center;
+    padding: 0.6rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+}
+.aiw-stat-grid .sg-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #0f172a;
+}
+.aiw-stat-grid .sg-label {
+    font-size: 0.68rem;
+    color: #64748b;
+    margin-top: 0.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}

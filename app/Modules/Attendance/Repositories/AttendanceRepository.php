@@ -87,7 +87,7 @@ class AttendanceRepository implements AttendanceRepositoryInterface
     public function findByDateAndStudent(string $date, int $studentId): ?Attendance
     {
         return $this->query()
-            ->where('attendance_date', $date)
+            ->whereDate('attendance_date', $date)
             ->where('student_id', $studentId)
             ->first();
     }

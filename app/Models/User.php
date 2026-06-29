@@ -92,6 +92,16 @@ class User extends Authenticatable
         return $this->hasOne(\App\Modules\Parents\Models\Guardian::class);
     }
 
+    public function teacher(): HasOne
+    {
+        return $this->hasOne(\App\Modules\Teachers\Models\Teacher::class);
+    }
+
+    public function student(): HasOne
+    {
+        return $this->hasOne(\App\Modules\Students\Models\Student::class);
+    }
+
     /**
      * Custom notification relationship via notification_user pivot.
      * Named differently to avoid conflicting with Notifiable trait's notifications() MorphMany return type.

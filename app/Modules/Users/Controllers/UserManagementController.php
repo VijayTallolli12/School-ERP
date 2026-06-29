@@ -40,7 +40,7 @@ class UserManagementController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('is_active', $request->status === 'active');
+            $query->where('status', $request->string('status'));
         }
 
         if ($request->filled('school_id')) {
@@ -50,7 +50,7 @@ class UserManagementController extends Controller
         return DataTables::of($query)
             ->addColumn('role', fn (User $user) => $user->roles->pluck('name')->implode(', '))
             ->addColumn('school', fn (User $user) => $user->currentSchool?->name ?? '-')
-            ->editColumn('is_active', fn (User $user) => $user->is_active ? 'Active' : 'Inactive')
+            ->addColumn('is_active', fn (User $user) => $user->status === 'active' ? 'Active' : 'Inactive')
             ->addColumn('actions', fn (User $user) => view('modules.users._actions', compact('user'))->render())
             ->rawColumns(['actions'])
             ->make(true);
