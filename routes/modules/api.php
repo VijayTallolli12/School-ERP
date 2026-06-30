@@ -33,6 +33,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         ->middleware('throttle:5,1')
         ->name('student.login');
 
+    // Phase 5.6 — Driver App Login (public, throttled)
+    Route::post('driver/login', [\App\Http\Controllers\Api\V1\DriverApiController::class, 'login'])
+        ->middleware('throttle:5,1')
+        ->name('driver.login');
+
     // ───────────────────────────────────────────────────────────────────
     // Authenticated routes (Sanctum + School context + throttle)
     // ───────────────────────────────────────────────────────────────────
@@ -59,5 +64,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
         // Phase 5.3 — Student App API
         require __DIR__.'/api/student-app.php';
+
+        // Phase 5.6 — Driver App API
+        require __DIR__.'/api/driver.php';
     });
 });
