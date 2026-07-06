@@ -51,13 +51,9 @@ $(document).ready(function () {
         return div.innerHTML;
     }
 
-    function askQuestion() {
-        const question = questionInput.val().trim();
-        if (!question) {
-            App.toast?.('warning', 'Please enter a question.');
-            return;
-        }
+    let pendingConfirmQuestion = '';
 
+    function sendRequest(question, confirmed) {
         responseArea.addClass('d-none');
         loading.removeClass('d-none');
         askBtn.prop('disabled', true);
@@ -67,6 +63,7 @@ $(document).ready(function () {
             method: 'POST',
             data: {
                 question: question,
+                confirmed: confirmed ? 1 : 0,
                 _token: '{{ csrf_token() }}'
             },
             success: function (res) {
@@ -76,50 +73,47 @@ $(document).ready(function () {
                 let html = '';
 
                 if (res.success) {
-                    const answer = res.answer;
+                    const answer = res.answer || '';
                     const lines = answer.split('\n').filter(function (l) { return l.trim(); });
-
-                    // Analysis Summary
-                    html += '<div class="aiw-response-section section-analysis">' +
-                        '<div class="section-label"><i class="ti ti-search"></i> Analysis Summary</div>' +
-                        '<div class="section-content">' + escHtml(lines[0] || answer).replace(/\n/g, '<br>') + '</div></div>';
-
-                    // Key Findings (bullet points from answer)
-                    const findings = lines.filter(function (l) { return l.trim().startsWith('-') || l.trim().startsWith('•') || l.trim().match(/^\d+\./) || l.includes(':'); });
-                    if (findings.length > 0) {
-                        let fHtml = '<ul class="aiw-findings-list">';
-                        findings.slice(0, 5).forEach(function (f) {
-                            fHtml += '<li>' + escHtml(f.replace(/^[-•]\s*/, '').replace(/^\d+\.\s*/, '')) + '</li>';
-                        });
-                        fHtml += '</ul>';
-                        html += '<div class="aiw-response-section section-findings">' +
-                            '<div class="section-label"><i class="ti ti-list-details"></i> Key Findings</div>' +
-                            fHtml + '</div>';
-                    }
-
-                    // Recommended Actions (from remaining lines)
-                    const actions = lines.slice(1, Math.min(4, lines.length));
-                    if (actions.length > 0) {
-                        let aHtml = '<ul class="aiw-findings-list">';
-                        actions.forEach(function (a) {
-                            if (!a.startsWith('-') && !a.startsWith('•') && !a.match(/^\d+\./)) {
-                                aHtml += '<li>' + escHtml(a) + '</li>';
-                            }
-                        });
-                        aHtml += '</ul>';
-                        html += '<div class="aiw-response-section section-actions">' +
-                            '<div class="section-label"><i class="ti ti-arrows-right"></i> Recommended Actions</div>' +
-                            aHtml + '</div>';
-                    }
-
-                    // Expected Impact
-                    html += '<div class="aiw-response-section section-impact">' +
-                        '<div class="section-label"><i class="ti ti-trending-up"></i> Expected Impact</div>' +
-                        '<div class="section-content">Automated processing of ' + lines.length + ' data points with real-time notifications and audit trail.</div></div>';
-
-                    // Confidence Indicator
-                    const confPct = res.agent_recommendation ? 92 : 78;
+                    const confPct = res.confidence ? Math.round(res.confidence * 100) : (res.agent_recommendation ? 92 : 78);
                     const confLevel = confPct >= 85 ? 'high' : confPct >= 70 ? 'medium' : 'low';
+
+                    if (res.confirmation_required) {
+                        pendingConfirmQuestion = question;
+                        html += '<div class="aiw-response-section section-analysis">' +
+                            '<div class="section-label"><i class="ti ti-alert-triangle" style="color:#f59e0b;"></i> Confirmation Required</div>' +
+                            '<div class="section-content">' + escHtml(answer).replace(/\n/g, '<br>') + '</div></div>';
+
+                        html += '<div class="aiw-response-section" style="border-left:3px solid #3b82f6;">' +
+                            '<div class="section-label" style="color:#3b82f6;"><i class="ti ti-info-circle"></i> Action Preview</div>' +
+                            '<div class="section-content">' +
+                            '<div class="d-flex gap-2 mt-2">' +
+                            '<button type="button" class="btn btn-success btn-sm" id="aiConfirmBtn" style="border-radius:0.5rem;font-weight:600;">' +
+                            '<i class="ti ti-check me-1"></i> Confirm</button>' +
+                            '<button type="button" class="btn btn-outline-secondary btn-sm" id="aiCancelBtn" style="border-radius:0.5rem;">' +
+                            '<i class="ti ti-x me-1"></i> Cancel</button>' +
+                            '</div></div></div>';
+
+                    } else {
+                        html += '<div class="aiw-response-section section-analysis">' +
+                            '<div class="section-label"><i class="ti ti-search"></i> Analysis Summary</div>' +
+                            '<div class="section-content">' + escHtml(answer).replace(/\n/g, '<br>') + '</div></div>';
+                    }
+
+                    if (lines.length > 1 && !res.confirmation_required) {
+                        const findings = lines.filter(function (l) { return l.trim().startsWith('-') || l.trim().startsWith('•') || l.trim().match(/^\d+\./) || l.includes(':'); });
+                        if (findings.length > 0) {
+                            let fHtml = '<ul class="aiw-findings-list">';
+                            findings.slice(0, 5).forEach(function (f) {
+                                fHtml += '<li>' + escHtml(f.replace(/^[-•]\s*/, '').replace(/^\d+\.\s*/, '')) + '</li>';
+                            });
+                            fHtml += '</ul>';
+                            html += '<div class="aiw-response-section section-findings">' +
+                                '<div class="section-label"><i class="ti ti-list-details"></i> Key Findings</div>' +
+                                fHtml + '</div>';
+                        }
+                    }
+
                     html += '<div class="aiw-response-section section-confidence">' +
                         '<div class="section-label"><i class="ti ti-shield-check"></i> Confidence</div>' +
                         '<div class="aiw-confidence">' +
@@ -127,8 +121,7 @@ $(document).ready(function () {
                         '<span>' + confPct + '%</span>' +
                         '</div></div>';
 
-                    // Recommendation card
-                    if (res.agent_recommendation) {
+                    if (res.agent_recommendation && !res.confirmation_required) {
                         const rec = res.agent_recommendation;
                         let paramsStr = '';
                         if (rec.params) {
@@ -138,33 +131,9 @@ $(document).ready(function () {
                         }
                         const href = '{{ route("admin.agents.index") }}?preselect=' + encodeURIComponent(rec.agent) + (paramsStr ? '&' + paramsStr : '');
 
-                        const outcomeMap = {
-                            'fee_collection': 'Send fee reminders to overdue students, reduce outstanding by 30-40%',
-                            'attendance': 'Notify parents of absent students, improve attendance tracking',
-                            'library': 'Alert overdue borrowers, recover library assets, collect fines',
-                            'payroll': 'Generate payroll, create payslips, lock payroll run',
-                        };
-                        const recordMap = {
-                            'fee_collection': 'Outstanding fee records',
-                            'attendance': 'Absent student records',
-                            'library': 'Overdue book issues',
-                            'payroll': 'Employee payroll records',
-                        };
-                        const impactMap = {
-                            'fee_collection': 'high',
-                            'attendance': 'high',
-                            'library': 'medium',
-                            'payroll': 'high',
-                        };
-
                         html += '<div class="aiw-recommendation">' +
                             '<div class="rec-title"><i class="ti ti-robot me-1"></i> AI Recommendation</div>' +
                             '<div class="rec-agent-name">' + escHtml(rec.label) + '</div>' +
-                            '<div class="rec-row" style="margin-top:0.5rem;"><strong>Reason</strong> Best suited to handle this request based on intent analysis</div>' +
-                            '<div class="rec-row"><strong>Expected Outcome</strong> ' + (outcomeMap[rec.agent] || 'Automate and streamline this process') + '</div>' +
-                            '<div class="rec-row"><strong>Affected Records</strong> ' + (recordMap[rec.agent] || 'School records') + '</div>' +
-                            '<div class="rec-row"><strong>Estimated Impact</strong> <span class="aiw-impact-badge ' + (impactMap[rec.agent] || 'medium') + '">' + (impactMap[rec.agent] === 'high' ? 'High' : 'Medium') + '</span></div>' +
-                            '<div class="rec-row"><strong>Confidence</strong> <span class="aiw-confidence"><div class="conf-bar"><div class="conf-fill high" style="width:92%;"></div></div> 92%</span></div>' +
                             '<a href="' + href + '" class="btn btn-primary w-100 mt-3" style="border-radius:0.625rem;font-weight:600;">' +
                             '<i class="ti ti-player-play me-1"></i> Execute Agent</a>' +
                             '</div>';
@@ -176,6 +145,16 @@ $(document).ready(function () {
                 }
 
                 responseContent.html(html);
+
+                if (res.confirmation_required) {
+                    $('#aiConfirmBtn').on('click', function () {
+                        sendRequest(pendingConfirmQuestion, true);
+                    });
+                    $('#aiCancelBtn').on('click', function () {
+                        responseArea.addClass('d-none');
+                        pendingConfirmQuestion = '';
+                    });
+                }
             },
             error: function () {
                 loading.addClass('d-none');
@@ -188,6 +167,16 @@ $(document).ready(function () {
                 askBtn.prop('disabled', false);
             }
         });
+    }
+
+    function askQuestion() {
+        const question = questionInput.val().trim();
+        if (!question) {
+            App.toast?.('warning', 'Please enter a question.');
+            return;
+        }
+        pendingConfirmQuestion = '';
+        sendRequest(question, false);
     }
 
     askBtn.on('click', askQuestion);

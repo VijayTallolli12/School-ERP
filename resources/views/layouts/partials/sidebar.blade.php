@@ -187,6 +187,13 @@
                 </li>
 
                 <li class="nav-item">
+                    <a href="{{ route('admin.ai.dashboard') }}" class="nav-link @if(request()->routeIs('admin.ai.dashboard')) active @endif">
+                        <i class="nav-icon ti ti-sparkles"></i>
+                        <p>Executive Copilot</p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a href="{{ route('admin.agents.index') }}" class="nav-link @if(request()->routeIs('admin.agents.index') && !request()->routeIs('admin.agents.history')) active @endif">
                         <i class="nav-icon ti ti-robot"></i>
                         <p>AI Agents</p>
