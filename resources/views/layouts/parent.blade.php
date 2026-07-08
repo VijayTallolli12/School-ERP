@@ -13,9 +13,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
-<body class="layout-fixed bg-body-tertiary">
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
 <div class="app-wrapper">
     @include('layouts.partials.navbar')
+    @include('layouts.partials._announcement_banner')
+    @include('layouts.partials.sidebar')
 
     <main class="app-main">
         <div class="app-content-header">
@@ -46,6 +48,7 @@
         <strong>&copy; {{ now()->year }} {{ setting('school_name', 'School ERP') }}.</strong>
     </footer>
 </div>
+@include('modules.ai-assistant.modal')
 @stack('modals')
 @stack('scripts')
 </body>

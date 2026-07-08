@@ -143,6 +143,16 @@ class LeaveService
             'target_type' => 'admins',
             'channel' => 'in_app',
         ]);
+
+        $this->notifications->create([
+            'title' => 'New Leave Request',
+            'message' => "{$leaveRequest->student?->full_name} submitted a {$leaveRequest->leaveType?->name} request.",
+            'type' => 'attendance_alert',
+            'priority' => 'medium',
+            'status' => 'sent',
+            'target_type' => 'principals',
+            'channel' => 'in_app',
+        ]);
     }
 
     private function notifyUser(LeaveRequest $leaveRequest, string $action): void

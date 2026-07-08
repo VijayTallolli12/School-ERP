@@ -39,12 +39,21 @@ class StudentController extends Controller
             'sql' => $parents->toQuery()->toSql(),
         ]);
 
+        $classSectionsQuery = ClassSection::query()
+            ->with(['schoolClass', 'section'])
+            ->where('status', 'active');
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $assignedIds = $teacher->classSections->pluck('id');
+                $classSectionsQuery->whereIn('id', $assignedIds);
+            }
+        }
+
         return view('modules.students.index', [
             'academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(),
-            'classSections' => ClassSection::query()
-                ->with(['schoolClass', 'section'])
-                ->where('status', 'active')
-                ->get()
+            'classSections' => $classSectionsQuery->get()
                 ->sortBy(fn (ClassSection $classSection) => $classSection->schoolClass->sort_order.'-'.$classSection->section->name),
             'parents' => $parents,
         ]);
@@ -52,7 +61,19 @@ class StudentController extends Controller
 
     public function data(): JsonResponse
     {
-        return DataTables::of($this->students->query())
+        $query = $this->students->query();
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $assignedIds = $teacher->classSections->pluck('id');
+                $query->whereHas('sessions', function ($q) use ($assignedIds) {
+                    $q->whereIn('class_section_id', $assignedIds)->where('status', 'active');
+                });
+            }
+        }
+
+        return DataTables::of($query)
             ->addColumn('full_name', fn (Student $student) => e($student->full_name))
             ->addColumn('class_section', function (Student $student): string {
                 $session = $student->sessions->firstWhere('status', 'active') ?? $student->sessions->first();
@@ -176,8 +197,19 @@ class StudentController extends Controller
                     ->orWhere('middle_name', 'like', "%{$q}%")
                     ->orWhere('last_name', 'like', "%{$q}%")
                     ->orWhere('admission_no', 'like', "%{$q}%");
-            })
-            ->orderBy('first_name')
+            });
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $assignedIds = $teacher->classSections->pluck('id');
+                $students->whereHas('sessions', function ($q) use ($assignedIds) {
+                    $q->whereIn('class_section_id', $assignedIds)->where('status', 'active');
+                });
+            }
+        }
+
+        $students = $students->orderBy('first_name')
             ->limit($limit)
             ->get();
 

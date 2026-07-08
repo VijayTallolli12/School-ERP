@@ -41,9 +41,57 @@ class LeaveRequestController extends Controller
         ]);
     }
 
+    public function myLeaves(): View
+    {
+        return view('modules.leave.requests.my_leaves', [
+            'leaveTypes' => LeaveType::query()->active()->orderBy('name')->get(),
+            'statuses' => LeaveRequest::statuses(),
+        ]);
+    }
+
+    public function myLeavesData(): JsonResponse
+    {
+        $query = $this->leaveRequests->query()->where('leave_requests.user_id', auth()->id());
+
+        if ($status = request('status')) {
+            $query->where('leave_requests.status', $status);
+        }
+
+        if ($leaveTypeId = request('leave_type_id')) {
+            $query->where('leave_requests.leave_type_id', $leaveTypeId);
+        }
+
+        if ($fromDate = request('from_date')) {
+            $query->where('leave_requests.from_date', '>=', $fromDate);
+        }
+
+        if ($toDate = request('to_date')) {
+            $query->where('leave_requests.to_date', '<=', $toDate);
+        }
+
+        return DataTables::eloquent($query)
+            ->addColumn('student_name', fn (LeaveRequest $lr) => e($lr->student?->full_name ?? 'Unknown'))
+            ->addColumn('leave_type', fn (LeaveRequest $lr) => e($lr->leaveType?->name ?? '-'))
+            ->addColumn('from_date', fn (LeaveRequest $lr) => $lr->from_date?->format('M d, Y'))
+            ->addColumn('to_date', fn (LeaveRequest $lr) => $lr->to_date?->format('M d, Y'))
+            ->addColumn('days', fn (LeaveRequest $lr) => $lr->days)
+            ->addColumn('status_badge', fn (LeaveRequest $lr) => sprintf(
+                '<span class="badge %s">%s</span>',
+                $lr->status_badge,
+                $lr->status_label
+            ))
+            ->addColumn('actions', fn (LeaveRequest $lr) => view('modules.leave.requests._my_actions', compact('lr'))->render())
+            ->rawColumns(['status_badge', 'actions'])
+            ->toJson();
+    }
+
     public function data(): JsonResponse
     {
         $query = $this->leaveRequests->query();
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $query->where('leave_requests.user_id', auth()->id());
+        }
 
         if ($status = request('status')) {
             $query->where('leave_requests.status', $status);
@@ -83,11 +131,11 @@ class LeaveRequestController extends Controller
             ->addColumn('actions', fn (LeaveRequest $lr) => view('modules.leave.requests._actions', compact('lr'))->render())
             ->rawColumns(['status_badge', 'actions'])
             ->orderColumn('student_name', fn ($q, $direction) => $q->orderBy(
-                Student::selectRaw("CONCAT_WS(' ', first_name, middle_name, last_name)")
+                Student::selectRaw("TRIM(CONCAT(COALESCE(first_name, ''), ' ', COALESCE(middle_name, ''), ' ', COALESCE(last_name, '')))")
                     ->whereColumn('students.id', 'leave_requests.student_id'),
                 $direction
             ))
-            ->filterColumn('student_name', fn ($q, $keyword) => $q->whereHas('student', fn ($sq) => $sq->whereRaw("CONCAT_WS(' ', first_name, middle_name, last_name) LIKE ?", ["%{$keyword}%"])))
+            ->filterColumn('student_name', fn ($q, $keyword) => $q->whereHas('student', fn ($sq) => $sq->whereRaw("TRIM(CONCAT(COALESCE(first_name, ''), ' ', COALESCE(middle_name, ''), ' ', COALESCE(last_name, ''))) LIKE ?", ["%{$keyword}%"])))
             ->toJson();
     }
 

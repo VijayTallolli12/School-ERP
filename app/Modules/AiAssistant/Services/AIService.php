@@ -13,6 +13,9 @@ use App\Modules\AiAssistant\Handlers\TransportQueryHandler;
 use App\Modules\Exams\Services\ExamService;
 use App\Modules\Homework\Services\HomeworkService;
 use App\Modules\Notifications\Services\NotificationService;
+use App\Modules\AiAssistant\Models\AiQueryLog;
+use App\Modules\AiAssistant\Services\RoleDataScoper;
+use App\Modules\Teachers\Models\Teacher;
 use App\Modules\Transport\Services\TransportService;
 use Illuminate\Support\Facades\Log;
 
@@ -80,6 +83,18 @@ class AIService
         ];
     }
 
+    private const TEACHER_ALLOWED_INTENTS = [
+        'attendance.absent_today',
+        'attendance.monthly_percentage',
+        'attendance.below_75',
+        'student.total',
+        'student.by_class',
+        'homework.create',
+        'exam.publish',
+        'notification.send',
+        'school.summary',
+    ];
+
     public function ask(string $question, bool $confirmed = false): array
     {
         $startTime = microtime(true);
@@ -95,6 +110,18 @@ class AIService
 
         $intentResult = $this->aiIntentService->resolve($trimmed);
 
+        if (!$this->checkRoleAuthorization($intentResult)) {
+            $response = [
+                'success' => false,
+                'answer' => 'You are not authorized to perform this action.',
+                'intent' => $intentResult['intent'] ?? 'unknown',
+            ];
+            $this->logQuery($intentResult['intent'] ?? 'unknown', $trimmed, $response['answer'], 'denied');
+            return $response;
+        }
+
+        $this->applyRoleScoping($intentResult);
+
         $this->logDebug('Intent resolved', [
             'query' => $trimmed,
             'intent' => $intentResult['intent'],
@@ -105,22 +132,26 @@ class AIService
         ]);
 
         if ($intentResult['intent'] === 'unknown') {
-            return [
+            $response = [
                 'success' => false,
                 'answer' => "I couldn't understand your question. Try asking about:\n" . $this->getSupportedPreview(),
                 'intent' => 'unknown',
                 'confidence' => 0.0,
             ];
+            $this->logQuery('unknown', $trimmed, $response['answer'], 'failed');
+            return $response;
         }
 
         $route = $this->agentRouter->route($intentResult['intent']);
 
         if (!$route) {
-            return [
+            $response = [
                 'success' => false,
                 'answer' => 'Internal error: route not found for intent.',
                 'intent' => $intentResult['intent'],
             ];
+            $this->logQuery($intentResult['intent'], $trimmed, $response['answer'], 'failed');
+            return $response;
         }
 
         $this->logDebug('Route selected', [
@@ -150,6 +181,13 @@ class AIService
                 'execution_time_ms' => round((microtime(true) - $startTime) * 1000, 1),
             ]);
 
+            $this->logQuery(
+                $intentResult['intent'],
+                $trimmed,
+                $result['answer'] ?? null,
+                ($result['success'] ?? false) ? 'success' : 'failed'
+            );
+
             return $result;
         } catch (\Exception $e) {
             Log::error('AI execution failed', [
@@ -157,11 +195,15 @@ class AIService
                 'error' => $e->getMessage(),
             ]);
 
-            return [
+            $response = [
                 'success' => false,
                 'answer' => 'An error occurred while processing your request: ' . $e->getMessage(),
                 'intent' => $intentResult['intent'],
             ];
+
+            $this->logQuery($intentResult['intent'], $trimmed, $response['answer'], 'failed');
+
+            return $response;
         }
     }
 
@@ -540,6 +582,46 @@ class AIService
         }
         $lines[] = '• Reports: today\'s school summary';
         return implode("\n", $lines);
+    }
+
+    private function checkRoleAuthorization(array $intentResult): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+        return app(RoleDataScoper::class)->isIntentAllowed($user, $intentResult['intent'] ?? 'unknown');
+    }
+
+    private function applyRoleScoping(array &$intentResult): void
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return;
+        }
+        $filters = app(RoleDataScoper::class)->getScopeFilters($user);
+        foreach ($filters as $key => $value) {
+            $intentResult['parameters'][$key] = $value;
+        }
+    }
+
+    private function logQuery(string $intent, string $question, ?string $response, string $status): void
+    {
+        try {
+            AiQueryLog::query()->create([
+                'user_id' => auth()->id(),
+                'role' => auth()->user()?->roles->first()?->name ?? 'unknown',
+                'intent' => $intent,
+                'question' => $question,
+                'response_summary' => $response ? mb_substr($response, 0, 500) : null,
+                'parameters' => request()->all(),
+                'status' => $status,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+        } catch (\Exception $e) {
+            // Don't let logging failures break the main flow
+        }
     }
 
     private function logDebug(string $message, array $context = []): void

@@ -3,6 +3,10 @@
 use App\Modules\Payroll\Controllers\PayrollController;
 use Illuminate\Support\Facades\Route;
 
+// Teacher My Payslips (accessible without payroll permission gate)
+Route::get('payroll/payslips/my', [PayrollController::class, 'myPayslips'])->name('payroll.payslips.my');
+Route::get('payroll/my-payslips/data', [PayrollController::class, 'myPayslipsData'])->name('payroll.my-payslips.data');
+
 Route::prefix('payroll')
     ->name('payroll.')
     ->middleware('permission:payroll.view')

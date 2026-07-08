@@ -13,14 +13,14 @@ use App\Modules\Academics\Models\ClassSection;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Modules\Reports\Exports\FeeReportExport;
-use App\Modules\Reports\Repositories\FeeDefaulterReportRepository;
+use App\Modules\Reports\Repositories\FeeDefaulterReportRepositoryInterface;
 
 class FeeReportController extends Controller
 {
     protected $feeService;
     protected $defaulterRepo;
 
-    public function __construct(FeeService $feeService, FeeDefaulterReportRepository $defaulterRepo)
+    public function __construct(FeeService $feeService, FeeDefaulterReportRepositoryInterface $defaulterRepo)
     {
         $this->feeService = $feeService;
         $this->defaulterRepo = $defaulterRepo;

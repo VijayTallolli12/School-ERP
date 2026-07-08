@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Controllers;
 
 use App\Http\Controllers\Api\V1\ApiBaseController;
+use App\Http\Middleware\SetSchoolContext;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
 use App\Modules\Auth\Requests\ApiLoginRequest;
@@ -124,9 +125,8 @@ class ApiAuthController extends ApiBaseController
     {
         $user = $request->user();
 
-        // Resolve school context from authenticated user
-        $schoolId = $user->current_school_id
-            ?: $user->schools()->wherePivot('status', 'active')->value('schools.id');
+        // Use the centralized school context resolver (same as SetSchoolContext middleware)
+        $schoolId = SetSchoolContext::resolveFromUser($user, $request);
 
         if ($schoolId) {
             app(SchoolContext::class)->set($schoolId);

@@ -31,15 +31,27 @@ class ExamController extends Controller
 
     public function index(): View
     {
+        $classSectionsQuery = ClassSection::query()
+            ->with(['schoolClass', 'section'])
+            ->where('status', 'active');
+
+        $examsQuery = Exam::query()->orderByDesc('exam_date');
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $assignedIds = $teacher->classSections->pluck('id');
+                $classSectionsQuery->whereIn('id', $assignedIds);
+                $examsQuery->whereIn('class_section_id', $assignedIds);
+            }
+        }
+
         return view('modules.exams.index', [
             'academicYears' => AcademicYear::query()->where('status', 'active')->orderByDesc('starts_on')->get(),
-            'classSections' => ClassSection::query()
-                ->with(['schoolClass', 'section'])
-                ->where('status', 'active')
-                ->get()
+            'classSections' => $classSectionsQuery->get()
                 ->sortBy(fn (ClassSection $classSection) => $classSection->schoolClass->sort_order.'-'.$classSection->section->name),
             'subjects' => Subject::query()->where('status', 'active')->orderBy('name')->get(),
-            'exams' => Exam::query()->orderByDesc('exam_date')->get(),
+            'exams' => $examsQuery->get(),
             'examTypes' => Exam::types(),
             'statuses' => Exam::statuses(),
         ]);
@@ -47,7 +59,17 @@ class ExamController extends Controller
 
     public function data(): JsonResponse
     {
-        return DataTables::of($this->exams->query())
+        $query = $this->exams->query();
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $assignedIds = $teacher->classSections->pluck('id');
+                $query->whereIn('class_section_id', $assignedIds);
+            }
+        }
+
+        return DataTables::of($query)
             ->addColumn('academic_year', fn (Exam $exam) => $exam->academicYear?->name ?? '-')
             ->addColumn('class_section', fn (Exam $exam) => $exam->classSection?->schoolClass->name.' - '.$exam->classSection?->section->name)
             ->addColumn('subject', fn (Exam $exam) => $exam->subject?->name ?? '-')
@@ -145,15 +167,23 @@ class ExamController extends Controller
             ->addColumn('class_section', fn (ExamResult $result) => e($result->exam->classSection?->schoolClass->name.' - '.$result->exam->classSection?->section->name))
             ->addColumn('status_label', fn (ExamResult $result) => '<span class="badge bg-'.($result->status === 'pass' ? 'success' : 'danger').'">'.e($result->status_label).'</span>')
             ->addColumn('actions', fn (ExamResult $result) => view('modules.exams._results_actions', compact('result'))->render())
-            ->orderColumn('student_name', fn ($query, $direction) => $query->orderByRaw("CONCAT_WS(' ', students.first_name, students.middle_name, students.last_name) {$direction}"))
-            ->filterColumn('student_name', fn ($query, $keyword) => $query->whereRaw("CONCAT_WS(' ', students.first_name, students.middle_name, students.last_name) LIKE ?", ["%{$keyword}%"]))
+            ->orderColumn('student_name', fn ($query, $direction) => $query->orderByRaw("TRIM(CONCAT(COALESCE(students.first_name, ''), ' ', COALESCE(students.middle_name, ''), ' ', COALESCE(students.last_name, ''))) {$direction}"))
+            ->filterColumn('student_name', fn ($query, $keyword) => $query->whereRaw("TRIM(CONCAT(COALESCE(students.first_name, ''), ' ', COALESCE(students.middle_name, ''), ' ', COALESCE(students.last_name, ''))) LIKE ?", ["%{$keyword}%"]))
             ->rawColumns(['status_label', 'actions'])
             ->toJson();
     }
 
     public function storeResult(StoreExamResultRequest $request): JsonResponse
     {
-        $this->authorize('update', Exam::query()->findOrFail($request->input('exam_id')));
+        $exam = Exam::query()->findOrFail($request->input('exam_id'));
+        $this->authorize('update', $exam);
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if (! $teacher || ! $teacher->classSections->pluck('id')->contains($exam->class_section_id)) {
+                return response()->json(['success' => false, 'message' => 'You do not have access to this exam.'], 403);
+            }
+        }
 
         $result = $this->service->saveResult($request->validated());
 
@@ -207,6 +237,13 @@ class ExamController extends Controller
 
     public function getStudentsByClassSection(ClassSection $classSection): JsonResponse
     {
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if (! $teacher || ! $teacher->classSections->pluck('id')->contains($classSection->id)) {
+                return response()->json(['success' => false, 'message' => 'You do not have access to this class section.'], 403);
+            }
+        }
+
         $students = Student::query()
             ->whereHas('sessions', function ($query) use ($classSection) {
                 $query->where('class_section_id', $classSection->id)
@@ -227,6 +264,14 @@ class ExamController extends Controller
 
     public function bulkEntry(Exam $exam): View
     {
+        $this->authorize('view', $exam);
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if (! $teacher || ! $teacher->classSections->pluck('id')->contains($exam->class_section_id)) {
+                abort(403, 'You do not have access to this exam.');
+            }
+        }
+
         $students = Student::query()
             ->select('students.id', 'students.first_name', 'students.middle_name', 'students.last_name', 'student_sessions.roll_no')
             ->join('student_sessions', function ($join) use ($exam) {

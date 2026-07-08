@@ -4,8 +4,11 @@ namespace App\Modules\Exams\Services;
 
 use App\Core\Tenant\SchoolContext;
 use App\Modules\Exams\Models\Exam;
+use App\Modules\Exams\Models\ExamMark;
 use App\Modules\Exams\Models\ExamResult;
+use App\Modules\Exams\Models\ExamSchedule;
 use App\Modules\Exams\Repositories\ExamRepositoryInterface;
+use App\Modules\Exams\Services\GradingService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
@@ -120,6 +123,55 @@ class ExamService
 
             return $saved;
         });
+    }
+
+    public function saveMarkWithGrade(ExamSchedule $schedule, int $studentId, ?float $marksObtained, ?string $remarks, bool $absent = false): ExamMark
+    {
+        $schoolId = app(SchoolContext::class)->id();
+        $gradingService = app(GradingService::class);
+
+        if ($absent) {
+            $gradeInfo = ['grade' => null, 'grade_point' => null, 'is_fail' => true];
+            $status = 'absent';
+        } elseif ($marksObtained === null) {
+            $gradeInfo = ['grade' => null, 'grade_point' => null, 'is_fail' => false];
+            $status = 'pending';
+        } else {
+            $percentage = $schedule->maximum_marks > 0
+                ? ($marksObtained / $schedule->maximum_marks) * 100
+                : 0;
+
+            $gradeInfo = $gradingService->calculateGrade($percentage, $schoolId);
+            $status = $marksObtained >= $schedule->pass_marks ? 'pass' : 'fail';
+        }
+
+        $payload = [
+            'school_id' => $schoolId,
+            'exam_schedule_id' => $schedule->id,
+            'student_id' => $studentId,
+            'marks_obtained' => $marksObtained,
+            'grade' => $gradeInfo['grade'],
+            'grade_point' => $gradeInfo['grade_point'],
+            'status' => $status,
+            'remarks' => $remarks,
+            'updated_by' => auth()->id(),
+        ];
+
+        $existing = ExamMark::query()
+            ->where('exam_schedule_id', $schedule->id)
+            ->where('student_id', $studentId)
+            ->first();
+
+        if ($existing) {
+            $payload['created_by'] ??= $existing->created_by;
+            $existing->fill($payload)->save();
+
+            return $existing->fresh();
+        }
+
+        $payload['created_by'] = auth()->id();
+
+        return ExamMark::query()->create($payload);
     }
 
     private function examPayload(array $data): array

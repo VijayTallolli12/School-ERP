@@ -13,9 +13,11 @@ use App\Modules\Calendar\Policies\CalendarPolicy;
 use App\Modules\Calendar\Repositories\CalendarRepository;
 use App\Modules\Calendar\Repositories\CalendarRepositoryInterface;
 use App\Modules\Documents\Policies\DocumentPolicy;
+use App\Modules\Documents\Policies\TeacherDocumentPolicy;
 use App\Modules\Documents\Repositories\DocumentRepository;
 use App\Modules\Documents\Repositories\DocumentRepositoryInterface;
 use App\Modules\Students\Models\StudentDocument;
+use App\Modules\Teachers\Models\TeacherDocument;
 use App\Modules\Academics\Policies\AcademicYearPolicy;
 use App\Modules\Academics\Policies\ClassSectionPolicy;
 use App\Modules\Academics\Policies\SchoolClassPolicy;
@@ -83,7 +85,13 @@ use App\Modules\Parents\Repositories\ParentRepository;
 use App\Modules\Parents\Repositories\ParentRepositoryInterface;
 use App\Modules\Teachers\Models\Teacher;
 use App\Modules\Exams\Models\Exam;
+use App\Modules\Exams\Models\ExamMark;
+use App\Modules\Exams\Models\ExamSchedule;
+use App\Modules\Exams\Models\GradeScale;
+use App\Modules\Exams\Policies\ExamMarkPolicy;
 use App\Modules\Exams\Policies\ExamPolicy;
+use App\Modules\Exams\Policies\ExamSchedulePolicy;
+use App\Modules\Exams\Policies\GradeScalePolicy;
 use App\Modules\Exams\Repositories\ExamRepository;
 use App\Modules\Exams\Repositories\ExamRepositoryInterface;
 use App\Modules\Homework\Models\Homework;
@@ -101,6 +109,12 @@ use App\Modules\Leave\Repositories\LeaveTypeRepositoryInterface;
 use App\Modules\AiAssistant\Services\AIIntentService;
 use App\Modules\AiAssistant\Services\AgentRouter;
 use App\Modules\AiAssistant\Services\AIResponseFormatter;
+use App\Modules\HR\Models\Employee;
+use App\Modules\HR\Models\EmployeeDocument;
+use App\Modules\HR\Policies\EmployeePolicy;
+use App\Modules\HR\Policies\EmployeeDocumentPolicy;
+use App\Modules\HR\Repositories\EmployeeRepository;
+use App\Modules\HR\Repositories\EmployeeRepositoryInterface;
 use App\Modules\Reports\Repositories\AttendanceReportRepository;
 use App\Modules\Reports\Repositories\AttendanceReportRepositoryInterface;
 use App\Modules\Reports\Repositories\ExamReportRepository;
@@ -121,6 +135,10 @@ use App\Modules\Timetable\Models\TimetableSlot;
 use App\Modules\Timetable\Policies\TimetableSlotPolicy;
 use App\Modules\Timetable\Repositories\TimetableRepository;
 use App\Modules\Timetable\Repositories\TimetableRepositoryInterface;
+use App\Modules\Dashboard\Contracts\RoleDashboardBuilderInterface;
+use App\Modules\Dashboard\Services\Builders\AdminDashboardBuilder;
+use App\Modules\Dashboard\Services\DashboardService;
+use App\Modules\Dashboard\Services\SidebarBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -162,6 +180,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TransportRepositoryInterface::class, TransportRepository::class);
         $this->app->bind(LibraryRepositoryInterface::class, LibraryRepository::class);
         $this->app->bind(PayrollRepositoryInterface::class, PayrollRepository::class);
+        $this->app->bind(FeeDefaulterReportRepositoryInterface::class, FeeDefaulterReportRepository::class);
+
+        $this->app->singleton(DashboardService::class);
+        $this->app->singleton(SidebarBuilder::class);
+        $this->app->bind(RoleDashboardBuilderInterface::class, AdminDashboardBuilder::class);
     }
 
     /**
@@ -177,6 +200,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::morphMap([
             'teacher' => \App\Modules\Teachers\Models\Teacher::class,
             'staff' => \App\Modules\Teachers\Models\Teacher::class,
+            'employee' => \App\Modules\HR\Models\Employee::class,
         ]);
 
         Gate::before(function ($user, string $ability) {
@@ -195,6 +219,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Attendance::class, AttendancePolicy::class);
         Gate::policy(Teacher::class, TeacherPolicy::class);
         Gate::policy(Exam::class, ExamPolicy::class);
+        Gate::policy(GradeScale::class, GradeScalePolicy::class);
+        Gate::policy(ExamSchedule::class, ExamSchedulePolicy::class);
+        Gate::policy(ExamMark::class, ExamMarkPolicy::class);
         Gate::policy(TimetableSlot::class, TimetableSlotPolicy::class);
         Gate::policy(FeeCategory::class, FeeCategoryPolicy::class);
         Gate::policy(FeeStructure::class, FeeStructurePolicy::class);
@@ -206,6 +233,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(LeaveRequest::class, LeaveRequestPolicy::class);
         Gate::policy(AcademicCalendar::class, CalendarPolicy::class);
         Gate::policy(StudentDocument::class, DocumentPolicy::class);
+        Gate::policy(TeacherDocument::class, TeacherDocumentPolicy::class);
         Gate::policy(Vehicle::class, VehiclePolicy::class);
         Gate::policy(Driver::class, DriverPolicy::class);
         Gate::policy(Route::class, RoutePolicy::class);
@@ -221,6 +249,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(PayrollRun::class, PayrollPolicy::class);
         Gate::policy(PayrollItem::class, PayrollPolicy::class);
         Gate::policy(EmployeePayslip::class, PayrollPolicy::class);
+        Gate::policy(Employee::class, EmployeePolicy::class);
+        Gate::policy(EmployeeDocument::class, EmployeeDocumentPolicy::class);
 
         view()->composer([
             'Reports::teachers.index',

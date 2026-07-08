@@ -31,12 +31,21 @@ class AttendanceController extends Controller
 
     public function index(): View
     {
+        $classSectionsQuery = ClassSection::query()
+            ->with(['schoolClass', 'section'])
+            ->where('status', 'active');
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $assignedIds = $teacher->classSections->pluck('id');
+                $classSectionsQuery->whereIn('id', $assignedIds);
+            }
+        }
+
         return view('modules.attendance.index', [
             'academicYears' => AcademicYear::query()->where('status', 'active')->orderByDesc('starts_on')->get(),
-            'classSections' => ClassSection::query()
-                ->with(['schoolClass', 'section'])
-                ->where('status', 'active')
-                ->get()
+            'classSections' => $classSectionsQuery->get()
                 ->sortBy(fn (ClassSection $cs) => $cs->schoolClass->sort_order.'-'.$cs->section->name),
             'statuses' => Attendance::getStatuses(),
         ]);
@@ -45,6 +54,14 @@ class AttendanceController extends Controller
     public function data(): JsonResponse
     {
         $query = $this->attendances->filterQuery($this->attendances->query(), $this->listFiltersFromRequest());
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $assignedIds = $teacher->classSections->pluck('id');
+                $query->whereIn('class_section_id', $assignedIds);
+            }
+        }
 
         return DataTables::eloquent($query)
             ->addColumn('student_name', fn (Attendance $attendance) => e($attendance->student->full_name ?? '-'))
@@ -103,6 +120,9 @@ class AttendanceController extends Controller
     public function store(MarkAttendanceRequest $request): JsonResponse
     {
         $this->authorize('create', Attendance::class);
+        if (auth()->user()->hasRole('Teacher')) {
+            $this->verifyTeacherClassAccess($request->input('class_section_id'));
+        }
         $attendance = $this->service->markAttendance($request->validated());
 
         return response()->json([
@@ -133,6 +153,9 @@ class AttendanceController extends Controller
     public function update(UpdateAttendanceRequest $request, Attendance $attendance): JsonResponse
     {
         $this->authorize('update', $attendance);
+        if (auth()->user()->hasRole('Teacher')) {
+            $this->verifyTeacherClassAccess($attendance->class_section_id);
+        }
         $attendance = $this->service->update($attendance, $request->validated());
 
         return response()->json([
@@ -156,6 +179,12 @@ class AttendanceController extends Controller
     public function bulkMark(BulkMarkAttendanceRequest $request): JsonResponse
     {
         $this->authorize('create', Attendance::class);
+        if (auth()->user()->hasRole('Teacher')) {
+            $classSectionIds = $request->input('class_section_ids', []);
+            foreach ($classSectionIds as $csId) {
+                $this->verifyTeacherClassAccess($csId);
+            }
+        }
         $results = $this->service->bulkMarkAttendance($request->validated());
 
         return response()->json([
@@ -168,6 +197,9 @@ class AttendanceController extends Controller
     public function getStudentsByClassSection(ClassSection $classSection): JsonResponse
     {
         $this->authorize('viewForAttendance', $classSection);
+        if (auth()->user()->hasRole('Teacher')) {
+            $this->verifyTeacherClassAccess($classSection->id);
+        }
 
         $students = Student::query()
             ->whereHas('sessions', function ($query) use ($classSection) {
@@ -196,6 +228,9 @@ class AttendanceController extends Controller
     public function monthlyReport(ClassSection $classSection): JsonResponse
     {
         $this->authorize('viewForAttendance', $classSection);
+        if (auth()->user()->hasRole('Teacher')) {
+            $this->verifyTeacherClassAccess($classSection->id);
+        }
 
         $classSection->loadMissing(['schoolClass', 'section']);
 
@@ -270,5 +305,13 @@ class AttendanceController extends Controller
             'status' => request('filters.status'),
             'academic_year_id' => request('filters.academic_year_id'),
         ], fn ($v) => $v !== null && $v !== '');
+    }
+
+    private function verifyTeacherClassAccess(int $classSectionId): void
+    {
+        $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+        if (! $teacher || ! $teacher->classSections->pluck('id')->contains($classSectionId)) {
+            abort(403, 'You do not have access to this class section.');
+        }
     }
 }

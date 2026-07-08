@@ -33,3 +33,11 @@ Route::prefix('leave-requests')
         Route::post('{leave_request}/approve', [LeaveRequestController::class, 'approve'])->middleware('permission:leave_management.approve')->name('approve');
         Route::post('{leave_request}/reject', [LeaveRequestController::class, 'reject'])->middleware('permission:leave_management.approve')->name('reject');
     });
+
+// Teacher Self-Service Leave
+Route::prefix('my-leaves')
+    ->name('my-leaves.')
+    ->group(function (): void {
+        Route::get('/', [LeaveRequestController::class, 'myLeaves'])->name('index');
+        Route::get('data', [LeaveRequestController::class, 'myLeavesData'])->name('data');
+    });

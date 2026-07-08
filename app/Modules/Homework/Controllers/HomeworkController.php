@@ -28,12 +28,21 @@ class HomeworkController extends Controller
 
     public function index(): View
     {
+        $classSectionsQuery = ClassSection::query()
+            ->with(['schoolClass', 'section'])
+            ->where('status', 'active');
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $assignedIds = $teacher->classSections->pluck('id');
+                $classSectionsQuery->whereIn('id', $assignedIds);
+            }
+        }
+
         return view('modules.homework.index', [
             'academicYears' => AcademicYear::query()->where('status', 'active')->orderByDesc('starts_on')->get(),
-            'classSections' => ClassSection::query()
-                ->with(['schoolClass', 'section'])
-                ->where('status', 'active')
-                ->get()
+            'classSections' => $classSectionsQuery->get()
                 ->sortBy(fn (ClassSection $classSection) => $classSection->schoolClass->sort_order.'-'.$classSection->section->name),
             'subjects' => Subject::query()->where('status', 'active')->orderBy('name')->get(),
             'statuses' => Homework::statuses(),
@@ -56,6 +65,14 @@ class HomeworkController extends Controller
             $query->where('status', $status);
         }
 
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $assignedIds = $teacher->classSections->pluck('id');
+                $query->whereIn('class_section_id', $assignedIds);
+            }
+        }
+
         return DataTables::of($query)
             ->addColumn('assigned_date', fn (Homework $hw) => $hw->assigned_date?->format('M d, Y'))
             ->addColumn('due_date', fn (Homework $hw) => $hw->due_date?->format('M d, Y'))
@@ -69,6 +86,13 @@ class HomeworkController extends Controller
 
     public function store(StoreHomeworkRequest $request): JsonResponse
     {
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            $assignedIds = $teacher ? $teacher->classSections->pluck('id')->toArray() : [];
+            if (! in_array($request->input('class_section_id'), $assignedIds)) {
+                return response()->json(['success' => false, 'message' => 'You can only create homework for your assigned class sections.'], 403);
+            }
+        }
         $homework = $this->service->create($request->validated());
 
         return response()->json([
@@ -80,6 +104,7 @@ class HomeworkController extends Controller
 
     public function show(Homework $homework): JsonResponse
     {
+        $this->authorize('view', $homework);
         $homework->load(['academicYear', 'classSection.schoolClass', 'classSection.section', 'subject']);
 
         return response()->json([
@@ -105,6 +130,7 @@ class HomeworkController extends Controller
 
     public function update(UpdateHomeworkRequest $request, Homework $homework): JsonResponse
     {
+        $this->authorize('update', $homework);
         $homework = $this->service->update($homework, $request->validated());
 
         return response()->json([

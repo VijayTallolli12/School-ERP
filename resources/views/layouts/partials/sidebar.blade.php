@@ -11,6 +11,595 @@
         <nav class="mt-2">
             <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu">
 
+            @if(auth()->user()->hasRole('Teacher'))
+
+                {{-- ========== TEACHER SIDEBAR ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Teacher</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('timetable.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.timetable.index') }}" class="nav-link @if(request()->routeIs('admin.timetable.*')) active @endif">
+                            <i class="nav-icon ti ti-table"></i>
+                            <p>My Timetable</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('attendance.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.attendance.index') }}" class="nav-link @if(request()->routeIs('admin.attendance.*')) active @endif">
+                            <i class="nav-icon ti ti-calendar-check"></i>
+                            <p>Attendance</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('homework.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.homework.index') }}" class="nav-link @if(request()->routeIs('admin.homework.*')) active @endif">
+                            <i class="nav-icon ti ti-books"></i>
+                            <p>Homework</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('students.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.students.index') }}" class="nav-link @if(request()->routeIs('admin.students.*')) active @endif">
+                            <i class="nav-icon ti ti-school"></i>
+                            <p>My Students</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('exams.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.exams.index') }}" class="nav-link @if(request()->routeIs('admin.exams.*')) active @endif">
+                            <i class="nav-icon ti ti-chart-arrows-vertical"></i>
+                            <p>Marks</p>
+                        </a>
+                    </li>
+                @endcan
+
+                <li class="nav-item">
+                    <a href="{{ route('admin.leave-requests.index') }}" class="nav-link @if(request()->routeIs('admin.leave-requests.*')) active @endif">
+                        <i class="nav-icon ti ti-calendar-minus"></i>
+                        <p>Leave</p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('admin.teacher-documents.index') }}" class="nav-link @if(request()->routeIs('admin.teacher-documents.*')) active @endif">
+                        <i class="nav-icon ti ti-file-text"></i>
+                        <p>My Documents</p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('admin.payroll.payslips.my') }}" class="nav-link @if(request()->routeIs('admin.payroll.payslips.my')) active @endif">
+                        <i class="nav-icon ti ti-cash"></i>
+                        <p>My Payslips</p>
+                    </a>
+                </li>
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link @if(request()->routeIs('admin.notifications.*')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('academic_calendar.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.calendar.index') }}" class="nav-link @if(request()->routeIs('admin.calendar.*')) active @endif">
+                            <i class="nav-icon ti ti-calendar-event"></i>
+                            <p>Calendar</p>
+                        </a>
+                    </li>
+                @endcan
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#askErpModal">
+                        <i class="nav-icon ti ti-message"></i>
+                        <p>Ask ERP</p>
+                    </a>
+                </li>
+
+            @elseif(auth()->user()->hasRole('HR'))
+
+                {{-- ========== HR ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">HR</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('hr.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.hr.employees.index') }}" class="nav-link @if(request()->routeIs('admin.hr.employees.*')) active @endif">
+                            <i class="nav-icon ti ti-users"></i>
+                            <p>Employees</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.hr.documents.index') }}" class="nav-link @if(request()->routeIs('admin.hr.documents.*')) active @endif">
+                            <i class="nav-icon ti ti-file-text"></i>
+                            <p>Documents</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link @if(request()->routeIs('admin.notifications.*')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
+                {{-- ========== AI WORKSPACE ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">AI Workspace</span>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#askErpModal">
+                        <i class="nav-icon ti ti-message"></i>
+                        <p>Ask ERP</p>
+                    </a>
+                </li>
+
+            @elseif(auth()->user()->hasRole('Principal'))
+
+                {{-- ========== PRINCIPAL ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Principal</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('attendance.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.attendance.index') }}" class="nav-link @if(request()->routeIs('admin.attendance.*')) active @endif">
+                            <i class="nav-icon ti ti-calendar-check"></i>
+                            <p>Attendance</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('timetable.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.timetable.index') }}" class="nav-link @if(request()->routeIs('admin.timetable.*')) active @endif">
+                            <i class="nav-icon ti ti-table"></i>
+                            <p>Timetable</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('exams.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.exams.index') }}" class="nav-link @if(request()->routeIs('admin.exams.*')) active @endif">
+                            <i class="nav-icon ti ti-chart-arrows-vertical"></i>
+                            <p>Exams</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('students.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.students.index') }}" class="nav-link @if(request()->routeIs('admin.students.*')) active @endif">
+                            <i class="nav-icon ti ti-school"></i>
+                            <p>Students</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('teachers.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.teachers.index') }}" class="nav-link @if(request()->routeIs('admin.teachers.*')) active @endif">
+                            <i class="nav-icon ti ti-presentation"></i>
+                            <p>Teachers</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('homework.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.homework.index') }}" class="nav-link @if(request()->routeIs('admin.homework.*')) active @endif">
+                            <i class="nav-icon ti ti-books"></i>
+                            <p>Homework</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('academic_calendar.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.calendar.index') }}" class="nav-link @if(request()->routeIs('admin.calendar.*')) active @endif">
+                            <i class="nav-icon ti ti-calendar-event"></i>
+                            <p>Calendar</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('fees.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.fees.index') }}" class="nav-link @if(request()->routeIs('admin.fees.*')) active @endif">
+                            <i class="nav-icon ti ti-receipt"></i>
+                            <p>Fees</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('reports.view')
+                    <li class="nav-item">
+                        <a href="{{ route('reports.attendance.index') }}" class="nav-link @if(request()->routeIs('reports.*')) active @endif">
+                            <i class="nav-icon ti ti-chart-bar"></i>
+                            <p>Reports</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('leave_management.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.leave-requests.index') }}" class="nav-link @if(request()->routeIs('admin.leave-requests.*')) active @endif">
+                            <i class="nav-icon ti ti-list-check"></i>
+                            <p>Leave Approvals</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link @if(request()->routeIs('admin.notifications.*')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
+                {{-- ========== AI WORKSPACE ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">AI Workspace</span>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#askErpModal">
+                        <i class="nav-icon ti ti-message"></i>
+                        <p>Ask ERP</p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('admin.ai.dashboard') }}" class="nav-link @if(request()->routeIs('admin.ai.dashboard')) active @endif">
+                        <i class="nav-icon ti ti-sparkles"></i>
+                        <p>Executive Copilot</p>
+                    </a>
+                </li>
+
+            @elseif(auth()->user()->hasRole('Parent'))
+
+                {{-- ========== PARENT PORTAL ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Parent Portal</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('parent-portal.dashboard') }}" class="nav-link @if(request()->routeIs('parent-portal.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('attendance.view')
+                    <li class="nav-item">
+                        <a href="{{ route('parent-portal.attendance') }}" class="nav-link @if(request()->routeIs('parent-portal.attendance')) active @endif">
+                            <i class="nav-icon ti ti-calendar-check"></i>
+                            <p>Attendance</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('fees.view')
+                    <li class="nav-item">
+                        <a href="{{ route('parent-portal.fees') }}" class="nav-link @if(request()->routeIs('parent-portal.fees')) active @endif">
+                            <i class="nav-icon ti ti-receipt"></i>
+                            <p>Fees</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('exams.view')
+                    <li class="nav-item">
+                        <a href="{{ route('parent-portal.exam-results') }}" class="nav-link @if(request()->routeIs('parent-portal.exam-results')) active @endif">
+                            <i class="nav-icon ti ti-chart-arrows-vertical"></i>
+                            <p>Exam Results</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('timetable.view')
+                    <li class="nav-item">
+                        <a href="{{ route('parent-portal.timetable') }}" class="nav-link @if(request()->routeIs('parent-portal.timetable')) active @endif">
+                            <i class="nav-icon ti ti-table"></i>
+                            <p>Timetable</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('homework.view')
+                    <li class="nav-item">
+                        <a href="{{ route('parent-portal.homework') }}" class="nav-link @if(request()->routeIs('parent-portal.homework')) active @endif">
+                            <i class="nav-icon ti ti-books"></i>
+                            <p>Homework</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('parent-portal.notifications') }}" class="nav-link @if(request()->routeIs('parent-portal.notifications')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
+            @elseif(auth()->user()->hasRole('Student'))
+
+                {{-- ========== STUDENT ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Student</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('attendance.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.attendance.index') }}" class="nav-link @if(request()->routeIs('admin.attendance.*')) active @endif">
+                            <i class="nav-icon ti ti-calendar-check"></i>
+                            <p>Attendance</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('timetable.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.timetable.index') }}" class="nav-link @if(request()->routeIs('admin.timetable.*')) active @endif">
+                            <i class="nav-icon ti ti-table"></i>
+                            <p>Timetable</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('exams.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.exams.index') }}" class="nav-link @if(request()->routeIs('admin.exams.*')) active @endif">
+                            <i class="nav-icon ti ti-chart-arrows-vertical"></i>
+                            <p>Exams</p>
+                        </a>
+                    </li>
+                @endcan
+
+            @elseif(auth()->user()->hasRole('Accountant'))
+
+                {{-- ========== ACCOUNTANT ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Finance</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('fees.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.fees.index') }}" class="nav-link @if(request()->routeIs('admin.fees.*')) active @endif">
+                            <i class="nav-icon ti ti-receipt"></i>
+                            <p>Fees</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('transport.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.transport.index') }}" class="nav-link @if(request()->routeIs('admin.transport.*')) active @endif">
+                            <i class="nav-icon ti ti-bus"></i>
+                            <p>Transport</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('fees.reports')
+                    <li class="nav-item">
+                        <a href="{{ route('reports.fees.index') }}" class="nav-link @if(request()->routeIs('reports.fees.*')) active @endif">
+                            <i class="nav-icon ti ti-chart-bar"></i>
+                            <p>Reports</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link @if(request()->routeIs('admin.notifications.*')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
+            @elseif(auth()->user()->hasRole('Librarian'))
+
+                {{-- ========== LIBRARIAN ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Library</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('library.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.library.index') }}" class="nav-link @if(request()->routeIs('admin.library.*')) active @endif">
+                            <i class="nav-icon ti ti-books"></i>
+                            <p>Library</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('reports.view')
+                    <li class="nav-item">
+                        <a href="{{ route('reports.attendance.index') }}" class="nav-link @if(request()->routeIs('reports.*')) active @endif">
+                            <i class="nav-icon ti ti-chart-bar"></i>
+                            <p>Reports</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link @if(request()->routeIs('admin.notifications.*')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
+            @elseif(auth()->user()->hasRole('Receptionist'))
+
+                {{-- ========== RECEPTIONIST ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Reception</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('students.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.students.index') }}" class="nav-link @if(request()->routeIs('admin.students.*')) active @endif">
+                            <i class="nav-icon ti ti-school"></i>
+                            <p>Students</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('parents.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.parents.index') }}" class="nav-link @if(request()->routeIs('admin.parents.*')) active @endif">
+                            <i class="nav-icon ti ti-users"></i>
+                            <p>Parents</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link @if(request()->routeIs('admin.notifications.*')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
+            @elseif(auth()->user()->hasRole('Staff'))
+
+                {{-- ========== STAFF ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Staff</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('timetable.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.timetable.index') }}" class="nav-link @if(request()->routeIs('admin.timetable.*')) active @endif">
+                            <i class="nav-icon ti ti-table"></i>
+                            <p>Timetable</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('attendance.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.attendance.index') }}" class="nav-link @if(request()->routeIs('admin.attendance.*')) active @endif">
+                            <i class="nav-icon ti ti-calendar-check"></i>
+                            <p>Attendance</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link @if(request()->routeIs('admin.notifications.*')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
+            @else
+
                 {{-- ========== OPERATIONS ========== --}}
                 <li class="nav-header">
                     <span class="nav-header-label">Operations</span>
@@ -532,6 +1121,8 @@
                         </ul>
                     </li>
                 @endcan
+
+            @endif
 
             </ul>
         </nav>

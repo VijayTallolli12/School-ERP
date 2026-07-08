@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\SetSchoolContext;
 use App\Modules\Auth\Requests\LoginRequest;
 use App\Modules\Auth\Services\LoginActivityService;
 use Illuminate\Http\RedirectResponse;
@@ -36,8 +37,30 @@ class LoginController extends Controller
 
         $user = $request->user();
 
+        // Apply school context BEFORE any role/permission checks.
+        // The SetSchoolContext middleware hasn't run yet at this point,
+        // so we need to set the team ID manually for hasRole() to work.
+        SetSchoolContext::applySchoolContext($user, $request);
+
         if ($user->hasRole('Parent')) {
             return redirect()->intended(route('admin.parent-portal.dashboard'));
+        }
+
+        if ($user->hasRole('Teacher')) {
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
+        if ($user->hasRole('Principal')) {
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
+        if ($user->hasRole('Staff')) {
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
+        // Fallback for users with roles not explicitly mapped above
+        if ($user->hasRole('School Admin')) {
+            return redirect()->intended(route('admin.dashboard'));
         }
 
         return redirect()->intended(route('admin.dashboard'));

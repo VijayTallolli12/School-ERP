@@ -147,6 +147,7 @@ class NotificationService
             'teachers' => $query->whereHas('roles', fn ($q) => $q->where('name', 'Teacher'))->pluck('id')->all(),
             'staff' => $query->whereHas('roles', fn ($q) => $q->where('name', 'Staff'))->pluck('id')->all(),
             'admins' => $query->whereHas('roles', fn ($q) => $q->whereIn('name', ['Super Admin', 'Admin']))->pluck('id')->all(),
+            'principals' => $query->whereHas('roles', fn ($q) => $q->where('name', 'Principal'))->pluck('id')->all(),
             default => [],
         };
     }

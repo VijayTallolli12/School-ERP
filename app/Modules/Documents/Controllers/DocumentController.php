@@ -26,6 +26,9 @@ class DocumentController extends Controller
 
     public function index(): View
     {
+        if (auth()->user()->hasRole('Teacher')) {
+            abort(403, 'Teachers cannot browse student documents.');
+        }
         $this->authorize('viewAny', StudentDocument::class);
 
         return view('modules.documents.index', [

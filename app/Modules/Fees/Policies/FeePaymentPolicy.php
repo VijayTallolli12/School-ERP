@@ -22,6 +22,11 @@ class FeePaymentPolicy
         return $user->can('fees.collect');
     }
 
+    public function update(User $user, FeePayment $feePayment): bool
+    {
+        return $user->can('fees.update');
+    }
+
     public function delete(User $user, FeePayment $feePayment): bool
     {
         return $user->can('fees.delete');

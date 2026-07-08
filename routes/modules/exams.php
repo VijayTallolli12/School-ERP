@@ -1,6 +1,9 @@
 <?php
 
 use App\Modules\Exams\Controllers\ExamController;
+use App\Modules\Exams\Controllers\ExamMarkController;
+use App\Modules\Exams\Controllers\ExamScheduleController;
+use App\Modules\Exams\Controllers\GradeScaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('exams')
@@ -26,4 +29,39 @@ Route::prefix('exams')
         Route::get('{exam}', [ExamController::class, 'show'])->name('show');
         Route::put('{exam}', [ExamController::class, 'update'])->middleware('permission:exams.update')->name('update');
         Route::delete('{exam}', [ExamController::class, 'destroy'])->middleware('permission:exams.delete')->name('destroy');
+    });
+
+Route::prefix('grade-scales')
+    ->name('grade-scales.')
+    ->middleware('permission:exams.view')
+    ->group(function (): void {
+        Route::get('/', [GradeScaleController::class, 'index'])->name('index');
+        Route::get('data', [GradeScaleController::class, 'data'])->name('data');
+        Route::post('/', [GradeScaleController::class, 'store'])->middleware('permission:exams.create')->name('store');
+        Route::get('{gradeScale}', [GradeScaleController::class, 'show'])->name('show');
+        Route::put('{gradeScale}', [GradeScaleController::class, 'update'])->middleware('permission:exams.update')->name('update');
+        Route::delete('{gradeScale}', [GradeScaleController::class, 'destroy'])->middleware('permission:exams.delete')->name('destroy');
+    });
+
+Route::prefix('exams/{exam}/schedules')
+    ->name('exams.schedules.')
+    ->middleware('permission:exams.view')
+    ->group(function (): void {
+        Route::get('/', [ExamScheduleController::class, 'index'])->name('index');
+        Route::get('data', [ExamScheduleController::class, 'data'])->name('data');
+        Route::post('/', [ExamScheduleController::class, 'store'])->middleware('permission:exams.update')->name('store');
+        Route::get('{schedule}', [ExamScheduleController::class, 'show'])->name('show');
+        Route::put('{schedule}', [ExamScheduleController::class, 'update'])->middleware('permission:exams.update')->name('update');
+        Route::delete('{schedule}', [ExamScheduleController::class, 'destroy'])->middleware('permission:exams.delete')->name('destroy');
+    });
+
+Route::prefix('exam-schedules/{schedule}/marks')
+    ->name('exams.schedules.marks.')
+    ->middleware('permission:exams.view')
+    ->group(function (): void {
+        Route::get('/', [ExamMarkController::class, 'index'])->name('index');
+        Route::get('data', [ExamMarkController::class, 'data'])->name('data');
+        Route::post('bulk-save', [ExamMarkController::class, 'bulkSave'])->middleware('permission:exams.update')->name('bulk-save');
+        Route::get('{mark}', [ExamMarkController::class, 'show'])->name('show');
+        Route::put('{mark}', [ExamMarkController::class, 'update'])->middleware('permission:exams.update')->name('update');
     });

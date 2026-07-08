@@ -44,6 +44,16 @@ class PayrollController extends Controller
 
     public function index()
     {
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if (! $teacher) {
+                abort(403, 'Teacher profile not found.');
+            }
+            return view('modules.payroll.teacher_payslips', [
+                'teacher' => $teacher,
+            ]);
+        }
+
         return view('modules.payroll.index', [
             'departments' => PayrollDepartment::query()->orderBy('name')->get(),
             'designations' => PayrollDesignation::query()->with('department')->orderBy('name')->get(),
@@ -746,6 +756,39 @@ class PayrollController extends Controller
 
             default => [],
         };
+    }
+
+    // ─── Teacher Payslips ────────────────────────────────────────────────
+
+    public function myPayslips(): \Illuminate\View\View
+    {
+        return view('modules.payroll.my_payslips', [
+            'teacher' => \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first(),
+        ]);
+    }
+
+    public function myPayslipsData(): JsonResponse
+    {
+        $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->firstOrFail();
+
+        $query = \App\Modules\Payroll\Models\EmployeePayslip::query()
+            ->where('employee_type', 'teacher')
+            ->where('employee_id', $teacher->id);
+
+        return DataTables::of($query)
+            ->addColumn('period', fn (\App\Modules\Payroll\Models\EmployeePayslip $p) => $p->payrollRun?->month_name.' '.$p->payrollRun?->year)
+            ->editColumn('gross_salary', fn (\App\Modules\Payroll\Models\EmployeePayslip $p) => '<span class="text-end d-block">'.number_format((float) $p->gross_salary, 2).'</span>')
+            ->editColumn('total_deductions', fn (\App\Modules\Payroll\Models\EmployeePayslip $p) => '<span class="text-end d-block">'.number_format((float) $p->total_deductions, 2).'</span>')
+            ->editColumn('net_salary', fn (\App\Modules\Payroll\Models\EmployeePayslip $p) => '<span class="text-end d-block">'.number_format((float) $p->net_salary, 2).'</span>')
+            ->editColumn('generated_at', fn (\App\Modules\Payroll\Models\EmployeePayslip $p) => $p->generated_at?->format('d M Y H:i') ?? '-')
+            ->addColumn('actions', fn (\App\Modules\Payroll\Models\EmployeePayslip $p) => '
+                <div class="btn-group btn-group-sm">
+                    <a class="btn btn-outline-primary" href="'.route('admin.payroll.payslips.print', $p->id).'" target="_blank" title="View"><i class="ti ti-eye"></i></a>
+                    <a class="btn btn-outline-danger" href="'.route('admin.payroll.payslips.pdf', $p->id).'" title="PDF"><i class="ti ti-file-pdf"></i></a>
+                    <a class="btn btn-outline-secondary" href="'.route('admin.payroll.payslips.print', $p->id).'" target="_blank" title="Print"><i class="ti ti-printer"></i></a>
+                </div>')
+            ->rawColumns(['gross_salary', 'total_deductions', 'net_salary', 'actions'])
+            ->toJson();
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────
