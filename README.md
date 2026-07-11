@@ -1,59 +1,100 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# School ERP
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Build Status](https://img.shields.io/badge/status-active-success)
+![Laravel](https://img.shields.io/badge/Laravel-12.x-red)
+![PHP](https://img.shields.io/badge/PHP-8.3%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## About Laravel
+School ERP is a modular Laravel-based school management platform for multi-school operations. The implementation in this repository currently includes authentication, student and teacher management, attendance, exams, homework, fees, payroll, library, transport, HR, notifications, AI assistant workflows, dashboards, and reporting.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Multi-school aware tenant context and role-based access control
+- Student, teacher, parent, and employee management
+- Attendance, homework, exams, fees, payroll, and library workflows
+- Transport and document management
+- Role-based dashboards and sidebar navigation
+- AI assistant and executive-copilot style workflows
+- Reporting and notifications
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Architecture Overview
 
-## Learning Laravel
+```mermaid
+flowchart LR
+    User[User] --> Web[Laravel Web App]
+    Web --> Module[Module Services]
+    Module --> Data[(Database)]
+    Web --> AI[AI Assistant]
+    AI --> Reports[Reports and Notifications]
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Installation
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm install
+npm run build
+```
 
-## Laravel Sponsors
+## Configuration
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Configure your database connection in .env.
+- Set services and AI-related environment variables where required.
+- Ensure storage permissions are correct for uploads and generated documents.
 
-### Premium Partners
+## Screenshots
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- Login and dashboard screens: placeholder
+- Role-based module views: placeholder
+- Reports and AI experience: placeholder
 
-## Contributing
+## Module Overview
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- Authentication
+- Students
+- Teachers
+- Attendance
+- Homework
+- Exams
+- Fees
+- Payroll
+- Library
+- Transport
+- HR
+- Notifications
+- Reports
+- AI Assistant
+- Settings
 
-## Code of Conduct
+## Documentation
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+The complete documentation set is available in [docs](docs/README.md).
 
-## Security Vulnerabilities
+## Roadmap
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- Expand automated regression coverage
+- Harden reporting and analytics workflows
+- Improve deployment and monitoring guidance
+- Extend AI assistant support for additional school operations
+
+## Contribution Guide
+
+1. Review the developer guide in [docs/Developer/DEVELOPER_GUIDE.md](docs/Developer/DEVELOPER_GUIDE.md).
+2. Make changes in a feature branch.
+3. Add or update relevant tests.
+4. Update the documentation if behavior changes.
+
+## Support
+
+For implementation, deployment, and operational questions, use the documentation set in [docs](docs/README.md) or review the module-specific guides.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is licensed under the MIT License.
+
+## Credits
+
+This project uses Laravel, Spatie Permission, Laravel Sanctum, DataTables, Excel, DomPDF, and related ecosystem packages.
