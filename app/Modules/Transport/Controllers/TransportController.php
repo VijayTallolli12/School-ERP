@@ -455,7 +455,7 @@ class TransportController extends Controller
 
     public function exportExcel(Request $request, string $report)
     {
-        $data = $this->getReportData($report, $request);
+        $data = $this->getReportData($request, $report);
 
         return Excel::download(
             new TransportReportExport($data, $report),
@@ -465,7 +465,7 @@ class TransportController extends Controller
 
     public function exportPdf(Request $request, string $report)
     {
-        $data = $this->getReportData($report, $request);
+        $data = $this->getReportData($request, $report);
         $title = str($report)->replace('_', ' ')->headline().' Report';
 
         return Pdf::loadView('modules.transport.reports_pdf', compact('data', 'title', 'report'))
@@ -475,7 +475,7 @@ class TransportController extends Controller
 
     public function printReport(Request $request, string $report)
     {
-        $data = $this->getReportData($report, $request);
+        $data = $this->getReportData($request, $report);
         $title = str($report)->replace('_', ' ')->headline().' Report';
 
         return view('modules.transport.reports_print', compact('data', 'title', 'report'));

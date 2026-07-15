@@ -76,13 +76,9 @@ class DocumentController extends Controller
         $this->authorize('create', StudentDocument::class);
 
         $data = $request->validated();
-        $data['uploaded_by'] = auth()->id();
+        $file = $request->file('file');
 
-        if ($request->hasFile('file_path')) {
-            $data['file_path'] = $request->file('file_path')->store('documents', 'public');
-        }
-
-        $document = $this->service->createDocument($data);
+        $document = $this->service->create($data, $file);
 
         return response()->json([
             'success' => true,
@@ -107,7 +103,7 @@ class DocumentController extends Controller
                     'document_type' => $document->document_type,
                     'document_type_label' => $document->document_type_label,
                     'title' => $document->title,
-                    'file_name' => $document->original_name,
+                    'file_name' => $document->file_name,
                     'file_path' => $document->file_path,
                     'file_size' => $document->file_size ? round($document->file_size / 1024, 1) . ' KB' : '-',
                     'mime_type' => $document->mime_type,
@@ -141,15 +137,9 @@ class DocumentController extends Controller
         $this->authorize('update', $document);
 
         $data = $request->validated();
+        $file = $request->file('file');
 
-        if ($request->hasFile('file_path')) {
-            if ($document->file_path) {
-                Storage::disk('public')->delete($document->file_path);
-            }
-            $data['file_path'] = $request->file('file_path')->store('documents', 'public');
-        }
-
-        $document = $this->service->updateDocument($document, $data);
+        $document = $this->service->update($document->id, $data, $file);
 
         return response()->json([
             'success' => true,
@@ -194,6 +184,6 @@ class DocumentController extends Controller
             abort(404, 'File not found.');
         }
 
-        return Storage::disk('public')->download($document->file_path, $document->original_name);
+        return Storage::disk('public')->download($document->file_path, $document->file_name);
     }
 }

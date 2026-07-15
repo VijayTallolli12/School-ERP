@@ -69,7 +69,7 @@ class CalendarController extends Controller
     {
         $this->authorize('create', AcademicCalendar::class);
 
-        $event = $this->service->createEvent($request->validated());
+        $event = $this->service->create($request->validated());
 
         return response()->json([
             'success' => true,
@@ -101,7 +101,7 @@ class CalendarController extends Controller
     {
         $this->authorize('update', $event);
 
-        $event = $this->service->updateEvent($event, $request->validated());
+        $event = $this->service->update($event->id, $request->validated());
 
         return response()->json([
             'success' => true,
@@ -114,7 +114,7 @@ class CalendarController extends Controller
     {
         $this->authorize('delete', $event);
 
-        $this->service->deleteEvent($event);
+        $this->service->delete($event->id);
 
         return response()->json([
             'success' => true,
