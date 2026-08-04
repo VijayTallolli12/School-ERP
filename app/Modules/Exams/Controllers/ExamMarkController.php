@@ -22,6 +22,7 @@ class ExamMarkController extends Controller
 
     public function index(ExamSchedule $schedule): View
     {
+        $this->assertTeacherScheduleAccess($schedule);
         $schedule->load(['exam', 'subject']);
 
         return view('modules.exams.marks.index', compact('schedule'));
@@ -29,6 +30,8 @@ class ExamMarkController extends Controller
 
     public function data(ExamSchedule $schedule): JsonResponse
     {
+        $this->assertTeacherScheduleAccess($schedule);
+
         $query = ExamMark::query()
             ->with(['student'])
             ->where('exam_schedule_id', $schedule->id);
@@ -43,6 +46,7 @@ class ExamMarkController extends Controller
 
     public function bulkSave(Request $request, ExamSchedule $schedule): JsonResponse
     {
+        $this->assertTeacherScheduleAccess($schedule);
         $this->authorize('update', $schedule->exam);
 
         $marks = $request->input('marks', []);
@@ -95,5 +99,18 @@ class ExamMarkController extends Controller
             'message' => 'Mark updated successfully.',
             'data' => $mark->fresh(),
         ]);
+    }
+
+    private function assertTeacherScheduleAccess(ExamSchedule $schedule): void
+    {
+        if (! auth()->user()->hasRole('Teacher')) {
+            return;
+        }
+
+        $teacher = \App\Modules\Teachers\Models\Teacher::query()->where('user_id', auth()->id())->first();
+
+        if (! $teacher || ! $teacher->classSections->pluck('id')->contains($schedule->exam->class_section_id)) {
+            abort(403, 'You do not have access to this exam.');
+        }
     }
 }

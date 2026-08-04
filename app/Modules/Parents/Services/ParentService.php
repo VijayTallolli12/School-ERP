@@ -130,7 +130,12 @@ class ParentService
             'fees_summary' => $this->getFeesSummary($students),
             'exam_results_summary' => $this->getExamResultsSummary($students),
             'homework_summary' => $this->getHomeworkSummary($students),
-            'notifications' => $parent->notifications()->latest()->take(5)->get(),
+            'notifications' => $parent->notifications()
+                ->where('notifications.target_type', 'parents')
+                ->where('notifications.status', 'sent')
+                ->latest()
+                ->take(5)
+                ->get(),
         ];
 
         return $data;

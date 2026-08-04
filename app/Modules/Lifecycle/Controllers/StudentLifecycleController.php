@@ -12,9 +12,7 @@ use App\Modules\Lifecycle\Requests\TransferStudentRequest;
 use App\Modules\Lifecycle\Services\StudentLifecycleService;
 use App\Modules\Students\Models\Student;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class StudentLifecycleController extends Controller
@@ -69,6 +67,7 @@ class StudentLifecycleController extends Controller
     public function promoteIndex(Request $request)
     {
         $students = Student::query()
+            ->where('status', 'active')
             ->whereHas('sessions', fn ($q) => $q->where('status', 'active'))
             ->with(['sessions.classSection.schoolClass', 'sessions.classSection.section'])
             ->orderBy('first_name')

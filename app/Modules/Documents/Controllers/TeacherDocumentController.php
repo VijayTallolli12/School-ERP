@@ -44,11 +44,7 @@ class TeacherDocumentController extends Controller
 
     public function download(TeacherDocument $document): StreamedResponse
     {
-        $teacher = Teacher::query()->where('user_id', auth()->id())->first();
-
-        if (!$teacher || $document->teacher_id !== $teacher->id) {
-            abort(403, 'Unauthorized access to this document.');
-        }
+        $this->authorize('view', $document);
 
         if (!$document->file_path || !Storage::disk('public')->exists($document->file_path)) {
             abort(404, 'File not found.');

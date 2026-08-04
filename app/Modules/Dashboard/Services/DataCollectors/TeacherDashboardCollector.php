@@ -6,7 +6,8 @@ use App\Modules\Academics\Models\ClassSection;
 use App\Modules\Attendance\Models\Attendance;
 use App\Modules\Exams\Models\Exam;
 use App\Modules\Homework\Models\Homework;
-use App\Modules\Leave\Models\LeaveRequest;
+use App\Modules\Teachers\Models\Teacher;
+use App\Modules\Teachers\Models\TeacherLeave;
 use App\Modules\Timetable\Models\TimetableSlot;
 use App\Modules\Timetable\Services\TimetableService;
 use Illuminate\Support\Facades\Cache;
@@ -93,13 +94,19 @@ class TeacherDashboardCollector
     public function leaveBalance(int $userId): array
     {
         return Cache::remember("dashboard.teacher.leave_balance.{$userId}", 300, function () use ($userId) {
+            $teacherId = Teacher::query()->where('user_id', $userId)->value('id');
+
+            if (! $teacherId) {
+                return ['approved' => 0, 'pending' => 0];
+            }
+
             return [
-                'approved' => LeaveRequest::query()
-                    ->where('user_id', $userId)
+                'approved' => TeacherLeave::query()
+                    ->where('teacher_id', $teacherId)
                     ->where('status', 'approved')
                     ->count(),
-                'pending' => LeaveRequest::query()
-                    ->where('user_id', $userId)
+                'pending' => TeacherLeave::query()
+                    ->where('teacher_id', $teacherId)
                     ->where('status', 'pending')
                     ->count(),
             ];

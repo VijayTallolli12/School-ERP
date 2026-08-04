@@ -39,6 +39,13 @@ class TeacherResource extends JsonResource
                 'is_class_teacher' => (bool) ($cs->pivot->is_class_teacher ?? false),
             ])),
 
+            'documents' => $this->whenLoaded('documents', fn() => $this->documents->map(fn($d) => [
+                'id' => $d->id,
+                'document_type' => $d->document_type,
+                'file_url' => $d->file_path ? asset('storage/' . $d->file_path) : null,
+                'uploaded_at' => $d->uploaded_at?->toISOString(),
+            ])),
+
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

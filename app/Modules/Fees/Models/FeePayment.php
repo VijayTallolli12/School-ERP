@@ -25,6 +25,10 @@ class FeePayment extends Model
         'remarks',
         'paid_on',
         'collected_by',
+        'status',
+        'void_reason',
+        'voided_by',
+        'voided_at',
     ];
 
     protected function casts(): array
@@ -32,8 +36,13 @@ class FeePayment extends Model
         return [
             'amount' => 'decimal:2',
             'paid_on' => 'date',
+            'voided_at' => 'datetime',
         ];
     }
+
+    public const STATUS_COMPLETED = 'completed';
+
+    public const STATUS_VOID = 'void';
 
     public static function paymentModes(): array
     {
@@ -60,8 +69,28 @@ class FeePayment extends Model
         return $this->belongsTo(User::class, 'collected_by');
     }
 
+    public function voidedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'voided_by');
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(FeePaymentItem::class);
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where($this->getTable().'.status', self::STATUS_COMPLETED);
+    }
+
+    public function scopeVoided($query)
+    {
+        return $query->where($this->getTable().'.status', self::STATUS_VOID);
+    }
+
+    public function isVoided(): bool
+    {
+        return $this->status === self::STATUS_VOID;
     }
 }

@@ -3,9 +3,13 @@
 namespace App\Modules\Lifecycle\Services;
 
 use App\Core\Tenant\SchoolContext;
+use App\Models\AcademicYear;
+use App\Modules\Fees\Models\FeeStructure;
+use App\Modules\Fees\Models\StudentFee;
 use App\Modules\Lifecycle\Models\StudentTransfer;
 use App\Modules\Notifications\Models\Notification;
 use App\Modules\Students\Models\Student;
+use App\Modules\Students\Models\StudentSession;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -17,10 +21,13 @@ class StudentLifecycleService
     {
         return DB::transaction(function () use ($student, $toClassSectionId, $toAcademicYearId, $rollNo): StudentTransfer {
             $this->assertSchoolContext();
+            $this->assertPromotableStudent($student);
 
             if ($student->sessions()->where('academic_year_id', $toAcademicYearId)->exists()) {
                 throw new RuntimeException($student->full_name.' already has a session for the selected academic year.');
             }
+
+            $targetYear = $this->assertTargetYearPromotable($toAcademicYearId, $student->school_id);
 
             $activeSession = $student->sessions()->where('status', 'active')->latest()->first();
 
@@ -33,6 +40,8 @@ class StudentLifecycleService
                     'left_on' => now()->toDateString(),
                 ]);
             }
+
+            $this->assertRollNoAvailable($student, $targetYear, $toClassSectionId, $rollNo);
 
             $student->sessions()->create([
                 'school_id' => $student->school_id,
@@ -47,6 +56,8 @@ class StudentLifecycleService
                 'status' => 'active',
                 'updated_by' => auth()->id(),
             ]);
+
+            $this->assignFeeStructureForPromotion($student, $toAcademicYearId, $toClassSectionId);
 
             $transfer = StudentTransfer::query()->create([
                 'school_id' => $student->school_id,
@@ -79,6 +90,7 @@ class StudentLifecycleService
 
             if (! $student) {
                 $skipped[] = $studentId;
+
                 continue;
             }
 
@@ -217,6 +229,92 @@ class StudentLifecycleService
 
             $this->log($student, 'marked_alumni', 'Student marked as alumni');
         });
+    }
+
+    private function assertPromotableStudent(Student $student): void
+    {
+        if ($student->status !== 'active') {
+            throw new RuntimeException($student->full_name.' is not eligible for promotion (current status: '.$student->status.').');
+        }
+    }
+
+    private function assertTargetYearPromotable(int $toAcademicYearId, int $schoolId): AcademicYear
+    {
+        $year = AcademicYear::query()
+            ->where('school_id', $schoolId)
+            ->find($toAcademicYearId);
+
+        if (! $year) {
+            throw new RuntimeException('The selected academic year is invalid.');
+        }
+
+        if ($year->status === 'archived') {
+            throw new RuntimeException('Cannot promote into "'.$year->name.'": the academic year is archived (locked).');
+        }
+
+        if ($year->ends_on && $year->ends_on->lt(today())) {
+            throw new RuntimeException('Cannot promote into "'.$year->name.'": the academic year has already ended.');
+        }
+
+        return $year;
+    }
+
+    private function assertRollNoAvailable(Student $student, AcademicYear $targetYear, int $toClassSectionId, ?string $rollNo): void
+    {
+        if ($rollNo === null || trim($rollNo) === '') {
+            return;
+        }
+
+        $taken = StudentSession::query()
+            ->withTrashed()
+            ->where('school_id', $student->school_id)
+            ->where('academic_year_id', $targetYear->id)
+            ->where('class_section_id', $toClassSectionId)
+            ->where('roll_no', trim($rollNo))
+            ->exists();
+
+        if ($taken) {
+            throw new RuntimeException($student->full_name.': roll number "'.$rollNo.'" is already taken in the target class for '.$targetYear->name.'.');
+        }
+    }
+
+    private function assignFeeStructureForPromotion(Student $student, int $toAcademicYearId, int $toClassSectionId): void
+    {
+        if (StudentFee::query()
+            ->where('student_id', $student->id)
+            ->where('academic_year_id', $toAcademicYearId)
+            ->exists()) {
+            return;
+        }
+
+        $structure = FeeStructure::query()
+            ->where('school_id', $student->school_id)
+            ->where('academic_year_id', $toAcademicYearId)
+            ->where('class_section_id', $toClassSectionId)
+            ->where('status', 'active')
+            ->with('items')
+            ->first();
+
+        if (! $structure) {
+            return;
+        }
+
+        $studentFee = StudentFee::query()->create([
+            'school_id' => $student->school_id,
+            'student_id' => $student->id,
+            'academic_year_id' => $toAcademicYearId,
+            'fee_structure_id' => $structure->id,
+            'status' => 'active',
+            'assigned_at' => now(),
+        ]);
+
+        foreach ($structure->items as $line) {
+            $studentFee->items()->create([
+                'fee_category_id' => $line->fee_category_id,
+                'amount' => $line->amount,
+                'due_date' => null,
+            ]);
+        }
     }
 
     private function generateTcNo(): string

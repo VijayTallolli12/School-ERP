@@ -21,7 +21,7 @@ class PromoteStudentsRequest extends FormRequest
             'student_ids' => ['required', 'array', 'min:1'],
             'student_ids.*' => ['integer', Rule::exists('students', 'id')->where('school_id', $schoolId)],
             'to_class_section_id' => ['required', 'integer', Rule::exists('class_section', 'id')->where('school_id', $schoolId)],
-            'to_academic_year_id' => ['required', 'integer', Rule::exists('academic_years', 'id')->where('school_id', $schoolId)],
+            'to_academic_year_id' => ['required', 'integer', Rule::exists('academic_years', 'id')->where('school_id', $schoolId)->whereNot('status', 'archived')],
             'roll_no' => ['nullable', 'string', 'max:30'],
             'roll_numbers' => ['nullable', 'array'],
         ];

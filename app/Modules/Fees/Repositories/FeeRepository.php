@@ -43,6 +43,7 @@ class FeeRepository implements FeeRepositoryInterface
     public function studentFeeItemsDueBaseQuery(): Builder
     {
         return StudentFeeItem::query()
+            ->whereHas('studentFee', fn ($q) => $q->where('status', 'active'))
             ->with([
                 'feeCategory',
                 'studentFee.student.sessions.classSection.schoolClass',
@@ -50,7 +51,7 @@ class FeeRepository implements FeeRepositoryInterface
                 'studentFee.academicYear',
             ])
             ->withSum(['paymentItems as paid_sum' => function ($q): void {
-                $q->whereHas('feePayment');
+                $q->whereHas('feePayment', fn ($p) => $p->completed());
             }], 'amount');
     }
 }

@@ -5,9 +5,9 @@
     <a href="{{ route('admin.fees.collections.receipt.pdf', $row) }}" class="btn btn-outline-secondary" title="Download PDF">
         <i class="ti ti-file-type-pdf"></i>
     </a>
-    @can('fees.delete')
-        <button type="button" class="btn btn-outline-danger delete-collection" data-url="{{ route('admin.fees.collections.destroy', $row) }}">
-            <i class="ti ti-trash"></i>
+    @can('fees.update')
+        <button type="button" class="btn btn-outline-warning void-collection" data-url="{{ route('admin.fees.collections.void', $row) }}" title="Void payment">
+            <i class="ti ti-x"></i>
         </button>
     @endcan
 </div>

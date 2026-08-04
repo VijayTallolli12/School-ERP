@@ -87,9 +87,6 @@ class TeacherAppController extends ApiBaseController
             return $this->error('This account is not active.', Response::HTTP_FORBIDDEN);
         }
 
-        $schoolId = $user->current_school_id ?? $user->schools()->first()?->id;
-        app(PermissionRegistrar::class)->setPermissionsTeamId($schoolId);
-
         if (! $user->hasRole('Teacher')) {
             $this->loginActivityService->recordFailure($request, 'Non-teacher login attempt');
             return $this->error('Only teacher accounts can use this endpoint.', Response::HTTP_FORBIDDEN);
@@ -99,6 +96,10 @@ class TeacherAppController extends ApiBaseController
         if (! $teacher) {
             return $this->error('Teacher profile not found.', Response::HTTP_NOT_FOUND);
         }
+
+        $schoolId = $teacher->school_id ?? $user->current_school_id ?? $user->schools()->first()?->id;
+        app(PermissionRegistrar::class)->setPermissionsTeamId($schoolId);
+        app(SchoolContext::class)->set($schoolId);
 
         $abilities = $user->getAllPermissions()->pluck('name')->values()->all();
         $token = $user->createToken(
@@ -119,6 +120,7 @@ class TeacherAppController extends ApiBaseController
 
     public function logout(Request $request): JsonResponse
     {
+        $this->resolveTeacher();
         $user = $request->user();
         $user?->currentAccessToken()?->delete();
 
@@ -159,6 +161,8 @@ class TeacherAppController extends ApiBaseController
 
     public function changePassword(Request $request): JsonResponse
     {
+        $this->resolveTeacher();
+
         $validated = $request->validate([
             'current_password' => ['required', 'string'],
             'new_password' => ['required', 'string', 'min:8', 'different:current_password'],
@@ -172,6 +176,11 @@ class TeacherAppController extends ApiBaseController
         }
 
         $user->update(['password' => Hash::make($validated['new_password'])]);
+
+        $currentTokenId = $user->currentAccessToken()?->id;
+        if ($currentTokenId) {
+            $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+        }
 
         return $this->success(message: 'Password changed successfully.');
     }
@@ -401,6 +410,17 @@ class TeacherAppController extends ApiBaseController
             return $this->error('No active academic year found.', Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        $enrolledStudentIds = StudentSession::query()
+            ->where('class_section_id', $validated['class_section_id'])
+            ->where('status', 'active')
+            ->pluck('student_id');
+
+        $invalidStudentIds = collect($validated['students'])->pluck('student_id')->diff($enrolledStudentIds);
+
+        if ($invalidStudentIds->isNotEmpty()) {
+            return $this->forbidden('One or more students are not enrolled in this class section.');
+        }
+
         $studentIds = collect($validated['students'])->pluck('student_id');
         $students = \App\Modules\Students\Models\Student::query()
             ->whereIn('id', $studentIds)
@@ -509,7 +529,15 @@ class TeacherAppController extends ApiBaseController
             return $this->forbidden('You are not assigned to this class section.');
         }
 
-        $validated['academic_year_id'] = $academicYear?->id;
+        if (! $teacher->subjects->contains('id', (int) $validated['subject_id'])) {
+            return $this->forbidden('You are not assigned to this subject.');
+        }
+
+        if (! $academicYear) {
+            return $this->error('No active academic year found.', Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $validated['academic_year_id'] = $academicYear->id;
         $validated['status'] = 'active';
 
         $homework = $this->homeworkService->create($validated);
@@ -695,6 +723,17 @@ class TeacherAppController extends ApiBaseController
             'publish' => ['sometimes', 'boolean'],
         ]);
 
+        $enrolledStudentIds = StudentSession::query()
+            ->where('class_section_id', $exam->class_section_id)
+            ->where('status', 'active')
+            ->pluck('student_id');
+
+        $invalidStudentIds = collect($validated['results'])->pluck('student_id')->diff($enrolledStudentIds);
+
+        if ($invalidStudentIds->isNotEmpty()) {
+            return $this->forbidden('One or more students are not enrolled in this exam class section.');
+        }
+
         $saved = $this->examService->bulkSave($exam, $validated['results']);
 
         if (! empty($validated['publish'])) {
@@ -761,6 +800,16 @@ class TeacherAppController extends ApiBaseController
             'attachment' => ['nullable', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:5120'],
         ]);
 
+        $isStudentOfTeacher = StudentSession::query()
+            ->where('student_id', $validated['student_id'])
+            ->whereIn('class_section_id', $teacher->classSections->pluck('id'))
+            ->where('status', 'active')
+            ->exists();
+
+        if (! $isStudentOfTeacher) {
+            return $this->forbidden('This student is not enrolled in any of your class sections.');
+        }
+
         $validated['user_id'] = $teacher->user_id;
 
         $leaveRequest = $this->leaveService->create($validated);
@@ -777,6 +826,7 @@ class TeacherAppController extends ApiBaseController
 
     public function notificationsIndex(): JsonResponse
     {
+        $this->resolveTeacher();
         $userId = request()->user()->id;
         $bellData = $this->notificationService->bellData($userId);
 
@@ -788,6 +838,7 @@ class TeacherAppController extends ApiBaseController
 
     public function notificationsRead(int $id): JsonResponse
     {
+        $this->resolveTeacher();
         $userId = request()->user()->id;
 
         $notification = \App\Modules\Notifications\Models\Notification::query()->findOrFail($id);
@@ -798,6 +849,7 @@ class TeacherAppController extends ApiBaseController
 
     public function notificationsReadAll(): JsonResponse
     {
+        $this->resolveTeacher();
         $userId = request()->user()->id;
         $this->notificationService->markAllRead($userId);
 

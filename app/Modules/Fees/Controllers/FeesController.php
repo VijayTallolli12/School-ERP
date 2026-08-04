@@ -3,6 +3,7 @@
 namespace App\Modules\Fees\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Core\Tenant\SchoolContext;
 use App\Models\AcademicYear;
 use App\Modules\Academics\Models\ClassSection;
 use App\Modules\Fees\Models\FeeCategory;
@@ -12,17 +13,19 @@ use App\Modules\Fees\Models\StudentFee;
 use App\Modules\Fees\Repositories\FeeRepositoryInterface;
 use App\Modules\Fees\Requests\AssignStudentFeeRequest;
 use App\Modules\Fees\Requests\BulkAssignStudentFeesRequest;
-use App\Modules\Fees\Requests\FeeReportFilterRequest;
 use App\Modules\Fees\Requests\SaveFeeCategoryRequest;
 use App\Modules\Fees\Requests\SaveFeeStructureRequest;
 use App\Modules\Fees\Requests\StoreFeePaymentRequest;
 use App\Modules\Fees\Requests\UpdateStudentFeeRequest;
+use App\Modules\Fees\Requests\VoidFeePaymentRequest;
 use App\Modules\Fees\Services\FeeService;
 use App\Modules\Students\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Rule;
 use Illuminate\View\View;
 use RuntimeException;
 use Yajra\DataTables\Facades\DataTables;
@@ -293,8 +296,11 @@ class FeesController extends Controller
             ->editColumn('paid_on', fn (FeePayment $row) => $row->paid_on?->format('d-M-Y'))
             ->addColumn('student', fn (FeePayment $row) => e($row->student?->full_name ?? '-'))
             ->addColumn('mode_label', fn (FeePayment $row) => e(FeePayment::paymentModes()[$row->payment_mode] ?? $row->payment_mode))
+            ->addColumn('status_label', fn (FeePayment $row) => $row->isVoided()
+                ? '<span class="badge bg-danger">Voided</span>'
+                : '<span class="badge bg-success">Completed</span>')
             ->addColumn('actions', fn (FeePayment $row) => view('modules.fees._actions_collection', ['row' => $row])->render())
-            ->rawColumns(['actions'])
+            ->rawColumns(['actions', 'status_label'])
             ->toJson();
     }
 
@@ -311,20 +317,29 @@ class FeesController extends Controller
         return $this->jsonCreated('Payment recorded.', $payment);
     }
 
-    public function destroyCollection(FeePayment $fee_payment): JsonResponse
+    public function voidCollection(VoidFeePaymentRequest $request, FeePayment $fee_payment): JsonResponse
     {
-        $this->authorize('delete', $fee_payment);
-        $this->service->deleteFeePayment($fee_payment);
+        $this->authorize('update', $fee_payment);
 
-        return $this->jsonMessage('Payment removed.');
+        try {
+            $payment = $this->service->voidFeePayment($fee_payment, $request->validated('reason'));
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment voided. The receipt is cancelled and the amounts are restored to the students\' dues.',
+            'data' => $payment,
+        ]);
     }
 
     public function studentFeeItems(Request $request): JsonResponse
     {
         $this->authorize('create', FeePayment::class);
         $request->validate([
-            'student_id' => ['required', 'integer'],
-            'academic_year_id' => ['required', 'integer'],
+            'student_id' => ['required', 'integer', Rule::exists('students', 'id')->where('school_id', app(SchoolContext::class)->id())],
+            'academic_year_id' => ['required', 'integer', Rule::exists('academic_years', 'id')->where('school_id', app(SchoolContext::class)->id())],
         ]);
 
         $items = $this->service->listStudentFeeItemsForCollection(
@@ -375,130 +390,6 @@ class FeesController extends Controller
                 : '<span class="badge bg-secondary">Pending</span>')
             ->rawColumns(['overdue_badge'])
             ->toJson();
-    }
-
-    public function reportCollection(FeeReportFilterRequest $request): View
-    {
-        $filters = $request->filterPayload();
-        $rows = $this->service->collectionReport(
-            $filters['from_date'] ?? null,
-            $filters['to_date'] ?? null,
-            isset($filters['class_section_id']) ? (int) $filters['class_section_id'] : null,
-            $filters['payment_mode'] ?? null,
-        );
-
-        return view('modules.fees.reports.print_collection', [
-            'title' => 'Fee Collection Report',
-            'rows' => $rows,
-            'filters' => $filters,
-        ]);
-    }
-
-    public function reportCollectionPdf(FeeReportFilterRequest $request)
-    {
-        $filters = $request->filterPayload();
-        $rows = $this->service->collectionReport(
-            $filters['from_date'] ?? null,
-            $filters['to_date'] ?? null,
-            isset($filters['class_section_id']) ? (int) $filters['class_section_id'] : null,
-            $filters['payment_mode'] ?? null,
-        );
-
-        return Pdf::loadView('modules.fees.reports.print_collection', [
-            'title' => 'Fee Collection Report',
-            'rows' => $rows,
-            'filters' => $filters,
-        ])
-            ->setPaper('a4', 'landscape')
-            ->download('fee-collection-'.now()->format('Y-m-d-His').'.pdf');
-    }
-
-    public function reportDue(FeeReportFilterRequest $request): View
-    {
-        $filters = $request->filterPayload();
-        $rows = $this->service->dueReport(
-            isset($filters['academic_year_id']) ? (int) $filters['academic_year_id'] : null,
-            (bool) ($filters['overdue_only'] ?? false),
-        );
-
-        return view('modules.fees.reports.print_due', [
-            'title' => 'Fee Due Report',
-            'rows' => $rows,
-            'filters' => $filters,
-        ]);
-    }
-
-    public function reportDuePdf(FeeReportFilterRequest $request)
-    {
-        $filters = $request->filterPayload();
-        $rows = $this->service->dueReport(
-            isset($filters['academic_year_id']) ? (int) $filters['academic_year_id'] : null,
-            (bool) ($filters['overdue_only'] ?? false),
-        );
-
-        return Pdf::loadView('modules.fees.reports.print_due', [
-            'title' => 'Fee Due Report',
-            'rows' => $rows,
-            'filters' => $filters,
-        ])
-            ->setPaper('a4', 'landscape')
-            ->download('fee-due-'.now()->format('Y-m-d-His').'.pdf');
-    }
-
-    public function reportClassWise(FeeReportFilterRequest $request): View
-    {
-        $filters = $request->filterPayload();
-        $academicYearId = (int) ($filters['academic_year_id'] ?? 0);
-        $rows = $academicYearId ? $this->service->classWiseFeeReport($academicYearId) : [];
-
-        return view('modules.fees.reports.print_class_wise', [
-            'title' => 'Class-wise Fee Report',
-            'rows' => $rows,
-            'filters' => $filters,
-        ]);
-    }
-
-    public function reportClassWisePdf(FeeReportFilterRequest $request)
-    {
-        $filters = $request->filterPayload();
-        $academicYearId = (int) ($filters['academic_year_id'] ?? 0);
-        $rows = $academicYearId ? $this->service->classWiseFeeReport($academicYearId) : [];
-
-        return Pdf::loadView('modules.fees.reports.print_class_wise', [
-            'title' => 'Class-wise Fee Report',
-            'rows' => $rows,
-            'filters' => $filters,
-        ])
-            ->setPaper('a4', 'portrait')
-            ->download('fee-class-wise-'.now()->format('Y-m-d-His').'.pdf');
-    }
-
-    public function reportDaily(FeeReportFilterRequest $request): View
-    {
-        $filters = $request->filterPayload();
-        $date = $filters['report_date'] ?? now()->toDateString();
-        $rows = $this->service->dailyCollectionReport($date);
-
-        return view('modules.fees.reports.print_collection', [
-            'title' => 'Daily Fee Collection — '.$date,
-            'rows' => $rows,
-            'filters' => array_merge($filters, ['from_date' => $date, 'to_date' => $date]),
-        ]);
-    }
-
-    public function reportDailyPdf(FeeReportFilterRequest $request)
-    {
-        $filters = $request->filterPayload();
-        $date = $filters['report_date'] ?? now()->toDateString();
-        $rows = $this->service->dailyCollectionReport($date);
-
-        return Pdf::loadView('modules.fees.reports.print_collection', [
-            'title' => 'Daily Fee Collection — '.$date,
-            'rows' => $rows,
-            'filters' => $filters,
-        ])
-            ->setPaper('a4', 'landscape')
-            ->download('fee-daily-'.now()->format('Y-m-d-His').'.pdf');
     }
 
     public function receiptPrint(FeePayment $fee_payment): View

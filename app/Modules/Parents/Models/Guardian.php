@@ -4,6 +4,7 @@ namespace App\Modules\Parents\Models;
 
 use App\Core\Tenant\BelongsToSchool;
 use App\Models\User;
+use App\Modules\Notifications\Models\Notification;
 use App\Modules\Students\Models\Student;
 use Database\Factories\GuardianFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -11,7 +12,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -72,18 +72,22 @@ class Guardian extends Model
     }
 
     /**
-     * Get notifications targeting this guardian.
+     * Get notifications linked to this guardian's user account.
      *
-     * Returns notifications where target_parents is null (all guardians)
-     * OR where target_parents JSON array contains this guardian's ID.
+     * Uses the shared notifications table (via the notification_user pivot),
+     * which is the same feed surfaced by the parent app API.
      */
-    public function notifications(): HasMany
+    public function notifications(): BelongsToMany
     {
-        return $this->hasMany(ParentNotification::class, 'school_id', 'school_id')
-            ->where(function ($query) {
-                $query->whereNull('target_parents')
-                    ->orWhereJsonContains('target_parents', $this->id);
-            });
+        return $this->belongsToMany(
+            Notification::class,
+            'notification_user',
+            'user_id',
+            'notification_id',
+            'user_id',
+            'id'
+        )->withPivot(['is_read', 'read_at', 'delivery_status'])
+            ->withTimestamps();
     }
 
     protected static function newFactory(): Factory

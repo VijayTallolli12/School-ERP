@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('parents', [ParentApiController::class, 'index'])
     ->middleware('permission:parents.view')->name('parents.index');
 Route::get('parents/{uuid}', [ParentApiController::class, 'show'])
-    ->middleware('permission:parents.view')->name('parents.show');
+    ->middleware('permission:dashboard.view')->name('parents.show');
 Route::get('parents/{uuid}/dashboard', [ParentApiController::class, 'dashboard'])
     ->middleware('permission:dashboard.view')->name('parents.dashboard');
 Route::get('parents/{uuid}/children', [ParentApiController::class, 'children'])
-    ->middleware('permission:parents.view')->name('parents.children');
+    ->middleware('permission:dashboard.view')->name('parents.children');
 
 // Children sub-resources
 Route::get('parents/{uuid}/children/{childUuid}/attendance', [ParentApiController::class, 'childAttendance'])
@@ -52,6 +52,6 @@ Route::post('parents/{uuid}/circulars/{id}/read', [ParentApiController::class, '
 
 // Profile
 Route::put('parents/{uuid}', [ParentApiController::class, 'updateParentProfile'])
-    ->middleware('permission:parents.view')->name('parents.update');
+    ->middleware('permission:dashboard.view')->name('parents.update');
 Route::put('parents/{uuid}/change-password', [ParentApiController::class, 'changeParentPassword'])
-    ->middleware('permission:parents.view')->name('parents.change-password');
+    ->middleware('permission:dashboard.view')->name('parents.change-password');

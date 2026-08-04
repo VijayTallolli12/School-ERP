@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Resources\Api\V1\FeePaymentResource;
 use App\Http\Resources\Api\V1\StudentFeeResource;
+use App\Core\Tenant\SchoolContext;
 use App\Modules\Fees\Models\FeePayment;
 use App\Modules\Fees\Models\StudentFee;
 use App\Modules\Fees\Repositories\FeeRepositoryInterface;
 use App\Modules\Fees\Services\FeeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class FeeApiController extends ApiBaseController
 {
@@ -21,8 +24,8 @@ class FeeApiController extends ApiBaseController
     public function studentFees(Request $request): JsonResponse
     {
         $request->validate([
-            'student_id' => 'sometimes|nullable|integer|exists:students,id',
-            'academic_year_id' => 'sometimes|nullable|integer|exists:academic_years,id',
+            'student_id' => ['sometimes', 'nullable', 'integer', Rule::exists('students', 'id')->where('school_id', app(SchoolContext::class)->id())],
+            'academic_year_id' => ['sometimes', 'nullable', 'integer', Rule::exists('academic_years', 'id')->where('school_id', app(SchoolContext::class)->id())],
             'status' => 'sometimes|nullable|in:paid,partial,pending,overdue',
             'per_page' => 'sometimes|integer|min:5|max:100',
         ]);
@@ -31,7 +34,12 @@ class FeeApiController extends ApiBaseController
         $studentId = $request->integer('student_id');
 
         $query = StudentFee::query()
-            ->with(['student:id,first_name,last_name,admission_no,uuid', 'academicYear', 'items.feeCategory', 'items.paymentItems']);
+            ->with([
+                'student:id,first_name,last_name,admission_no,uuid',
+                'academicYear',
+                'items.feeCategory',
+                'items' => fn ($q) => $q->withSum(['paymentItems as paid_sum' => fn ($sq) => $sq->whereHas('feePayment', fn ($p) => $p->completed())], 'amount'),
+            ]);
 
         if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Accountant')) {
             $guardian = $user->guardian;
@@ -63,12 +71,49 @@ class FeeApiController extends ApiBaseController
             $query->where('academic_year_id', $academicYearId);
         }
 
+        $this->applyStatusFilter($query, $request->input('status'));
+
         $paginator = $query->orderByDesc('id')->paginate($request->integer('per_page', 15));
 
         return $this->paginated(
             paginator: $paginator->through(fn (StudentFee $sf) => new StudentFeeResource($sf)),
             message: 'Student fees retrieved.'
         );
+    }
+
+    private function applyStatusFilter($query, ?string $status): void
+    {
+        if (! $status) {
+            return;
+        }
+
+        $paidSubquery = DB::raw('COALESCE((SELECT SUM(fpi.amount) FROM fee_payment_items fpi WHERE fpi.student_fee_item_id = student_fee_items.id AND EXISTS (SELECT 1 FROM fee_payments fp WHERE fp.id = fpi.fee_payment_id AND fp.status = "completed")), 0)');
+
+        $hasBalance = function ($q) use ($paidSubquery): void {
+            $q->whereColumn('student_fee_items.amount', '>', $paidSubquery);
+        };
+
+        $fullyPaid = function ($q) use ($paidSubquery): void {
+            $q->whereColumn('student_fee_items.amount', '<=', $paidSubquery);
+        };
+
+        switch ($status) {
+            case 'paid':
+                $query->whereDoesntHave('items', $hasBalance);
+                break;
+            case 'pending':
+                $query->whereHas('items', $hasBalance);
+                break;
+            case 'partial':
+                $query->whereHas('items', $hasBalance)->whereHas('items', $fullyPaid);
+                break;
+            case 'overdue':
+                $query->whereHas('items', function ($q) use ($hasBalance): void {
+                    $hasBalance($q);
+                    $q->whereDate('student_fee_items.due_date', '<', now());
+                });
+                break;
+        }
     }
 
     public function paymentReceipt(int $paymentId): JsonResponse
@@ -85,6 +130,10 @@ class FeeApiController extends ApiBaseController
 
         if (! $payment) {
             return $this->notFound('Payment not found.');
+        }
+
+        if ($payment->isVoided()) {
+            return $this->error('This receipt has been voided and is no longer valid.', 422);
         }
 
         if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Accountant')) {
@@ -113,7 +162,12 @@ class FeeApiController extends ApiBaseController
         }
 
         $query = StudentFee::query()
-            ->with(['student:id,first_name,last_name,admission_no,uuid', 'items.feeCategory', 'items.paymentItems', 'academicYear']);
+            ->with([
+                'student:id,first_name,last_name,admission_no,uuid',
+                'items.feeCategory',
+                'items' => fn ($q) => $q->withSum(['paymentItems as paid_sum' => fn ($sq) => $sq->whereHas('feePayment', fn ($p) => $p->completed())], 'amount'),
+                'academicYear',
+            ]);
 
         if ($classSectionId = $request->integer('class_section_id')) {
             $query->whereHas('student.currentSession', fn ($q) => $q->where('class_section_id', $classSectionId));
@@ -146,7 +200,7 @@ class FeeApiController extends ApiBaseController
             'per_page' => 'sometimes|integer|min:5|max:100',
         ]);
 
-        $query = FeePayment::query()
+        $query = FeePayment::query()->completed()
             ->with([
                 'student:id,first_name,last_name,admission_no,uuid',
                 'academicYear',

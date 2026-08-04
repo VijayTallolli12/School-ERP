@@ -6,6 +6,7 @@ use App\Core\Tenant\BelongsToSchool;
 use App\Models\User;
 use App\Modules\Academics\Models\ClassSection;
 use App\Modules\Academics\Models\Subject;
+use App\Modules\Timetable\Models\TimetableSlot;
 use Database\Factories\TeacherFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -98,7 +99,7 @@ class Teacher extends Model
 
     public function timetableSlots(): HasMany
     {
-        return $this->hasMany(TeacherTimetableSlot::class);
+        return $this->hasMany(TimetableSlot::class, 'teacher_id');
     }
 
     public function getFullNameAttribute(): string

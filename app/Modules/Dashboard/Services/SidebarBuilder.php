@@ -133,7 +133,7 @@ class SidebarBuilder
                     $this->item('Homework', 'admin.homework.index', 'books', 'homework.view', $user),
                     $this->item('My Students', 'admin.students.index', 'school', 'students.view', $user),
                     $this->item('Marks', 'admin.exams.index', 'chart-arrows-vertical', 'exams.view', $user),
-                    $this->item('Leave', 'admin.leave-requests.index', 'calendar-minus', null, $user),
+                    $this->item('My Leave', 'admin.teachers.my-leaves.index', 'calendar-minus', null, $user),
                     $this->item('My Documents', 'admin.teacher-documents.index', 'file-text', null, $user),
                     $this->item('My Payslips', 'admin.payroll.payslips.my', 'cash', null, $user),
                     $this->item('Notifications', 'admin.notifications.index', 'bell', 'notifications.view', $user),

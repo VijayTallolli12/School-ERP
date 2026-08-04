@@ -119,6 +119,10 @@ class FeeReportController extends Controller
 
     protected function getReportData($type, Request $request)
     {
+        if (! in_array($type, ['paid', 'pending', 'overdue', 'collection_summary'], true)) {
+            abort(404, 'Unknown fee report type.');
+        }
+
         switch ($type) {
             case 'paid':
                 return $this->feeService->collectionReport(

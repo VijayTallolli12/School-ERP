@@ -35,9 +35,9 @@ class FeeDefaulterReportRepository implements FeeDefaulterReportRepositoryInterf
                 'studentFee.student.sessions.classSection.section',
                 'studentFee.feeStructure',
             ])
-            ->withSum(['paymentItems as paid_sum' => fn($q) => $q->whereHas('feePayment')], 'amount')
+            ->withSum(['paymentItems as paid_sum' => fn($q) => $q->whereHas('feePayment', fn ($p) => $p->completed())], 'amount')
             ->whereHas('studentFee', function ($q) use ($schoolId, $academicYearId, $studentId, $feeStructureId) {
-                $q->where('school_id', $schoolId);
+                $q->where('school_id', $schoolId)->where('status', 'active');
                 if ($academicYearId) $q->where('academic_year_id', $academicYearId);
                 if ($studentId) $q->where('student_id', $studentId);
                 if ($feeStructureId) $q->where('fee_structure_id', $feeStructureId);
@@ -180,6 +180,7 @@ class FeeDefaulterReportRepository implements FeeDefaulterReportRepositoryInterf
         // Chart: Monthly collection trend
         $monthlyTrend = FeePayment::query()
             ->where('school_id', $schoolId)
+            ->where('status', 'completed')
             ->when($academicYearId, fn($q) => $q->where('academic_year_id', $academicYearId))
             ->select(
                 DB::raw("DATE_FORMAT(paid_on, '%Y-%m') as month"),

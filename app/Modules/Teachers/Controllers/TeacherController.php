@@ -20,6 +20,7 @@ use App\Modules\Teachers\Requests\TeacherAttendanceReportFilterRequest;
 use App\Modules\Teachers\Services\TeacherService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -296,6 +297,149 @@ class TeacherController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Leave request deleted successfully.',
+        ]);
+    }
+
+    private function currentTeacher(): ?Teacher
+    {
+        return Teacher::query()->where('user_id', auth()->id())->first();
+    }
+
+    public function myLeaveIndex(): View
+    {
+        return view('modules.teachers.my_leaves', [
+            'statuses' => TeacherLeave::statuses(),
+        ]);
+    }
+
+    public function myLeaveData(): JsonResponse
+    {
+        $teacher = $this->currentTeacher();
+
+        if (! $teacher) {
+            return DataTables::of(TeacherLeave::query()->whereRaw('1 = 0'))->toJson();
+        }
+
+        return DataTables::of(TeacherLeave::query()
+            ->where('teacher_id', $teacher->id)
+            ->with('approvedBy'))
+            ->addColumn('period', fn (TeacherLeave $leave) => e($leave->start_date->format('d-M-Y').' to '.$leave->end_date->format('d-M-Y')))
+            ->addColumn('status', function (TeacherLeave $leave): string {
+                $statusClass = match ($leave->status) {
+                    'approved' => 'success',
+                    'rejected' => 'danger',
+                    default => 'warning',
+                };
+
+                return '<span class="badge bg-'.$statusClass.'">'.e(ucfirst($leave->status)).'</span>';
+            })
+            ->addColumn('approved_by', fn (TeacherLeave $leave) => e($leave->approvedBy?->name ?? '-'))
+            ->rawColumns(['status'])
+            ->toJson();
+    }
+
+    public function myLeaveStore(Request $request): JsonResponse
+    {
+        $teacher = $this->currentTeacher();
+
+        if (! $teacher) {
+            return response()->json(['success' => false, 'message' => 'Teacher profile not found.'], 404);
+        }
+
+        $validated = $request->validate([
+            'leave_type' => ['required', Rule::in(['sick', 'casual', 'personal', 'maternity', 'other'])],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'reason' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $this->service->requestLeave([
+            'teacher_id' => $teacher->id,
+            'leave_type' => $validated['leave_type'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'reason' => $validated['reason'] ?? null,
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Leave request submitted successfully.',
+        ]);
+    }
+
+    public function myAttendanceIndex(): View
+    {
+        return view('modules.teachers.my_attendance', [
+            'statuses' => TeacherAttendance::statuses(),
+        ]);
+    }
+
+    public function myAttendanceData(): JsonResponse
+    {
+        $teacher = $this->currentTeacher();
+
+        if (! $teacher) {
+            return DataTables::of(TeacherAttendance::query()->whereRaw('1 = 0'))->toJson();
+        }
+
+        return DataTables::of(TeacherAttendance::query()->where('teacher_id', $teacher->id))
+            ->addColumn('attendance_date', fn (TeacherAttendance $attendance) => $attendance->attendance_date->format('d-M-Y'))
+            ->addColumn('status', function (TeacherAttendance $attendance): string {
+                $statusClass = match ($attendance->status) {
+                    'present' => 'success',
+                    'absent' => 'danger',
+                    'late' => 'warning',
+                    'half_day' => 'info',
+                    'excused' => 'secondary',
+                    default => 'dark',
+                };
+
+                return '<span class="badge bg-'.$statusClass.'">'.e($attendance->status_label).'</span>';
+            })
+            ->addColumn('marked_by', fn (TeacherAttendance $attendance) => e($attendance->markedBy?->name ?? '-'))
+            ->rawColumns(['status'])
+            ->toJson();
+    }
+
+    public function myProfile(): View
+    {
+        $teacher = $this->currentTeacher();
+
+        if (! $teacher) {
+            abort(404);
+        }
+
+        $teacher->load([
+            'subjects',
+            'classSections.schoolClass',
+            'classSections.section',
+            'classTeacherSections.schoolClass',
+            'classTeacherSections.section',
+        ]);
+
+        return view('modules.teachers.my_profile', compact('teacher'));
+    }
+
+    public function myProfileUpdate(Request $request): JsonResponse
+    {
+        $teacher = $this->currentTeacher();
+
+        if (! $teacher) {
+            return response()->json(['success' => false, 'message' => 'Teacher profile not found.'], 404);
+        }
+
+        $validated = $request->validate([
+            'phone' => ['sometimes', 'nullable', 'string', 'max:20'],
+            'address' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'qualification' => ['sometimes', 'nullable', 'string', 'max:200'],
+        ]);
+
+        $teacher->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully.',
         ]);
     }
 

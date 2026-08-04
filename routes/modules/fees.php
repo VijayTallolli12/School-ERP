@@ -30,7 +30,7 @@ Route::prefix('fees')
 
         Route::get('collections/data', [FeesController::class, 'collectionsData'])->name('collections.data');
         Route::post('collections', [FeesController::class, 'storeCollection'])->middleware('permission:fees.collect')->name('collections.store');
-        Route::delete('collections/{fee_payment}', [FeesController::class, 'destroyCollection'])->middleware('permission:fees.delete')->name('collections.destroy');
+        Route::post('collections/{fee_payment}/void', [FeesController::class, 'voidCollection'])->middleware('permission:fees.update')->name('collections.void');
 
         Route::get('api/student-fee-items', [FeesController::class, 'studentFeeItems'])->middleware('permission:fees.collect')->name('api.student-fee-items');
 

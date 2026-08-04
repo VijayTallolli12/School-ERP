@@ -34,6 +34,31 @@ class ParentApiController extends ApiBaseController
         private readonly ParentService $parentService,
     ) {}
 
+    private function isAdmin(): bool
+    {
+        $user = request()->user();
+
+        return $user->isSuperAdmin()
+            || $user->hasRole('School Admin')
+            || $user->hasRole('Principal')
+            || $user->hasRole('HR');
+    }
+
+    private function resolveParent(string $uuid, array $with = []): ?Guardian
+    {
+        $parent = Guardian::query()->with($with)->where('uuid', $uuid)->first();
+
+        if (! $parent) {
+            return null;
+        }
+
+        if ($this->isAdmin() || $parent->user_id === request()->user()->getKey()) {
+            return $parent;
+        }
+
+        return null;
+    }
+
     public function index(Request $request): JsonResponse
     {
         $request->validate([
@@ -67,10 +92,7 @@ class ParentApiController extends ApiBaseController
 
     public function show(string $uuid): JsonResponse
     {
-        $parent = Guardian::query()
-            ->where('uuid', $uuid)
-            ->with(['students', 'user'])
-            ->first();
+        $parent = $this->resolveParent($uuid, ['students', 'user']);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -81,7 +103,7 @@ class ParentApiController extends ApiBaseController
 
     public function children(string $uuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -99,7 +121,7 @@ class ParentApiController extends ApiBaseController
 
     public function childAttendance(string $uuid, string $childUuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -142,7 +164,7 @@ class ParentApiController extends ApiBaseController
 
     public function childFees(string $uuid, string $childUuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -168,7 +190,7 @@ class ParentApiController extends ApiBaseController
 
     public function childExamResults(string $uuid, string $childUuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -195,7 +217,7 @@ class ParentApiController extends ApiBaseController
 
     public function childTimetable(string $uuid, string $childUuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -236,7 +258,7 @@ class ParentApiController extends ApiBaseController
 
     public function dashboard(string $uuid, Request $request): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->with('students')->first();
+        $parent = $this->resolveParent($uuid, ['students']);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -251,7 +273,7 @@ class ParentApiController extends ApiBaseController
 
     public function childHomework(string $uuid, string $childUuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -285,7 +307,7 @@ class ParentApiController extends ApiBaseController
 
     public function childCalendar(string $uuid, string $childUuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -327,7 +349,7 @@ class ParentApiController extends ApiBaseController
 
     public function childDocuments(string $uuid, string $childUuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -369,7 +391,7 @@ class ParentApiController extends ApiBaseController
 
     public function childCirculars(string $uuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->with('user')->first();
+        $parent = $this->resolveParent($uuid, ['user']);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -401,7 +423,7 @@ class ParentApiController extends ApiBaseController
 
     public function childCircularDetail(string $uuid, int $id): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->with('user')->first();
+        $parent = $this->resolveParent($uuid, ['user']);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -430,7 +452,7 @@ class ParentApiController extends ApiBaseController
 
     public function markCircularRead(string $uuid, int $id): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->with('user')->first();
+        $parent = $this->resolveParent($uuid, ['user']);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -487,7 +509,7 @@ class ParentApiController extends ApiBaseController
 
     public function childLeaveRequests(string $uuid, string $childUuid): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->with('user')->first();
+        $parent = $this->resolveParent($uuid, ['user']);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -529,7 +551,7 @@ class ParentApiController extends ApiBaseController
 
     public function storeLeaveRequest(string $uuid, string $childUuid, Request $request): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->with('user')->first();
+        $parent = $this->resolveParent($uuid, ['user']);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -596,7 +618,7 @@ class ParentApiController extends ApiBaseController
 
     public function updateLeaveRequest(string $uuid, string $childUuid, int $id, Request $request): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->with('user')->first();
+        $parent = $this->resolveParent($uuid, ['user']);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -670,7 +692,7 @@ class ParentApiController extends ApiBaseController
 
     public function showLeaveRequest(string $uuid, string $childUuid, int $id): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -714,7 +736,7 @@ class ParentApiController extends ApiBaseController
 
     public function updateParentProfile(string $uuid, Request $request): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->first();
+        $parent = $this->resolveParent($uuid);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -738,7 +760,7 @@ class ParentApiController extends ApiBaseController
 
     public function changeParentPassword(string $uuid, Request $request): JsonResponse
     {
-        $parent = Guardian::query()->where('uuid', $uuid)->with('user')->first();
+        $parent = $this->resolveParent($uuid, ['user']);
 
         if (! $parent) {
             return $this->notFound('Parent not found.');
@@ -761,7 +783,14 @@ class ParentApiController extends ApiBaseController
         }
 
         $user->password = Hash::make($validated['new_password']);
+        $user->force_password_change = false;
         $user->save();
+
+        // Revoke other active tokens so the password change invalidates other sessions.
+        $currentTokenId = $request->user()->currentAccessToken()?->id;
+        if ($currentTokenId) {
+            $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+        }
 
         return $this->success(message: 'Password changed successfully.');
     }

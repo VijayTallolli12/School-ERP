@@ -127,7 +127,7 @@ class TeacherReportController extends Controller
         $summary = $initialData['summary'];
         $chartData = $initialData['chartData'];
 
-        return view("modules.reports.teachers.workload", array_merge(
+        return view("Reports::teachers.workload", array_merge(
             $this->getSharedData(),
             compact('academicYears', 'summary', 'chartData')
         ));
@@ -145,11 +145,11 @@ class TeacherReportController extends Controller
             return Excel::download(new TeacherReportExport($rows, 'workload'), 'teacher_workload_report.xlsx');
         } elseif ($type === 'pdf') {
             $title = 'Teacher Workload Report';
-            $pdf = Pdf::loadView('modules.reports.teachers.exports.workload_pdf', compact('rows', 'summary', 'chartData', 'title'));
+            $pdf = Pdf::loadView('Reports::teachers.exports.workload_pdf', compact('rows', 'summary', 'chartData', 'title'));
             return $pdf->setPaper('a4', 'landscape')->download('teacher_workload_report.pdf');
         } elseif ($type === 'print') {
             $title = 'Teacher Workload Report';
-            return view('modules.reports.teachers.exports.workload_print', compact('rows', 'summary', 'chartData', 'title'));
+            return view('Reports::teachers.exports.workload_print', compact('rows', 'summary', 'chartData', 'title'));
         }
     }
 

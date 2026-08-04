@@ -81,9 +81,7 @@ class TeacherApiController extends ApiBaseController
             return $this->notFound('Teacher not found.');
         }
 
-        $user = request()->user();
-
-        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('HR') && ! $user->hasRole('Principal')) {
+        if (! $this->authorizeTeacherAccess($teacher)) {
             return $this->forbidden('You are not authorized to view this teacher.');
         }
 

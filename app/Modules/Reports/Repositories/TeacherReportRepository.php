@@ -11,9 +11,9 @@ use Illuminate\Support\Arr;
 
 class TeacherReportRepository implements TeacherReportRepositoryInterface
 {
-    protected function getSchoolId()
+    protected function getSchoolId(): ?int
     {
-        return app(\App\Core\Tenant\SchoolContext::class)->id() ?? auth()->user()->school_id ?? null;
+        return app(\App\Core\Tenant\SchoolContext::class)->id();
     }
 
     public function dashboardStats(): array

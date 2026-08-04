@@ -3,6 +3,20 @@
 use App\Modules\Teachers\Controllers\TeacherController;
 use Illuminate\Support\Facades\Route;
 
+// Teacher self-service routes (no `teachers.view` required — teachers may manage their own)
+Route::prefix('teachers')
+    ->name('teachers.')
+    ->middleware('role_or_permission:Teacher|teachers.view')
+    ->group(function (): void {
+        Route::get('my-leaves', [TeacherController::class, 'myLeaveIndex'])->name('my-leaves.index');
+        Route::get('my-leaves/data', [TeacherController::class, 'myLeaveData'])->name('my-leaves.data');
+        Route::post('my-leaves', [TeacherController::class, 'myLeaveStore'])->name('my-leaves.store');
+        Route::get('my-attendance', [TeacherController::class, 'myAttendanceIndex'])->name('my-attendance.index');
+        Route::get('my-attendance/data', [TeacherController::class, 'myAttendanceData'])->name('my-attendance.data');
+        Route::get('my-profile', [TeacherController::class, 'myProfile'])->name('my-profile');
+        Route::put('my-profile', [TeacherController::class, 'myProfileUpdate'])->name('my-profile.update');
+    });
+
 Route::prefix('teachers')
     ->name('teachers.')
     ->middleware('permission:teachers.view')

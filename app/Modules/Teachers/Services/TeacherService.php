@@ -75,15 +75,6 @@ class TeacherService
         activity()->causedBy(auth()->user())->performedOn($teacher)->event('deleted')->log('Teacher profile deleted');
     }
 
-    public function getDashboardStats(): array
-    {
-        return [
-            'total' => Teacher::query()->count(),
-            'active' => Teacher::query()->where('status', 'active')->count(),
-            'attendance_today' => TeacherAttendance::query()->whereDate('attendance_date', today())->count(),
-        ];
-    }
-
     public function getSubjectAllocationReport(): Collection
     {
         return Teacher::query()

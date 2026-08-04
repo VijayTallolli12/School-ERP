@@ -33,7 +33,7 @@
                     <select name="payment_mode" id="payment_mode" class="form-select">
                         <option value="">All</option>
                         <option value="cash">Cash</option>
-                        <option value="online">Online</option>
+                        <option value="upi">UPI</option>
                         <option value="bank_transfer">Bank Transfer</option>
                         <option value="cheque">Cheque</option>
                     </select>

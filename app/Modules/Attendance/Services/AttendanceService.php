@@ -24,7 +24,7 @@ class AttendanceService
                 'academic_year_id' => $data['academic_year_id'],
                 'attendance_date' => $data['attendance_date'],
                 'status' => $data['status'] ?? 'present',
-                'marked_by' => auth()->id(),
+                'marked_by' => $data['marked_by'] ?? auth()->id(),
                 'remarks' => $data['remarks'] ?? null,
             ];
 

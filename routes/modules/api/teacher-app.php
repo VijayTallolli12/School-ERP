@@ -9,7 +9,7 @@
 use App\Http\Controllers\Api\V1\TeacherAppController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('teacher')->name('teacher.')->group(function (): void {
+Route::prefix('teacher')->name('teacher.')->middleware('role:Teacher')->group(function (): void {
 
     // Auth
     Route::post('logout', [TeacherAppController::class, 'logout'])->name('logout');

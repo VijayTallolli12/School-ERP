@@ -611,10 +611,19 @@
                 });
             });
 
-            $('#collectionsTable').on('click', '.delete-collection', function () {
-                App.confirmDelete({
-                    url: $(this).data('url'),
-                    onSuccess: () => tables.collections?.ajax.reload(null, false)
+            $('#collectionsTable').on('click', '.void-collection', function () {
+                const url = $(this).data('url');
+                const reason = prompt('Enter a reason for voiding this payment (minimum 5 characters):');
+                if (reason === null) return;
+                if (!reason || reason.trim().length < 5) {
+                    App.toast('error', 'A reason of at least 5 characters is required to void a payment.');
+                    return;
+                }
+                $.post(url, {reason: reason.trim()}, () => {
+                    App.toast('success', 'Payment voided.');
+                    tables.collections?.ajax.reload(null, false);
+                }).fail((xhr) => {
+                    App.toast('error', xhr.responseJSON?.message || 'Unable to void payment.');
                 });
             });
 
@@ -668,7 +677,8 @@
                         {data: 'id'}, {data: 'receipt_number'}, {data: 'student', orderable: false, searchable: false},
                         {data: 'academic_year', orderable: false, searchable: false},
                         {data: 'amount'}, {data: 'mode_label', orderable: false, searchable: false},
-                        {data: 'paid_on'}, {data: 'actions', orderable: false, searchable: false}
+                        {data: 'paid_on'}, {data: 'status_label', orderable: false, searchable: false},
+                        {data: 'actions', orderable: false, searchable: false}
                     ]
                 }),
                 dues: createFeeTable('#duesTable', {

@@ -11,8 +11,10 @@ use App\Modules\Fees\Models\FeeStructure;
 use App\Modules\Fees\Models\StudentFee;
 use App\Modules\Fees\Models\StudentFeeItem;
 use App\Modules\Students\Models\Student;
+use App\Modules\Students\Models\StudentSession;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -27,19 +29,27 @@ class FeeService
     public function pendingFeeItemsQuery(): Builder
     {
         return StudentFeeItem::query()
-            ->whereHas('studentFee.student', fn ($q) => $q->where('school_id', $this->schoolContext->id()))
-            ->withSum(['paymentItems as paid_sum' => fn ($q) => $q->whereHas('feePayment')], 'amount')
+            ->whereHas('studentFee', function ($q): void {
+                $q->where('school_id', $this->schoolContext->id())->where('status', 'active');
+            })
+            ->withSum(['paymentItems as paid_sum' => fn ($q) => $q->whereHas('feePayment', fn ($p) => $p->completed())], 'amount')
             ->havingRaw('COALESCE(paid_sum, 0) < student_fee_items.amount');
     }
 
     public function createFeeCategory(array $data): FeeCategory
     {
-        return FeeCategory::query()->create($data);
+        $category = FeeCategory::query()->create($data);
+
+        activity()->causedBy(auth()->user())->performedOn($category)->event('created')->log('Fee category created');
+
+        return $category;
     }
 
     public function updateFeeCategory(FeeCategory $category, array $data): FeeCategory
     {
         $category->fill($data)->save();
+
+        activity()->causedBy(auth()->user())->performedOn($category)->event('updated')->log('Fee category updated');
 
         return $category->refresh();
     }
@@ -51,6 +61,8 @@ class FeeService
         }
 
         $category->delete();
+
+        activity()->causedBy(auth()->user())->performedOn($category)->event('deleted')->log('Fee category deleted');
     }
 
     public function createFeeStructure(array $data): FeeStructure
@@ -61,6 +73,8 @@ class FeeService
 
             $structure = FeeStructure::query()->create($data);
             $this->syncStructureItems($structure, $items);
+
+            activity()->causedBy(auth()->user())->performedOn($structure)->event('created')->log('Fee structure created');
 
             return $structure->load(['items.feeCategory', 'academicYear', 'classSection.schoolClass', 'classSection.section']);
         });
@@ -77,6 +91,8 @@ class FeeService
             if (is_array($items)) {
                 $this->syncStructureItems($structure, $items);
             }
+
+            activity()->causedBy(auth()->user())->performedOn($structure)->event('updated')->log('Fee structure updated');
 
             return $structure->load(['items.feeCategory', 'academicYear', 'classSection.schoolClass', 'classSection.section']);
         });
@@ -106,6 +122,8 @@ class FeeService
 
         $structure->items()->delete();
         $structure->delete();
+
+        activity()->causedBy(auth()->user())->performedOn($structure)->event('deleted')->log('Fee structure deleted');
     }
 
     public function assignStudentFee(array $data): StudentFee
@@ -116,6 +134,8 @@ class FeeService
             if ((int) $structure->academic_year_id !== (int) $data['academic_year_id']) {
                 throw new RuntimeException('The fee structure does not belong to the selected academic year.');
             }
+
+            $this->assertStudentClassSectionMatches((int) $data['student_id'], (int) $data['academic_year_id'], $structure);
 
             $dueDate = isset($data['default_due_date']) ? Carbon::parse($data['default_due_date']) : null;
 
@@ -128,13 +148,21 @@ class FeeService
                 throw new RuntimeException('This student already has a fee assignment for the selected academic year.');
             }
 
-            $studentFee = StudentFee::query()->create([
-                'student_id' => $data['student_id'],
-                'academic_year_id' => $data['academic_year_id'],
-                'fee_structure_id' => $structure->id,
-                'status' => 'active',
-                'assigned_at' => now(),
-            ]);
+            try {
+                $studentFee = StudentFee::query()->create([
+                    'student_id' => $data['student_id'],
+                    'academic_year_id' => $data['academic_year_id'],
+                    'fee_structure_id' => $structure->id,
+                    'status' => 'active',
+                    'assigned_at' => now(),
+                ]);
+            } catch (QueryException $e) {
+                if ($e->errorInfo[1] !== 1062) {
+                    throw $e;
+                }
+
+                throw new RuntimeException('This student already has a fee assignment for the selected academic year.');
+            }
 
             foreach ($structure->items as $line) {
                 $studentFee->items()->create([
@@ -144,8 +172,23 @@ class FeeService
                 ]);
             }
 
+            activity()->causedBy(auth()->user())->performedOn($studentFee)->event('created')->log('Fee assignment created');
+
             return $studentFee->load(['items.feeCategory', 'student', 'academicYear', 'feeStructure']);
         });
+    }
+
+    private function assertStudentClassSectionMatches(int $studentId, int $academicYearId, FeeStructure $structure): void
+    {
+        $session = StudentSession::query()
+            ->where('student_id', $studentId)
+            ->where('academic_year_id', $academicYearId)
+            ->where('status', 'active')
+            ->first();
+
+        if ($session && (int) $session->class_section_id !== (int) $structure->class_section_id) {
+            throw new RuntimeException('The fee structure does not match the student\'s current class section.');
+        }
     }
 
     /**
@@ -191,13 +234,22 @@ class FeeService
                     continue;
                 }
 
-                $studentFee = StudentFee::query()->create([
-                    'student_id' => $studentId,
-                    'academic_year_id' => $data['academic_year_id'],
-                    'fee_structure_id' => $structure->id,
-                    'status' => 'active',
-                    'assigned_at' => now(),
-                ]);
+                try {
+                    $studentFee = StudentFee::query()->create([
+                        'student_id' => $studentId,
+                        'academic_year_id' => $data['academic_year_id'],
+                        'fee_structure_id' => $structure->id,
+                        'status' => 'active',
+                        'assigned_at' => now(),
+                    ]);
+                } catch (QueryException $e) {
+                    if ($e->errorInfo[1] !== 1062) {
+                        throw $e;
+                    }
+
+                    $skipped++;
+                    continue;
+                }
 
                 foreach ($structure->items as $line) {
                     $studentFee->items()->create([
@@ -209,6 +261,13 @@ class FeeService
 
                 $assigned++;
             }
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($structure)
+                ->event('created')
+                ->withProperties(['assigned' => $assigned, 'skipped' => $skipped])
+                ->log('Fee structure bulk-assigned to students');
 
             return ['assigned' => $assigned, 'skipped' => $skipped];
         });
@@ -227,7 +286,7 @@ class FeeService
                     ->whereKey($row['id'])
                     ->firstOrFail();
 
-                if ($this->itemHasNonVoidPayments($item)) {
+                if ($this->itemHasCompletedPayments($item)) {
                     throw new RuntimeException('Fee lines with payments cannot be changed.');
                 }
 
@@ -238,26 +297,30 @@ class FeeService
             }
         }
 
+        activity()->causedBy(auth()->user())->performedOn($studentFee)->event('updated')->log('Fee assignment updated');
+
         return $studentFee->load(['items.feeCategory', 'student', 'academicYear', 'feeStructure']);
     }
 
     public function deleteStudentFee(StudentFee $studentFee): void
     {
         foreach ($studentFee->items as $item) {
-            if ($this->itemHasNonVoidPayments($item)) {
+            if ($this->itemHasCompletedPayments($item)) {
                 throw new RuntimeException('Cannot remove a fee assignment that already has collections.');
             }
         }
 
         $studentFee->items()->delete();
         $studentFee->delete();
+
+        activity()->causedBy(auth()->user())->performedOn($studentFee)->event('deleted')->log('Fee assignment deleted');
     }
 
-    private function itemHasNonVoidPayments(StudentFeeItem $item): bool
+    private function itemHasCompletedPayments(StudentFeeItem $item): bool
     {
         return FeePaymentItem::query()
             ->where('student_fee_item_id', $item->id)
-            ->whereHas('feePayment')
+            ->whereHas('feePayment', fn ($q) => $q->completed())
             ->exists();
     }
 
@@ -298,12 +361,18 @@ class FeeService
 
             foreach ($lines as $line) {
                 $item = StudentFeeItem::query()
-                    ->whereHas('studentFee', fn ($q) => $q->where('student_id', $studentId)->where('academic_year_id', $academicYearId))
+                    ->whereHas('studentFee', function ($q) use ($studentId, $academicYearId): void {
+                        $q->where('student_id', $studentId)->where('academic_year_id', $academicYearId)->where('status', 'active');
+                    })
                     ->whereKey($line['student_fee_item_id'])
                     ->lockForUpdate()
-                    ->firstOrFail();
+                    ->first();
 
-                $paid = (float) $item->paymentItems()->whereHas('feePayment')->sum('amount');
+                if (! $item) {
+                    throw new RuntimeException('One or more fee lines are not payable for this student and year.');
+                }
+
+                $paid = (float) $item->paymentItems()->whereHas('feePayment', fn ($q) => $q->completed())->sum('amount');
                 $balance = max(0, (float) $item->amount - $paid);
                 $pay = (float) $line['amount'];
 
@@ -318,35 +387,76 @@ class FeeService
                 ]);
             }
 
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($payment)
+                ->event('created')
+                ->withProperties([
+                    'receipt_number' => $payment->receipt_number,
+                    'amount' => $total,
+                    'payment_mode' => $data['payment_mode'],
+                    'paid_on' => $payment->paid_on?->toDateString(),
+                ])
+                ->log('Fee payment recorded');
+
             return $payment->load(['items.studentFeeItem.feeCategory', 'student', 'academicYear']);
         });
     }
 
-    public function deleteFeePayment(FeePayment $payment): void
+    public function voidFeePayment(FeePayment $payment, ?string $reason): FeePayment
     {
-        $payment->items()->delete();
-        $payment->delete();
+        if ($payment->isVoided()) {
+            throw new RuntimeException('This payment is already voided.');
+        }
+
+        if (! $reason || mb_strlen(trim($reason)) < 5) {
+            throw new RuntimeException('A reason (at least 5 characters) is required to void a payment.');
+        }
+
+        $payment->update([
+            'status' => FeePayment::STATUS_VOID,
+            'void_reason' => trim($reason),
+            'voided_by' => Auth::id(),
+            'voided_at' => now(),
+        ]);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($payment)
+            ->event('voided')
+            ->withProperties([
+                'receipt_number' => $payment->receipt_number,
+                'amount' => $payment->amount,
+                'reason' => trim($reason),
+            ])
+            ->log('Fee payment voided');
+
+        return $payment->load(['items.studentFeeItem.feeCategory', 'student', 'academicYear']);
     }
 
     private function nextReceiptNumber(int $schoolId, int $academicYearId): string
     {
-        FeeReceiptSequence::query()->firstOrCreate(
-            [
-                'school_id' => $schoolId,
-                'academic_year_id' => $academicYearId,
-            ],
-            ['last_number' => 0],
-        );
+        $sequence = FeeReceiptSequence::query()->where('school_id', $schoolId)->where('academic_year_id', $academicYearId)->lockForUpdate()->first();
 
-        $row = FeeReceiptSequence::query()
-            ->where('school_id', $schoolId)
-            ->where('academic_year_id', $academicYearId)
-            ->lockForUpdate()
-            ->firstOrFail();
+        if (! $sequence) {
+            try {
+                $sequence = FeeReceiptSequence::query()->create([
+                    'school_id' => $schoolId,
+                    'academic_year_id' => $academicYearId,
+                    'last_number' => 0,
+                ]);
+            } catch (QueryException $e) {
+                if ($e->errorInfo[1] !== 1062) {
+                    throw $e;
+                }
 
-        $row->increment('last_number');
+                $sequence = FeeReceiptSequence::query()->where('school_id', $schoolId)->where('academic_year_id', $academicYearId)->lockForUpdate()->firstOrFail();
+            }
+        }
 
-        return sprintf('RCP-%d-%d-%06d', $schoolId, $academicYearId, (int) $row->fresh()->last_number);
+        $sequence->increment('last_number');
+
+        return sprintf('RCP-%d-%d-%06d', $schoolId, $academicYearId, (int) $sequence->fresh()->last_number);
     }
 
     /**
@@ -356,10 +466,10 @@ class FeeService
     {
         return StudentFeeItem::query()
             ->whereHas('studentFee', function ($q) use ($studentId, $academicYearId): void {
-                $q->where('student_id', $studentId)->where('academic_year_id', $academicYearId);
+                $q->where('student_id', $studentId)->where('academic_year_id', $academicYearId)->where('status', 'active');
             })
             ->with('feeCategory')
-            ->withSum(['paymentItems as paid_sum' => fn ($q) => $q->whereHas('feePayment')], 'amount')
+            ->withSum(['paymentItems as paid_sum' => fn ($q) => $q->whereHas('feePayment', fn ($p) => $p->completed())], 'amount')
             ->get();
     }
 
@@ -368,7 +478,7 @@ class FeeService
      */
     public function collectionReport(?string $from, ?string $to, ?int $classSectionId, ?string $paymentMode): array
     {
-        $q = FeePayment::query()->with(['student', 'academicYear', 'collector']);
+        $q = FeePayment::query()->completed()->with(['student', 'academicYear', 'collector']);
 
         if ($from) {
             $q->whereDate('paid_on', '>=', $from);
@@ -410,16 +520,18 @@ class FeeService
     public function dueReport(?int $academicYearId, bool $overdueOnly): array
     {
         $q = StudentFeeItem::query()
+            ->whereHas('studentFee', function ($sq) use ($academicYearId): void {
+                $sq->where('status', 'active');
+                if ($academicYearId) {
+                    $sq->where('academic_year_id', $academicYearId);
+                }
+            })
             ->with([
                 'feeCategory',
                 'studentFee.student',
                 'studentFee.academicYear',
             ])
-            ->withSum(['paymentItems as paid_sum' => fn ($sq) => $sq->whereHas('feePayment')], 'amount');
-
-        if ($academicYearId) {
-            $q->whereHas('studentFee', fn ($sq) => $sq->where('academic_year_id', $academicYearId));
-        }
+            ->withSum(['paymentItems as paid_sum' => fn ($sq) => $sq->whereHas('feePayment', fn ($p) => $p->completed())], 'amount');
 
         // Filter items with balance at the SQL level using HAVING
         $q->havingRaw('COALESCE(paid_sum, 0) < student_fee_items.amount');
@@ -464,7 +576,8 @@ class FeeService
      */
     public function classWiseFeeReport(int $academicYearId): array
     {
-        // Use SQL aggregation with GROUP BY instead of loading 20K rows into PHP
+        $schoolId = $this->schoolContext->id();
+
         $rows = StudentFeeItem::query()
             ->select([
                 'class_section.id',
@@ -482,8 +595,11 @@ class FeeService
             ->leftJoin('class_section', 'student_sessions.class_section_id', '=', 'class_section.id')
             ->leftJoin('classes', 'class_section.class_id', '=', 'classes.id')
             ->leftJoin('sections', 'class_section.section_id', '=', 'sections.id')
-            ->leftJoin(DB::raw('(SELECT student_fee_item_id, SUM(amount) as paid_amount FROM fee_payment_items WHERE EXISTS (SELECT 1 FROM fee_payments WHERE fee_payments.id = fee_payment_items.fee_payment_id) GROUP BY student_fee_item_id) as fpi'), 'student_fee_items.id', '=', 'fpi.student_fee_item_id')
+            ->leftJoin(DB::raw('(SELECT student_fee_item_id, SUM(amount) as paid_amount FROM fee_payment_items WHERE EXISTS (SELECT 1 FROM fee_payments WHERE fee_payments.id = fee_payment_items.fee_payment_id AND fee_payments.status = "completed") GROUP BY student_fee_item_id) as fpi'), 'student_fee_items.id', '=', 'fpi.student_fee_item_id')
             ->where('student_fees.academic_year_id', $academicYearId)
+            ->where('student_fees.status', 'active')
+            ->when($schoolId, fn ($q) => $q->where('students.school_id', $schoolId))
+            ->when($schoolId, fn ($q) => $q->where('class_section.school_id', $schoolId))
             ->groupBy('class_section.id', 'classes.name', 'sections.name')
             ->get();
 
@@ -507,8 +623,8 @@ class FeeService
 
     public function dashboardFeeStats(): array
     {
-        $totalCollected = FeePayment::query()->sum('amount');
-        $monthly = FeePayment::query()
+        $totalCollected = FeePayment::query()->completed()->sum('amount');
+        $monthly = FeePayment::query()->completed()
             ->whereYear('paid_on', now()->year)
             ->whereMonth('paid_on', now()->month)
             ->sum('amount');
@@ -517,7 +633,8 @@ class FeeService
         $pending = (float) StudentFeeItem::query()
             ->join('student_fees', 'student_fees.id', '=', 'student_fee_items.student_fee_id')
             ->when($this->schoolContext->id(), fn ($q, $schoolId) => $q->where('student_fees.school_id', $schoolId))
-            ->leftJoin(DB::raw('(SELECT student_fee_item_id, SUM(amount) as paid_sum FROM fee_payment_items WHERE EXISTS (SELECT 1 FROM fee_payments WHERE fee_payments.id = fee_payment_items.fee_payment_id) GROUP BY student_fee_item_id) as fpi'), 'student_fee_items.id', '=', 'fpi.student_fee_item_id')
+            ->where('student_fees.status', 'active')
+            ->leftJoin(DB::raw('(SELECT student_fee_item_id, SUM(amount) as paid_sum FROM fee_payment_items WHERE EXISTS (SELECT 1 FROM fee_payments WHERE fee_payments.id = fee_payment_items.fee_payment_id AND fee_payments.status = "completed") GROUP BY student_fee_item_id) as fpi'), 'student_fee_items.id', '=', 'fpi.student_fee_item_id')
             ->selectRaw('COALESCE(SUM(student_fee_items.amount - COALESCE(fpi.paid_sum, 0)), 0) as total_pending')
             ->value('total_pending');
 

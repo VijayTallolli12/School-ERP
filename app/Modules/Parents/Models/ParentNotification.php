@@ -47,11 +47,14 @@ class ParentNotification extends Model
      */
     public function parents()
     {
+        $query = Guardian::where('school_id', $this->school_id);
+
         if (empty($this->target_parents)) {
-            return Guardian::query()->whereRaw('1 = 0');
+            // Null/empty target_parents means all guardians in the school.
+            return $query;
         }
 
-        return Guardian::whereIn('id', $this->target_parents);
+        return $query->whereIn('id', $this->target_parents);
     }
 
     public function isSent(): bool

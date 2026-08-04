@@ -306,9 +306,12 @@ class ExamController extends Controller
         $message = 'Results saved successfully.';
 
         if ($request->boolean('publish') && ! $exam->is_published) {
-            $this->authorize('publish', $exam);
-            $this->service->publish($exam);
-            $message = 'Results saved and published successfully.';
+            if (auth()->user()->can('publish', $exam)) {
+                $this->service->publish($exam);
+                $message = 'Results saved and published successfully.';
+            } else {
+                $message = 'Results saved successfully. (Publish skipped — you do not have permission.)';
+            }
         }
 
         return response()->json(['success' => true, 'message' => $message]);

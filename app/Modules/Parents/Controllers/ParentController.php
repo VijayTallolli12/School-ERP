@@ -25,6 +25,8 @@ class ParentController extends Controller
 
     public function index(): View
     {
+        $this->authorize('viewAny', Guardian::class);
+
         return view('modules.parents.index', [
             'statuses' => Guardian::statuses(),
             'students' => Student::query()
@@ -36,10 +38,15 @@ class ParentController extends Controller
 
     public function data(): JsonResponse
     {
-        $query = $this->parents->filterQuery($this->parents->query(), request()->only([
-            'status',
-            'search',
-        ]))->withCount('students');
+        $this->authorize('viewAny', Guardian::class);
+
+        $query = $this->parents->filterQuery(
+            $this->parents->query()->where('school_id', auth()->user()->school_id),
+            request()->only([
+                'status',
+                'search',
+            ])
+        )->withCount('students');
 
         return DataTables::eloquent($query)
             ->addColumn('full_name', fn (Guardian $parent) => e($parent->full_name))
@@ -162,7 +169,11 @@ class ParentController extends Controller
     public function notifications(): View
     {
         return view('modules.parents.notifications', [
-            'notifications' => $this->guardian()->notifications()->latest()->paginate(20),
+            'notifications' => $this->guardian()->notifications()
+                ->where('notifications.target_type', 'parents')
+                ->where('notifications.status', 'sent')
+                ->latest()
+                ->paginate(20),
         ]);
     }
 

@@ -84,7 +84,7 @@ class TeacherDashboardBuilder extends BaseDashboardBuilder
             'calendar-minus',
             'secondary',
             4, 1,
-            route('admin.leave-requests.index'),
+            route('admin.teachers.my-leaves.index'),
         );
 
         return $widgets;
@@ -94,10 +94,13 @@ class TeacherDashboardBuilder extends BaseDashboardBuilder
     {
         return [
             $this->quickAction('Record Attendance', route('admin.attendance.index'), 'clipboard-check', 'primary', 'attendance.view'),
+            $this->quickAction('My Attendance', route('admin.teachers.my-attendance.index'), 'user-check', 'primary'),
             $this->quickAction('Manage Homework', route('admin.homework.index'), 'book-open', 'success', 'homework.view'),
             $this->quickAction('View Timetable', route('admin.timetable.index'), 'clock', 'info', 'timetable.view'),
             $this->quickAction('View Exams', route('admin.exams.index'), 'upload', 'warning', 'exams.view'),
-            $this->quickAction('Apply Leave', route('admin.leave-requests.index'), 'calendar-plus', 'secondary'),
+            $this->quickAction('Apply Leave', route('admin.teachers.my-leaves.index'), 'calendar-plus', 'secondary'),
+            $this->quickAction('My Documents', route('admin.teacher-documents.index'), 'file-text', 'secondary'),
+            $this->quickAction('My Payslips', route('admin.payroll.payslips.my'), 'cash', 'secondary'),
         ];
     }
 
