@@ -14,7 +14,6 @@ use App\Http\Resources\Api\V1\StudentListResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,15 +28,6 @@ class ApiAuthController extends ApiBaseController
         $password = $request->string('password')->toString();
 
         $user = User::query()->where('email', $email)->first();
-
-        Log::debug('[API LOGIN] Attempt', [
-            'email'            => $email,
-            'user_found'       => $user !== null,
-            'user_id'          => $user?->id,
-            'current_school_id'=> $user?->current_school_id,
-            'user_status'      => $user?->status,
-            'hash_check_pass'  => $user ? Hash::check($password, $user->password) : false,
-        ]);
 
         if (! $user || ! Hash::check($password, $user->password)) {
             $this->loginActivityService->recordFailure($request, 'Invalid API credentials');
@@ -56,11 +46,6 @@ class ApiAuthController extends ApiBaseController
         // ───────────────────────────────────────────────────────────────
         $schoolId = $this->resolveSchoolId($request, $user);
 
-        Log::debug('[API LOGIN] School context', [
-            'resolved_school_id' => $schoolId,
-            'permissions_team_id' => $schoolId,
-        ]);
-
         app(SchoolContext::class)->set($schoolId);
         app(PermissionRegistrar::class)->setPermissionsTeamId($schoolId);
 
@@ -70,13 +55,6 @@ class ApiAuthController extends ApiBaseController
         $user->load('roles');
         $roleNames = $user->getRoleNames();
         $hasParentRole = $roleNames->contains('Parent');
-
-        Log::debug('[API LOGIN] Role resolution', [
-            'user_id'               => $user->id,
-            'role_names'            => $roleNames->toArray(),
-            'has_parent_role'       => $hasParentRole,
-            'permissions_team_id'   => app(PermissionRegistrar::class)->getPermissionsTeamId(),
-        ]);
 
         $abilities = $user->getAllPermissions()->pluck('name')->values()->all();
         $token = $user->createToken(
@@ -102,21 +80,7 @@ class ApiAuthController extends ApiBaseController
                 ? $this->loadLinkedStudents($guardian)
                 : [];
             $response['parent_uuid'] = $guardian?->uuid;
-
-            Log::debug('[API LOGIN] Parent data', [
-                'guardian_found'  => $guardian !== null,
-                'guardian_id'     => $guardian?->id,
-                'guardian_uuid'   => $guardian?->uuid,
-                'students_count'  => count($response['students'] ?? []),
-            ]);
-        } else {
-            Log::debug('[API LOGIN] Non-parent user — skipping students', [
-                'user_id'    => $user->id,
-                'role_names' => $roleNames->toArray(),
-            ]);
         }
-
-        Log::debug('[API LOGIN] Response keys', ['keys' => array_keys($response)]);
 
         return $this->success($response, 'Logged in successfully.');
     }
@@ -197,7 +161,11 @@ class ApiAuthController extends ApiBaseController
     {
         // 1. Explicit request parameter
         if ($request->filled('school_id')) {
-            return (int) $request->input('school_id');
+            $requested = (int) $request->input('school_id');
+
+            if ($user->isSuperAdmin() || $user->schools()->whereKey($requested)->exists()) {
+                return $requested;
+            }
         }
 
         // 2. User's current_school_id
@@ -258,12 +226,6 @@ class ApiAuthController extends ApiBaseController
                 ->first();
 
             if ($guardianByEmail) {
-                Log::debug('[API LOGIN] Guardian found by email fallback', [
-                    'user_email'         => $user->email,
-                    'guardian_id'        => $guardianByEmail->id,
-                    'guardian_user_id'   => $guardianByEmail->user_id,
-                ]);
-
                 // Auto-link for future queries
                 $guardianByEmail->user_id = $user->id;
                 $guardianByEmail->save();

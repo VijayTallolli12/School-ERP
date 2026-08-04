@@ -464,17 +464,12 @@
 
             $(document).on('click', '.edit-slot', function () {
                 const $btn = $(this);
-                const slotId = $btn.attr('data-id');
                 const url = $btn.attr('data-url');
-
-                console.log('=== Timetable Edit === slotId:', slotId, 'url:', url);
 
                 $.ajax({
                     url: url,
                     method: 'GET',
                     success: function (response) {
-                        console.log('=== Timetable Edit RESPONSE ===', JSON.stringify(response));
-
                         timetableForm[0].reset();
                         timetableForm.find('.is-invalid').removeClass('is-invalid');
                         timetableForm.find('.invalid-feedback.dynamic').remove();

@@ -94,7 +94,10 @@ class TeacherService
 
     public function getAttendanceReport(array $filters): Collection
     {
-        $query = TeacherAttendance::query()->with(['teacher'])->orderByDesc('attendance_date');
+        $query = TeacherAttendance::query()
+            ->with(['teacher'])
+            ->whereHas('teacher', fn ($q) => $q->where('school_id', app(SchoolContext::class)->id()))
+            ->orderByDesc('attendance_date');
 
         if (! empty($filters['teacher_id'])) {
             $query->where('teacher_id', $filters['teacher_id']);

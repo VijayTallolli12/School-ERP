@@ -277,7 +277,8 @@
                 category: {modal: '#categoryModal', store: '{{ route('admin.library.categories.store') }}', table: tables.categories},
                 author: {modal: '#authorModal', store: '{{ route('admin.library.authors.store') }}', table: tables.authors},
                 publisher: {modal: '#publisherModal', store: '{{ route('admin.library.publishers.store') }}', table: tables.publishers},
-                'fine-setting': {modal: '#fineSettingModal', store: '{{ route('admin.library.fine-settings.store') }}', table: tables.fineSettings}
+                'fine-setting': {modal: '#fineSettingModal', store: '{{ route('admin.library.fine-settings.store') }}', table: tables.fineSettings},
+                issue: {modal: '#issueModal', store: '{{ route('admin.library.issues.store') }}', table: tables.issues}
             };
 
             $('.open-modal').on('click', function () {

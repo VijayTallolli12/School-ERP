@@ -24,14 +24,15 @@
                         
                         $timetable = [];
                         if ($classSectionId) {
-                            $timetableRecords = \App\Modules\Timetable\Models\Timetable::with(['subject', 'teacher'])
+                            $timetableRecords = \App\Modules\Timetable\Models\TimetableSlot::with(['subject', 'teacher'])
                                 ->where('class_section_id', $classSectionId)
                                 ->where('academic_year_id', app(\App\Core\Tenant\SchoolContext::class)->getAcademicYearId())
+                                ->where('status', 'active')
                                 ->orderBy('start_time')
                                 ->get();
-                                
+
                             foreach ($timetableRecords as $record) {
-                                $timetable[$record->day_of_week][] = $record;
+                                $timetable[$record->day_name][] = $record;
                             }
                         }
                         
@@ -67,8 +68,8 @@
                                                                     </div>
                                                                     <div class="fw-bold">{{ $period->subject->name }}</div>
                                                                     <div class="small text-muted">{{ $period->teacher->full_name ?? 'N/A' }}</div>
-                                                                    @if($period->room_number)
-                                                                        <div class="small text-muted">Room: {{ $period->room_number }}</div>
+                                                                    @if($period->room)
+                                                                        <div class="small text-muted">Room: {{ $period->room }}</div>
                                                                     @endif
                                                                 </div>
                                                             </div>

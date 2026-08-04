@@ -12,9 +12,13 @@ Route::middleware('guest')->group(function (): void {
         ->name('login.store');
 
     Route::get('forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
-    Route::post('forgot-password', [ForgotPasswordController::class, 'store'])->name('password.email');
+    Route::post('forgot-password', [ForgotPasswordController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('password.email');
     Route::get('reset-password/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
-    Route::post('reset-password', [ResetPasswordController::class, 'store'])->name('password.store');
+    Route::post('reset-password', [ResetPasswordController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('password.store');
 });
 
 Route::post('logout', [LoginController::class, 'destroy'])

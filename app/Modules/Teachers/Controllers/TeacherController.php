@@ -2,6 +2,7 @@
 
 namespace App\Modules\Teachers\Controllers;
 
+use App\Core\Tenant\SchoolContext;
 use App\Http\Controllers\Controller;
 use App\Modules\Academics\Models\ClassSection;
 use App\Modules\Academics\Models\Subject;
@@ -149,7 +150,9 @@ class TeacherController extends Controller
 
     public function attendanceData(): JsonResponse
     {
-        return DataTables::of(TeacherAttendance::query()->with(['teacher', 'markedBy']))
+        return DataTables::of(TeacherAttendance::query()
+            ->with(['teacher', 'markedBy'])
+            ->whereHas('teacher', fn ($q) => $q->where('school_id', app(SchoolContext::class)->id())))
             ->addColumn('teacher_name', fn (TeacherAttendance $attendance) => e($attendance->teacher->full_name))
             ->addColumn('attendance_date', fn (TeacherAttendance $attendance) => $attendance->attendance_date->format('d-M-Y'))
             ->addColumn('status', function (TeacherAttendance $attendance): string {
@@ -226,7 +229,9 @@ class TeacherController extends Controller
 
     public function leaveData(): JsonResponse
     {
-        return DataTables::of(TeacherLeave::query()->with(['teacher', 'approvedBy']))
+        return DataTables::of(TeacherLeave::query()
+            ->with(['teacher', 'approvedBy'])
+            ->whereHas('teacher', fn ($q) => $q->where('school_id', app(SchoolContext::class)->id())))
             ->addColumn('teacher_name', fn (TeacherLeave $leave) => e($leave->teacher->full_name))
             ->addColumn('period', fn (TeacherLeave $leave) => e($leave->start_date->format('d-M-Y').' to '.$leave->end_date->format('d-M-Y')))
             ->addColumn('status', function (TeacherLeave $leave): string {

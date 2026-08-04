@@ -395,6 +395,8 @@ class PayrollController extends Controller
 
     public function downloadPayslipPdf(EmployeePayslip $payslip): \Illuminate\Http\Response
     {
+        $this->authorizePayslipAccess($payslip);
+
         $data = $this->service->getPayslipData($payslip->id);
 
         return Pdf::loadView('modules.payroll.payslip_pdf', $data)
@@ -404,9 +406,25 @@ class PayrollController extends Controller
 
     public function printPayslip(EmployeePayslip $payslip): \Illuminate\View\View
     {
+        $this->authorizePayslipAccess($payslip);
+
         $data = $this->service->getPayslipData($payslip->id);
 
         return view('modules.payroll.payslip_print', $data);
+    }
+
+    private function authorizePayslipAccess(EmployeePayslip $payslip): void
+    {
+        $user = auth()->user();
+
+        if ($user->can('payroll.payslip.view') || $user->can('payroll.payslip.export')) {
+            return;
+        }
+
+        $isOwner = $payslip->employee_type === 'teacher'
+            && \App\Modules\Teachers\Models\Teacher::where('user_id', $user->id)->value('id') === $payslip->employee_id;
+
+        abort_unless($isOwner, 403, 'You are not authorized to access this payslip.');
     }
 
     // ─── Reports ─────────────────────────────────────────────────────────
@@ -772,6 +790,7 @@ class PayrollController extends Controller
         $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->firstOrFail();
 
         $query = \App\Modules\Payroll\Models\EmployeePayslip::query()
+            ->with('payrollRun')
             ->where('employee_type', 'teacher')
             ->where('employee_id', $teacher->id);
 
@@ -783,9 +802,9 @@ class PayrollController extends Controller
             ->editColumn('generated_at', fn (\App\Modules\Payroll\Models\EmployeePayslip $p) => $p->generated_at?->format('d M Y H:i') ?? '-')
             ->addColumn('actions', fn (\App\Modules\Payroll\Models\EmployeePayslip $p) => '
                 <div class="btn-group btn-group-sm">
-                    <a class="btn btn-outline-primary" href="'.route('admin.payroll.payslips.print', $p->id).'" target="_blank" title="View"><i class="ti ti-eye"></i></a>
-                    <a class="btn btn-outline-danger" href="'.route('admin.payroll.payslips.pdf', $p->id).'" title="PDF"><i class="ti ti-file-pdf"></i></a>
-                    <a class="btn btn-outline-secondary" href="'.route('admin.payroll.payslips.print', $p->id).'" target="_blank" title="Print"><i class="ti ti-printer"></i></a>
+                    <a class="btn btn-outline-primary" href="'.route('admin.payroll.payslips.my.print', $p->id).'" target="_blank" title="View"><i class="ti ti-eye"></i></a>
+                    <a class="btn btn-outline-danger" href="'.route('admin.payroll.payslips.my.pdf', $p->id).'" title="PDF"><i class="ti ti-file-pdf"></i></a>
+                    <a class="btn btn-outline-secondary" href="'.route('admin.payroll.payslips.my.print', $p->id).'" target="_blank" title="Print"><i class="ti ti-printer"></i></a>
                 </div>')
             ->rawColumns(['gross_salary', 'total_deductions', 'net_salary', 'actions'])
             ->toJson();

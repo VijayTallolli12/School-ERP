@@ -215,9 +215,6 @@
                     { data: 'created_by_name', orderable: false, searchable: false },
                     { data: 'actions', orderable: false, searchable: false }
                 ],
-                initComplete: function(settings, json) {
-                    console.log('[Notif DT] init:', this.api().data().length, 'rows, total:', json?.recordsTotal);
-                }
             });
 
             $('#filterType, #filterStatus').on('change', () => table.ajax.reload());

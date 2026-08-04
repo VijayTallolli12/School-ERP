@@ -14,6 +14,23 @@ use Illuminate\Http\Request;
 
 class TeacherApiController extends ApiBaseController
 {
+    private function authorizeTeacherAccess(Teacher $teacher): bool
+    {
+        $user = request()->user();
+
+        if ($user->isSuperAdmin() || $user->hasRole('School Admin') || $user->hasRole('Principal') || $user->hasRole('HR')) {
+            return true;
+        }
+
+        if ($user->hasRole('Teacher')) {
+            $ownTeacher = Teacher::query()->where('user_id', $user->id)->first();
+
+            return $ownTeacher && $ownTeacher->id === $teacher->id;
+        }
+
+        return false;
+    }
+
     public function index(Request $request): JsonResponse
     {
         $request->validate([
@@ -81,6 +98,10 @@ class TeacherApiController extends ApiBaseController
             return $this->notFound('Teacher not found.');
         }
 
+        if (! $this->authorizeTeacherAccess($teacher)) {
+            return $this->forbidden('You are not authorized to view this timetable.');
+        }
+
         $slotsQuery = TimetableSlot::query()
             ->where('teacher_id', $teacher->id)
             ->with(['subject:id,name,code', 'classSection.schoolClass', 'classSection.section']);
@@ -120,6 +141,10 @@ class TeacherApiController extends ApiBaseController
 
         if (! $teacher) {
             return $this->notFound('Teacher not found.');
+        }
+
+        if (! $this->authorizeTeacherAccess($teacher)) {
+            return $this->forbidden('You are not authorized to view this attendance.');
         }
 
         $request->validate([
@@ -174,6 +199,10 @@ class TeacherApiController extends ApiBaseController
             return $this->notFound('Teacher not found.');
         }
 
+        if (! $this->authorizeTeacherAccess($teacher)) {
+            return $this->forbidden('You are not authorized to view this teacher.');
+        }
+
         return $this->success([
             'teacher' => new TeacherListResource($teacher),
             'classes' => $teacher->classSections->map(fn ($cs) => [
@@ -196,6 +225,10 @@ class TeacherApiController extends ApiBaseController
 
         if (! $teacher) {
             return $this->notFound('Teacher not found.');
+        }
+
+        if (! $this->authorizeTeacherAccess($teacher)) {
+            return $this->forbidden('You are not authorized to view this teacher.');
         }
 
         return $this->success([

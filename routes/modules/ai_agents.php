@@ -9,7 +9,7 @@ Route::prefix('agents')
         Route::get('/', [AgentController::class, 'index'])->name('index');
         Route::get('history', [AgentController::class, 'history'])->name('history');
         Route::get('history/data', [AgentController::class, 'historyData'])->name('history.data');
-        Route::post('{agent}/preview', [AgentController::class, 'preview'])->name('preview');
-        Route::post('{agent}/execute', [AgentController::class, 'execute'])->name('execute');
+        Route::post('{agent}/preview', [AgentController::class, 'preview'])->middleware('role:Super Admin|School Admin|Principal|HR')->name('preview');
+        Route::post('{agent}/execute', [AgentController::class, 'execute'])->middleware('role:Super Admin|School Admin|Principal|HR')->name('execute');
         Route::get('executions/{id}', [AgentController::class, 'executionDetail'])->name('executions.detail');
     });

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Teachers\Requests;
 
+use App\Core\Tenant\SchoolContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,7 @@ class TeacherAttendanceReportFilterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'teacher_id' => ['nullable', 'integer', Rule::exists('teachers', 'id')],
+            'teacher_id' => ['nullable', 'integer', Rule::exists('teachers', 'id')->where('school_id', app(SchoolContext::class)->id())],
             'from_date' => ['nullable', 'date'],
             'to_date' => ['nullable', 'date', 'after_or_equal:from_date'],
         ];

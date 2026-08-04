@@ -282,13 +282,14 @@ class TransportController extends Controller
     {
         $q = $request->get('q', '');
         $limit = min((int) $request->get('limit', 20), 50);
+        $escaped = addcslashes($q, '%_\\');
 
         $students = Student::query()
-            ->where(function ($query) use ($q): void {
-                $query->where('first_name', 'like', "%{$q}%")
-                    ->orWhere('middle_name', 'like', "%{$q}%")
-                    ->orWhere('last_name', 'like', "%{$q}%")
-                    ->orWhere('admission_no', 'like', "%{$q}%");
+            ->where(function ($query) use ($escaped): void {
+                $query->where('first_name', 'like', "%{$escaped}%")
+                    ->orWhere('middle_name', 'like', "%{$escaped}%")
+                    ->orWhere('last_name', 'like', "%{$escaped}%")
+                    ->orWhere('admission_no', 'like', "%{$escaped}%");
             })
             ->orderBy('first_name')
             ->limit($limit)
@@ -306,11 +307,12 @@ class TransportController extends Controller
     {
         $q = $request->get('q', '');
         $limit = min((int) $request->get('limit', 20), 50);
+        $escaped = addcslashes($q, '%_\\');
 
         $routes = Route::query()
-            ->where('route_name', 'like', "%{$q}%")
-            ->orWhere('start_point', 'like', "%{$q}%")
-            ->orWhere('end_point', 'like', "%{$q}%")
+            ->where('route_name', 'like', "%{$escaped}%")
+            ->orWhere('start_point', 'like', "%{$escaped}%")
+            ->orWhere('end_point', 'like', "%{$escaped}%")
             ->orderBy('route_name')
             ->limit($limit)
             ->get();

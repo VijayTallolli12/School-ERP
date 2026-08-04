@@ -126,6 +126,20 @@ class ExamApiController extends ApiBaseController
             return $this->notFound('Result not found.');
         }
 
+        $user = request()->user();
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Principal') && ! $user->hasRole('Teacher')) {
+            $student = \App\Modules\Students\Models\Student::query()->where('user_id', $user->id)->first();
+            $guardian = $user->guardian;
+
+            $isOwnResult = ($student && $result->student_id === $student->id)
+                || ($guardian && $guardian->students()->where('students.id', $result->student_id)->exists());
+
+            if (! $isOwnResult) {
+                return $this->forbidden('You are not authorized to view this result.');
+            }
+        }
+
         return $this->success(new ExamResultResource($result), 'Exam result retrieved.');
     }
 
@@ -139,11 +153,36 @@ class ExamApiController extends ApiBaseController
             return $this->notFound('Exam not found.');
         }
 
+        $user = request()->user();
+        $isStaff = $user->isSuperAdmin() || $user->hasRole('School Admin') || $user->hasRole('Principal') || $user->hasRole('Teacher');
+
         $results = ExamResult::query()
             ->where('exam_id', $examId)
             ->with(['student:id,first_name,last_name,admission_no,uuid,roll_no'])
             ->orderBy('marks_obtained', 'desc')
             ->get();
+
+        if (! $isStaff) {
+            $student = \App\Modules\Students\Models\Student::query()->where('user_id', $user->id)->first();
+            $guardian = $user->guardian;
+
+            $ownStudentIds = collect();
+            if ($student && $exam->class_section_id === $student->currentSession->first()?->class_section_id) {
+                $ownStudentIds->push($student->id);
+            }
+            if ($guardian) {
+                $ownStudentIds = $ownStudentIds->merge(
+                    $guardian->students()->pluck('students.id')
+                );
+            }
+            $ownStudentIds = $ownStudentIds->unique();
+
+            if ($ownStudentIds->isEmpty()) {
+                return $this->forbidden('You are not authorized to view this report card.');
+            }
+
+            $results = $results->filter(fn (ExamResult $r) => $ownStudentIds->contains($r->student_id));
+        }
 
         $gradeDistribution = [];
         foreach ($results as $result) {

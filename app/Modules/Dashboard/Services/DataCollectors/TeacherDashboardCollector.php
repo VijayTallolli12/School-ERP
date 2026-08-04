@@ -7,7 +7,6 @@ use App\Modules\Attendance\Models\Attendance;
 use App\Modules\Exams\Models\Exam;
 use App\Modules\Homework\Models\Homework;
 use App\Modules\Leave\Models\LeaveRequest;
-use App\Modules\Teachers\Models\Teacher;
 use App\Modules\Timetable\Models\TimetableSlot;
 use App\Modules\Timetable\Services\TimetableService;
 use Illuminate\Support\Facades\Cache;
@@ -16,20 +15,19 @@ class TeacherDashboardCollector
 {
     public function todayClassesCount(int $teacherId, int $schoolId): int
     {
-        return Cache::remember("dashboard.teacher.today_classes.{$teacherId}.{$schoolId}", 60, function () use ($teacherId, $schoolId) {
-            $teacher = Teacher::query()->find($teacherId);
+        return Cache::remember("dashboard.teacher.today_classes.{$teacherId}.{$schoolId}", 60, function () use ($teacherId) {
+            $academicYear = app(TimetableService::class)->activeAcademicYear();
 
-            if (!$teacher) {
+            if (!$academicYear) {
                 return 0;
             }
 
-            $classSectionIds = $teacher->classSections()->pluck('class_section_id')->toArray();
-
-            if (empty($classSectionIds)) {
-                return 0;
-            }
-
-            return app(TimetableService::class)->todaySchedulesCount();
+            return TimetableSlot::query()
+                ->where('teacher_id', $teacherId)
+                ->where('academic_year_id', $academicYear->id)
+                ->where('day_of_week', now()->dayOfWeekIso)
+                ->where('status', 'active')
+                ->count();
         });
     }
 
@@ -44,6 +42,7 @@ class TeacherDashboardCollector
 
             return Homework::query()
                 ->whereIn('class_section_id', $classSectionIds)
+                ->active()
                 ->where('due_date', '>=', now())
                 ->count();
         });

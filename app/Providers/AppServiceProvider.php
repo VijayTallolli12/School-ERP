@@ -119,6 +119,8 @@ use App\Modules\Reports\Repositories\AttendanceReportRepository;
 use App\Modules\Reports\Repositories\AttendanceReportRepositoryInterface;
 use App\Modules\Reports\Repositories\ExamReportRepository;
 use App\Modules\Reports\Repositories\ExamReportRepositoryInterface;
+use App\Modules\Reports\Repositories\FeeDefaulterReportRepository;
+use App\Modules\Reports\Repositories\FeeDefaulterReportRepositoryInterface;
 use App\Modules\Reports\Repositories\ParentReportRepository;
 use App\Modules\Reports\Repositories\ParentReportRepositoryInterface;
 use App\Modules\Reports\Repositories\StudentReportRepository;
@@ -141,6 +143,7 @@ use App\Modules\Dashboard\Services\DashboardService;
 use App\Modules\Dashboard\Services\SidebarBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Spatie\Permission\Models\Permission;
@@ -180,6 +183,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TransportRepositoryInterface::class, TransportRepository::class);
         $this->app->bind(LibraryRepositoryInterface::class, LibraryRepository::class);
         $this->app->bind(PayrollRepositoryInterface::class, PayrollRepository::class);
+        $this->app->bind(EmployeeRepositoryInterface::class, EmployeeRepository::class);
         $this->app->bind(FeeDefaulterReportRepositoryInterface::class, FeeDefaulterReportRepository::class);
 
         $this->app->singleton(DashboardService::class);
@@ -195,7 +199,14 @@ class AppServiceProvider extends ServiceProvider
         if (app()->environment('production')) {
             URL::forceScheme('https');
         }
-        view()->addNamespace('Reports', app_path('Modules/Reports/Views'));
+        PasswordRule::defaults(function () {
+            return PasswordRule::min(8)
+                ->letters()
+                ->mixedCase()
+                ->numbers()
+                ->symbols()
+                ->uncompromised();
+        });        view()->addNamespace('Reports', app_path('Modules/Reports/Views'));
 
         Relation::morphMap([
             'teacher' => \App\Modules\Teachers\Models\Teacher::class,

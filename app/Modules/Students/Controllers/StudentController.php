@@ -29,16 +29,6 @@ class StudentController extends Controller
             ->orderBy('first_name')
             ->get(['id', 'first_name', 'last_name', 'email', 'phone']);
 
-        logger()->debug('StudentController@index — parents dropdown', [
-            'count' => $parents->count(),
-            'school_context_id' => app(\App\Core\Tenant\SchoolContext::class)->id(),
-            'auth_user_school_id' => auth()->user()->current_school_id,
-            'auth_user_id' => auth()->id(),
-            'parent_ids' => $parents->pluck('id')->toArray(),
-            'parent_names' => $parents->pluck('first_name')->toArray(),
-            'sql' => $parents->toQuery()->toSql(),
-        ]);
-
         $classSectionsQuery = ClassSection::query()
             ->with(['schoolClass', 'section'])
             ->where('status', 'active');

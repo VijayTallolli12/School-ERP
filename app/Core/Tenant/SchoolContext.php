@@ -2,6 +2,7 @@
 
 namespace App\Core\Tenant;
 
+use App\Models\AcademicYear;
 use App\Models\School;
 
 class SchoolContext
@@ -28,5 +29,13 @@ class SchoolContext
         }
 
         return $this->school ??= School::query()->find($this->schoolId);
+    }
+
+    public function getAcademicYearId(): ?int
+    {
+        return AcademicYear::query()
+            ->where('school_id', $this->id())
+            ->where('status', 'active')
+            ->value('id');
     }
 }

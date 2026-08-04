@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Core\Tenant\SchoolContext;
-use App\Models\AcademicYear;
 use App\Modules\Attendance\Models\Attendance;
 use App\Modules\Teachers\Models\TeacherAttendance;
 use Carbon\Carbon;
@@ -17,20 +16,12 @@ class AttendanceRealtimeController extends ApiBaseController
         $schoolId = app(SchoolContext::class)->id();
         $date = $request->input('date', now()->toDateString());
         $carbonDate = Carbon::parse($date);
-
-        $academicYear = AcademicYear::query()
-            ->where('school_id', $schoolId)
-            ->where('is_active', true)
-            ->first();
+        $dateString = $carbonDate->toDateString();
 
         // Student attendance summary for the date
         $studentQuery = Attendance::query()
             ->where('school_id', $schoolId)
-            ->whereDate('attendance_date', $carbonDate);
-
-        if ($academicYear) {
-            $studentQuery->where('academic_year_id', $academicYear->id);
-        }
+            ->whereDate('attendance_date', $dateString);
 
         $studentRecords = $studentQuery->get();
         $studentTotal = $studentRecords->count();
@@ -44,7 +35,7 @@ class AttendanceRealtimeController extends ApiBaseController
 
         // Teacher attendance summary for the date
         $teacherRecords = TeacherAttendance::query()
-            ->whereDate('attendance_date', $carbonDate)
+            ->whereDate('attendance_date', $dateString)
             ->get();
         $teacherTotal = $teacherRecords->count();
         $teacherSummary = [
@@ -58,7 +49,7 @@ class AttendanceRealtimeController extends ApiBaseController
         // Recent activity (last 20 student attendance marks)
         $recentActivity = Attendance::query()
             ->where('school_id', $schoolId)
-            ->whereDate('attendance_date', $carbonDate)
+            ->whereDate('attendance_date', $dateString)
             ->with(['student:id,first_name,last_name', 'markedBy:id,name'])
             ->latest()
             ->limit(20)

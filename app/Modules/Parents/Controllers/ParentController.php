@@ -126,70 +126,61 @@ class ParentController extends Controller
 
     public function dashboard(): View
     {
-        $parent = auth()->user()->guardian;
-
-        if (!$parent) {
-            abort(403, 'Parent profile not found.');
-        }
-
-        $dashboardData = $this->service->getParentDashboardData($parent);
+        $dashboardData = $this->service->getParentDashboardData($this->guardian());
 
         return view('modules.parents.dashboard', $dashboardData);
     }
 
     public function attendance(): View
     {
-        $parent = auth()->user()->guardian;
-
         return view('modules.parents.attendance', [
-            'students' => $parent->students,
+            'students' => $this->guardian()->students,
         ]);
     }
 
     public function fees(): View
     {
-        $parent = auth()->user()->guardian;
-
         return view('modules.parents.fees', [
-            'students' => $parent->students,
+            'students' => $this->guardian()->students,
         ]);
     }
 
     public function examResults(): View
     {
-        $parent = auth()->user()->guardian;
-
         return view('modules.parents.exam_results', [
-            'students' => $parent->students,
+            'students' => $this->guardian()->students,
         ]);
     }
 
     public function timetable(): View
     {
-        $parent = auth()->user()->guardian;
-
         return view('modules.parents.timetable', [
-            'students' => $parent->students,
+            'students' => $this->guardian()->students,
         ]);
     }
 
     public function notifications(): View
     {
-        $parent = auth()->user()->guardian;
-
         return view('modules.parents.notifications', [
-            'notifications' => $parent->notifications()->latest()->paginate(20),
+            'notifications' => $this->guardian()->notifications()->latest()->paginate(20),
         ]);
     }
 
     public function homework(): View
     {
+        return view('modules.parents.homework', [
+            'homework' => $this->service->getHomeworkForStudents($this->guardian()->students),
+        ]);
+    }
+
+    private function guardian(): Guardian
+    {
         $parent = auth()->user()->guardian;
 
-        $homework = $this->service->getHomeworkForStudents($parent->students);
+        if (! $parent) {
+            abort(403, 'Parent profile not found.');
+        }
 
-        return view('modules.parents.homework', [
-            'homework' => $homework,
-        ]);
+        return $parent;
     }
 }

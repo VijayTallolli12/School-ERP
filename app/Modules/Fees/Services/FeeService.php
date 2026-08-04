@@ -515,6 +515,8 @@ class FeeService
 
         // Replace chunkById loop with a single aggregate subquery for pending fees
         $pending = (float) StudentFeeItem::query()
+            ->join('student_fees', 'student_fees.id', '=', 'student_fee_items.student_fee_id')
+            ->when($this->schoolContext->id(), fn ($q, $schoolId) => $q->where('student_fees.school_id', $schoolId))
             ->leftJoin(DB::raw('(SELECT student_fee_item_id, SUM(amount) as paid_sum FROM fee_payment_items WHERE EXISTS (SELECT 1 FROM fee_payments WHERE fee_payments.id = fee_payment_items.fee_payment_id) GROUP BY student_fee_item_id) as fpi'), 'student_fee_items.id', '=', 'fpi.student_fee_item_id')
             ->selectRaw('COALESCE(SUM(student_fee_items.amount - COALESCE(fpi.paid_sum, 0)), 0) as total_pending')
             ->value('total_pending');

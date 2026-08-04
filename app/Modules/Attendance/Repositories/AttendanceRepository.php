@@ -35,7 +35,11 @@ class AttendanceRepository implements AttendanceRepositoryInterface
         $table = $query->getModel()->getTable();
 
         if (! empty($filters['class_section_id'])) {
-            $query->where($table.'.class_section_id', $filters['class_section_id']);
+            if (is_array($filters['class_section_id'])) {
+                $query->whereIn($table.'.class_section_id', $filters['class_section_id']);
+            } else {
+                $query->where($table.'.class_section_id', $filters['class_section_id']);
+            }
         }
 
         if (! empty($filters['from_date'])) {

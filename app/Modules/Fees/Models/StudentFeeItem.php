@@ -2,6 +2,7 @@
 
 namespace App\Modules\Fees\Models;
 
+use App\Core\Tenant\BelongsToSchool;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,9 +10,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentFeeItem extends Model
 {
-    use SoftDeletes;
+    use BelongsToSchool, SoftDeletes;
 
     protected $fillable = [
+        'school_id',
         'student_fee_id',
         'fee_category_id',
         'amount',

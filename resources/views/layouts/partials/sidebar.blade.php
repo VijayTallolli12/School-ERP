@@ -136,7 +136,7 @@
 
                 @can('hr.view')
                     <li class="nav-item">
-                        <a href="{{ route('admin.hr.employees.index') }}" class="nav-link @if(request()->routeIs('admin.hr.employees.*')) active @endif">
+                        <a href="{{ route('admin.hr.index') }}" class="nav-link @if(request()->routeIs('admin.hr.index')) active @endif">
                             <i class="nav-icon ti ti-users"></i>
                             <p>Employees</p>
                         </a>
@@ -313,7 +313,7 @@
 
                 @can('dashboard.view')
                     <li class="nav-item">
-                        <a href="{{ route('parent-portal.dashboard') }}" class="nav-link @if(request()->routeIs('parent-portal.dashboard')) active @endif">
+                        <a href="{{ route('admin.parent-portal.dashboard') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.dashboard')) active @endif">
                             <i class="nav-icon ti ti-gauge"></i>
                             <p>Dashboard</p>
                         </a>
@@ -322,7 +322,7 @@
 
                 @can('attendance.view')
                     <li class="nav-item">
-                        <a href="{{ route('parent-portal.attendance') }}" class="nav-link @if(request()->routeIs('parent-portal.attendance')) active @endif">
+                        <a href="{{ route('admin.parent-portal.attendance') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.attendance')) active @endif">
                             <i class="nav-icon ti ti-calendar-check"></i>
                             <p>Attendance</p>
                         </a>
@@ -331,7 +331,7 @@
 
                 @can('fees.view')
                     <li class="nav-item">
-                        <a href="{{ route('parent-portal.fees') }}" class="nav-link @if(request()->routeIs('parent-portal.fees')) active @endif">
+                        <a href="{{ route('admin.parent-portal.fees') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.fees')) active @endif">
                             <i class="nav-icon ti ti-receipt"></i>
                             <p>Fees</p>
                         </a>
@@ -340,7 +340,7 @@
 
                 @can('exams.view')
                     <li class="nav-item">
-                        <a href="{{ route('parent-portal.exam-results') }}" class="nav-link @if(request()->routeIs('parent-portal.exam-results')) active @endif">
+                        <a href="{{ route('admin.parent-portal.exam-results') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.exam-results')) active @endif">
                             <i class="nav-icon ti ti-chart-arrows-vertical"></i>
                             <p>Exam Results</p>
                         </a>
@@ -349,7 +349,7 @@
 
                 @can('timetable.view')
                     <li class="nav-item">
-                        <a href="{{ route('parent-portal.timetable') }}" class="nav-link @if(request()->routeIs('parent-portal.timetable')) active @endif">
+                        <a href="{{ route('admin.parent-portal.timetable') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.timetable')) active @endif">
                             <i class="nav-icon ti ti-table"></i>
                             <p>Timetable</p>
                         </a>
@@ -358,7 +358,7 @@
 
                 @can('homework.view')
                     <li class="nav-item">
-                        <a href="{{ route('parent-portal.homework') }}" class="nav-link @if(request()->routeIs('parent-portal.homework')) active @endif">
+                        <a href="{{ route('admin.parent-portal.homework') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.homework')) active @endif">
                             <i class="nav-icon ti ti-books"></i>
                             <p>Homework</p>
                         </a>
@@ -367,7 +367,7 @@
 
                 @can('notifications.view')
                     <li class="nav-item">
-                        <a href="{{ route('parent-portal.notifications') }}" class="nav-link @if(request()->routeIs('parent-portal.notifications')) active @endif">
+                        <a href="{{ route('admin.parent-portal.notifications') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.notifications')) active @endif">
                             <i class="nav-icon ti ti-bell"></i>
                             <p>Notifications</p>
                         </a>
@@ -614,6 +614,15 @@
                     </li>
                 @endcan
 
+                @can('admissions.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.admissions.index') }}" class="nav-link @if(request()->routeIs('admin.admissions.*')) active @endif">
+                            <i class="nav-icon ti ti-clipboard-list"></i>
+                            <p>Admissions</p>
+                        </a>
+                    </li>
+                @endcan
+
                 @can('attendance.view')
                     <li class="nav-item">
                         <a href="{{ route('admin.attendance.index') }}" class="nav-link @if(request()->routeIs('admin.attendance.*')) active @endif">
@@ -775,26 +784,28 @@
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a href="{{ route('admin.ai.dashboard') }}" class="nav-link @if(request()->routeIs('admin.ai.dashboard')) active @endif">
-                        <i class="nav-icon ti ti-sparkles"></i>
-                        <p>Executive Copilot</p>
-                    </a>
-                </li>
+                @role('Super Admin|School Admin|Principal|HR')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.ai.dashboard') }}" class="nav-link @if(request()->routeIs('admin.ai.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-sparkles"></i>
+                            <p>Executive Copilot</p>
+                        </a>
+                    </li>
 
-                <li class="nav-item">
-                    <a href="{{ route('admin.agents.index') }}" class="nav-link @if(request()->routeIs('admin.agents.index') && !request()->routeIs('admin.agents.history')) active @endif">
-                        <i class="nav-icon ti ti-robot"></i>
-                        <p>AI Agents</p>
-                    </a>
-                </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.agents.index') }}" class="nav-link @if(request()->routeIs('admin.agents.index') && !request()->routeIs('admin.agents.history')) active @endif">
+                            <i class="nav-icon ti ti-robot"></i>
+                            <p>AI Agents</p>
+                        </a>
+                    </li>
 
-                <li class="nav-item">
-                    <a href="{{ route('admin.agents.history') }}" class="nav-link @if(request()->routeIs('admin.agents.history*')) active @endif">
-                        <i class="nav-icon ti ti-clock"></i>
-                        <p>Execution History</p>
-                    </a>
-                </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.agents.history') }}" class="nav-link @if(request()->routeIs('admin.agents.history*')) active @endif">
+                            <i class="nav-icon ti ti-clock"></i>
+                            <p>Execution History</p>
+                        </a>
+                    </li>
+                @endrole
 
                 {{-- ========== ADMINISTRATION ========== --}}
                 <li class="nav-header">

@@ -22,7 +22,7 @@ class StoreVehicleRequest extends FormRequest
             'vehicle_name' => ['required', 'string', 'max:120'],
             'vehicle_type' => ['required', Rule::in(['bus', 'van', 'car', 'other'])],
             'capacity' => ['required', 'integer', 'min:1', 'max:9999'],
-            'driver_id' => ['nullable', 'integer', 'exists:drivers,id'],
+            'driver_id' => ['nullable', 'integer', Rule::exists('drivers', 'id')->where('school_id', $schoolId)],
             'attendant' => ['nullable', 'string', 'max:120'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
         ];

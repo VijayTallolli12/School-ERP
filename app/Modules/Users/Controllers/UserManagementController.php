@@ -143,11 +143,12 @@ class UserManagementController extends Controller
 
     public function toggleStatus(User $user): JsonResponse
     {
-        $user->update(['is_active' => !$user->is_active]);
+        $newStatus = $user->status === 'active' ? 'inactive' : 'active';
+        $user->update(['status' => $newStatus]);
 
         return response()->json([
             'success' => true,
-            'message' => $user->is_active ? 'User activated.' : 'User deactivated.',
+            'message' => $newStatus === 'active' ? 'User activated.' : 'User deactivated.',
         ]);
     }
 

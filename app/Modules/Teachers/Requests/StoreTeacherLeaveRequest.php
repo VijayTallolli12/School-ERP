@@ -2,6 +2,7 @@
 
 namespace App\Modules\Teachers\Requests;
 
+use App\Core\Tenant\SchoolContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,7 @@ class StoreTeacherLeaveRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'teacher_id' => ['required', 'integer', Rule::exists('teachers', 'id')],
+            'teacher_id' => ['required', 'integer', Rule::exists('teachers', 'id')->where('school_id', app(SchoolContext::class)->id())],
             'leave_type' => ['required', Rule::in(['sick', 'casual', 'personal', 'maternity', 'other'])],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],

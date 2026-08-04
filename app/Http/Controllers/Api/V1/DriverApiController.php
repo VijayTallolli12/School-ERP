@@ -63,6 +63,11 @@ class DriverApiController extends ApiBaseController
         }
 
         $schoolId = $this->resolveSchoolId($request, $user);
+
+        if (! $schoolId) {
+            return $this->error('Could not resolve your school. Contact the administrator.', Response::HTTP_FORBIDDEN);
+        }
+
         app(SchoolContext::class)->set($schoolId);
         app(PermissionRegistrar::class)->setPermissionsTeamId($schoolId);
 
@@ -432,6 +437,14 @@ class DriverApiController extends ApiBaseController
             return $this->error('Vehicle not assigned to this driver.', Response::HTTP_FORBIDDEN);
         }
 
+        if ($validated['trip_id'] ?? null) {
+            $trip = Trip::query()->where('id', $validated['trip_id'])->where('driver_id', $driver->id)->first();
+
+            if (! $trip) {
+                return $this->error('Trip not assigned to this driver.', Response::HTTP_FORBIDDEN);
+            }
+        }
+
         $location = VehicleLocation::query()->create([
             'vehicle_id' => $validated['vehicle_id'],
             'latitude' => $validated['latitude'],
@@ -548,6 +561,14 @@ class DriverApiController extends ApiBaseController
             'trip_id' => ['nullable', 'integer', 'exists:trips,id'],
         ]);
 
+        if ($validated['trip_id'] ?? null) {
+            $trip = Trip::query()->where('id', $validated['trip_id'])->where('driver_id', $driver->id)->first();
+
+            if (! $trip) {
+                return $this->error('Trip not assigned to this driver.', Response::HTTP_FORBIDDEN);
+            }
+        }
+
         TripEvent::query()->create([
             'school_id' => $driver->school_id,
             'trip_id' => $validated['trip_id'] ?? null,
@@ -573,7 +594,7 @@ class DriverApiController extends ApiBaseController
         return $this->success(null, 'SOS alert sent successfully.');
     }
 
-    private function resolveSchoolId(Request $request, User $user): int
+    private function resolveSchoolId(Request $request, User $user): ?int
     {
         $schoolId = (int) $request->header('X-School-Id', $request->input('school_id', 0));
 
@@ -586,6 +607,6 @@ class DriverApiController extends ApiBaseController
             $schoolId = $primarySchool?->id ?? 0;
         }
 
-        return $schoolId > 0 ? $schoolId : 1;
+        return $schoolId > 0 ? $schoolId : null;
     }
 }

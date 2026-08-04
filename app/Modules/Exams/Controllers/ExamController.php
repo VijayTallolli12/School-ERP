@@ -306,6 +306,7 @@ class ExamController extends Controller
         $message = 'Results saved successfully.';
 
         if ($request->boolean('publish') && ! $exam->is_published) {
+            $this->authorize('publish', $exam);
             $this->service->publish($exam);
             $message = 'Results saved and published successfully.';
         }

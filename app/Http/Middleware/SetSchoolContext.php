@@ -14,14 +14,18 @@ class SetSchoolContext
     {
         $schoolId = $this->resolveSchoolId($request);
 
+        $user = $request->user();
+
         if ($schoolId) {
             app(SchoolContext::class)->set($schoolId);
             app(PermissionRegistrar::class)->setPermissionsTeamId($schoolId);
             session(['school_id' => $schoolId]);
 
-            if ($request->user()) {
-                $request->user()->unsetRelation('roles');
+            if ($user) {
+                $user->unsetRelation('roles');
             }
+        } elseif ($user && ! $user->isSuperAdmin()) {
+            abort(403, 'Unable to resolve your school context. Contact the administrator.');
         }
 
         return $next($request);

@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 // Teacher My Payslips (accessible without payroll permission gate)
 Route::get('payroll/payslips/my', [PayrollController::class, 'myPayslips'])->name('payroll.payslips.my');
 Route::get('payroll/my-payslips/data', [PayrollController::class, 'myPayslipsData'])->name('payroll.my-payslips.data');
+Route::get('payroll/payslips/my/{payslip}/print', [PayrollController::class, 'printPayslip'])->name('payroll.payslips.my.print');
+Route::get('payroll/payslips/my/{payslip}/pdf', [PayrollController::class, 'downloadPayslipPdf'])->name('payroll.payslips.my.pdf');
 
 Route::prefix('payroll')
     ->name('payroll.')

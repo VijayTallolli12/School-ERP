@@ -111,9 +111,18 @@ class AttendanceController extends Controller
 
     public function statistics(): JsonResponse
     {
+        $filters = $this->listFiltersFromRequest();
+
+        if (auth()->user()->hasRole('Teacher')) {
+            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            if ($teacher) {
+                $filters['class_section_id'] = $teacher->classSections->pluck('id')->all();
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'data' => $this->service->getStatistics($this->listFiltersFromRequest()),
+            'data' => $this->service->getStatistics($filters),
         ]);
     }
 

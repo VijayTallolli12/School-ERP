@@ -28,21 +28,34 @@ class FeeApiController extends ApiBaseController
         ]);
 
         $user = $request->user();
-
-        if ($studentId = $request->integer('student_id')) {
-            if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Accountant')) {
-                $guardian = $user->guardian;
-
-                if (! $guardian || ! $guardian->students()->where('students.id', $studentId)->exists()) {
-                    return $this->forbidden('You are not authorized to view fees for this student.');
-                }
-            }
-        }
+        $studentId = $request->integer('student_id');
 
         $query = StudentFee::query()
             ->with(['student:id,first_name,last_name,admission_no,uuid', 'academicYear', 'items.feeCategory', 'items.paymentItems']);
 
-        if ($studentId = $request->integer('student_id')) {
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Accountant')) {
+            $guardian = $user->guardian;
+
+            if (! $guardian) {
+                return $this->forbidden('You are not authorized to view student fees.');
+            }
+
+            $ownStudentIds = $guardian->students()->pluck('students.id');
+
+            if ($studentId) {
+                if (! $ownStudentIds->contains($studentId)) {
+                    return $this->forbidden('You are not authorized to view fees for this student.');
+                }
+
+                $query->where('student_id', $studentId);
+            } else {
+                if ($ownStudentIds->isEmpty()) {
+                    return $this->forbidden('You are not authorized to view student fees.');
+                }
+
+                $query->whereIn('student_id', $ownStudentIds);
+            }
+        } elseif ($studentId) {
             $query->where('student_id', $studentId);
         }
 
@@ -93,6 +106,12 @@ class FeeApiController extends ApiBaseController
             'per_page' => 'sometimes|integer|min:5|max:100',
         ]);
 
+        $user = $request->user();
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Accountant')) {
+            return $this->forbidden('You are not authorized to view pending fees.');
+        }
+
         $query = StudentFee::query()
             ->with(['student:id,first_name,last_name,admission_no,uuid', 'items.feeCategory', 'items.paymentItems', 'academicYear']);
 
@@ -135,7 +154,32 @@ class FeeApiController extends ApiBaseController
                 'items.studentFeeItem.feeCategory',
             ]);
 
-        if ($studentId = $request->integer('student_id')) {
+        $user = $request->user();
+        $studentId = $request->integer('student_id');
+
+        if (! $user->isSuperAdmin() && ! $user->hasRole('School Admin') && ! $user->hasRole('Accountant')) {
+            $guardian = $user->guardian;
+
+            if (! $guardian) {
+                return $this->forbidden('You are not authorized to view payments.');
+            }
+
+            $ownStudentIds = $guardian->students()->pluck('students.id');
+
+            if ($studentId) {
+                if (! $ownStudentIds->contains($studentId)) {
+                    return $this->forbidden('You are not authorized to view payments for this student.');
+                }
+
+                $query->where('student_id', $studentId);
+            } else {
+                if ($ownStudentIds->isEmpty()) {
+                    return $this->forbidden('You are not authorized to view payments.');
+                }
+
+                $query->whereIn('student_id', $ownStudentIds);
+            }
+        } elseif ($studentId) {
             $query->where('student_id', $studentId);
         }
 

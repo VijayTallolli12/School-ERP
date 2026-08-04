@@ -45,6 +45,7 @@ class LeaveRequestController extends Controller
     {
         return view('modules.leave.requests.my_leaves', [
             'leaveTypes' => LeaveType::query()->active()->orderBy('name')->get(),
+            'students' => Student::query()->orderBy('first_name')->get(['id', 'first_name', 'middle_name', 'last_name']),
             'statuses' => LeaveRequest::statuses(),
         ]);
     }

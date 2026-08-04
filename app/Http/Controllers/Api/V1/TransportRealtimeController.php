@@ -28,6 +28,27 @@ class TransportRealtimeController extends ApiBaseController
             'source' => ['nullable', 'string', 'max:30'],
         ]);
 
+        $vehicle = Vehicle::query()->find($validated['vehicle_id']);
+
+        if (! $vehicle) {
+            return $this->notFound('Vehicle not found.');
+        }
+
+        $user = $request->user();
+
+        if ($user->hasRole('Driver')) {
+            $driver = \App\Modules\Transport\Models\Driver::query()->where('user_id', $user->id)->first();
+
+            if (! $driver || ! $driver->vehicles()->where('vehicles.id', $vehicle->id)->exists()) {
+                return $this->forbidden('You are not authorized to update this vehicle location.');
+            }
+        } elseif (! $user->hasAnyRole([
+            'Super Admin', 'School Admin', 'Principal', 'Teacher',
+            'Accountant', 'HR', 'Librarian', 'Receptionist', 'Staff',
+        ])) {
+            return $this->forbidden('You are not authorized to update this vehicle location.');
+        }
+
         $location = VehicleLocation::query()->create([
             'vehicle_id' => $validated['vehicle_id'],
             'latitude' => $validated['latitude'],
@@ -70,14 +91,27 @@ class TransportRealtimeController extends ApiBaseController
             ->with('driver')
             ->get();
 
+        $vehicleIds = $vehicles->pluck('id');
+
+        $latestLocations = VehicleLocation::query()
+            ->from('vehicle_locations as v')
+            ->joinSub(
+                VehicleLocation::query()
+                    ->select('vehicle_id', \Illuminate\Support\Facades\DB::raw('MAX(captured_at) as max_captured_at'))
+                    ->whereIn('vehicle_id', $vehicleIds)
+                    ->groupBy('vehicle_id'),
+                'latest',
+                fn ($join) => $join->on('v.vehicle_id', '=', 'latest.vehicle_id')->on('v.captured_at', '=', 'latest.max_captured_at')
+            )
+            ->select('v.vehicle_id', 'v.latitude', 'v.longitude', 'v.speed', 'v.heading', 'v.captured_at')
+            ->get()
+            ->keyBy('vehicle_id');
+
         $activeVehicles = [];
         $inactiveVehicles = [];
 
         foreach ($vehicles as $vehicle) {
-            $latestLocation = VehicleLocation::query()
-                ->where('vehicle_id', $vehicle->id)
-                ->latest('captured_at')
-                ->first();
+            $latestLocation = $latestLocations->get($vehicle->id);
 
             $isActive = $latestLocation && $latestLocation->captured_at->diffInMinutes(now()) <= 15;
 

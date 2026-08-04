@@ -19,6 +19,8 @@ Route::middleware(['auth', 'school'])
         require __DIR__.'/modules/rbac.php';
         require __DIR__.'/modules/academics.php';
         require __DIR__.'/modules/students.php';
+        require __DIR__.'/modules/admissions.php';
+        require __DIR__.'/modules/lifecycle.php';
         require __DIR__.'/modules/parents.php';
         require __DIR__.'/modules/timetable.php';
         require __DIR__.'/modules/attendance.php';

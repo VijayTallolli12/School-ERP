@@ -99,6 +99,11 @@ class Student extends Model
         return $this->sessions()->where('status', 'active')->latest();
     }
 
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Lifecycle\Models\StudentTransfer::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim(collect([$this->first_name, $this->middle_name, $this->last_name])->filter()->implode(' '));

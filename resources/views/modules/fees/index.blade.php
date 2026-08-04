@@ -623,9 +623,6 @@
                     opts.error = function(xhr, error, thrown) {
                         console.error('[Fee DT] ' + selector + ' error:', error, thrown, xhr.responseJSON);
                     };
-                    opts.initComplete = function(settings, json) {
-                        console.log('[Fee DT] ' + selector + ' init:', this.api().data().length, 'rows, total:', json?.recordsTotal);
-                    };
                     return $(selector).DataTable(opts);
                 } catch (e) {
                     console.error('[Fee DT] ' + selector + ' failed to initialize:', e);
@@ -684,7 +681,6 @@
                     ]
                 })
             };
-            console.log('[Fee DT] Tables initialized:', Object.keys(tables).filter(k => tables[k] !== null).join(', '));
             initTabPersistence('#feesTabs');
 
             $('.fees-category-form').on('erp:success', () => {

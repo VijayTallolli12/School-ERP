@@ -49,6 +49,7 @@ class DashboardApiController extends ApiBaseController
 
         $data['login_today'] = LoginActivity::query()
             ->withoutGlobalScopes()
+            ->when($schoolId, fn ($query) => $query->where('school_id', $schoolId))
             ->whereDate('created_at', today())
             ->count();
 
@@ -66,9 +67,10 @@ class DashboardApiController extends ApiBaseController
             ];
         }
 
-        // Teacher attendance today
+        // Teacher attendance today (scoped to school via teacher's school_id)
         $data['teacher_attendance_today'] = TeacherAttendance::query()
             ->whereDate('attendance_date', today())
+            ->when($schoolId, fn ($query) => $query->whereHas('teacher', fn ($t) => $t->where('school_id', $schoolId)))
             ->count();
 
         return $this->success($data, 'Dashboard stats retrieved.');
@@ -82,6 +84,14 @@ class DashboardApiController extends ApiBaseController
 
         $activities = Activity::query()
             ->with('causer:id,name')
+            ->when($schoolId, function ($q) use ($schoolId): void {
+                $userIds = User::query()
+                    ->whereHas('schools', fn ($sq) => $sq->whereKey($schoolId))
+                    ->pluck('id');
+                $q->where(function ($sub) use ($userIds): void {
+                    $sub->whereIn('causer_id', $userIds)->orWhereNull('causer_id');
+                });
+            })
             ->latest()
             ->limit($request->integer('limit', 10))
             ->get()
