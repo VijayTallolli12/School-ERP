@@ -25,7 +25,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Rule;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
 use Yajra\DataTables\Facades\DataTables;

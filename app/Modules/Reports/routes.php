@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 // Reports Module Routes
-Route::middleware(['auth', 'verified', 'school', 'permission:reports.view'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'school', 'permission:reports.view'])->group(function () {
     Route::prefix('reports')->name('reports.')->group(function () {
         // Student Reports
         Route::get('students', [\App\Modules\Reports\Controllers\StudentReportController::class, 'index'])->name('students.index');

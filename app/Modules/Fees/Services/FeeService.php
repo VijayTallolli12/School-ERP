@@ -533,9 +533,6 @@ class FeeService
             ])
             ->withSum(['paymentItems as paid_sum' => fn ($sq) => $sq->whereHas('feePayment', fn ($p) => $p->completed())], 'amount');
 
-        // Filter items with balance at the SQL level using HAVING
-        $q->havingRaw('COALESCE(paid_sum, 0) < student_fee_items.amount');
-
         if ($overdueOnly) {
             $q->whereDate('due_date', '<', now());
         }

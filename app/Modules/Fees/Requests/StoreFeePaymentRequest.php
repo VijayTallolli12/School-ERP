@@ -29,12 +29,7 @@ class StoreFeePaymentRequest extends FormRequest
             'lines.*.student_fee_item_id' => [
                 'required',
                 'integer',
-                Rule::exists('student_fee_items', 'id')->where(function ($q) use ($studentId, $academicYearId): void {
-                    $q->whereHas('studentFee', fn ($sq) => $sq
-                        ->where('student_id', $studentId)
-                        ->where('academic_year_id', $academicYearId)
-                        ->where('status', 'active'));
-                }),
+                Rule::exists('student_fee_items', 'id'),
             ],
             'lines.*.amount' => ['required', 'numeric', 'min:0.01', 'max:99999999.99'],
         ];
