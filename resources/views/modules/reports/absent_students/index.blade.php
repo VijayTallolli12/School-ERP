@@ -75,13 +75,13 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <a id="exportExcel" href="{{ route('reports.attendance.absent_students.export.excel', request()->query()) }}" class="btn btn-success me-2">
+                    <a id="exportExcel" href="{{ route('reports.attendance.absent_students.export.excel', request()->query()) }}" class="btn btn-sm btn-outline-success me-2">
                         <i class="ti ti-file-type-xls me-1"></i> Export Excel
                     </a>
-                    <a id="exportPdf" href="{{ route('reports.attendance.absent_students.export.pdf', request()->query()) }}" class="btn btn-danger me-2">
+                    <a id="exportPdf" href="{{ route('reports.attendance.absent_students.export.pdf', request()->query()) }}" class="btn btn-sm btn-outline-danger me-2">
                         <i class="ti ti-file-type-pdf me-1"></i> Export PDF
                     </a>
-                    <a id="exportPrint" href="{{ route('reports.attendance.absent_students.print', request()->query()) }}" class="btn btn-warning" target="_blank">
+                    <a id="exportPrint" href="{{ route('reports.attendance.absent_students.print', request()->query()) }}" class="btn btn-sm btn-outline-secondary" target="_blank">
                         <i class="ti ti-printer me-1"></i> Print
                     </a>
                 </div>
@@ -90,67 +90,11 @@
     </div>
 
     {{-- Summary Cards --}}
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Total Records</p>
-                            <h4 class="fw-semibold mb-0">{{ $summary['total'] }}</h4>
-                        </div>
-                        <div class="fs-32 text-info">
-                            <i class="ti ti-clipboard"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Present</p>
-                            <h4 class="fw-semibold mb-0">{{ $summary['present'] }}</h4>
-                        </div>
-                        <div class="fs-32 text-success">
-                            <i class="ti ti-check"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Absent</p>
-                            <h4 class="fw-semibold mb-0">{{ $summary['absent'] }}</h4>
-                        </div>
-                        <div class="fs-32 text-danger">
-                            <i class="ti ti-close"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Attendance %</p>
-                            <h4 class="fw-semibold mb-0">{{ $summary['percentage'] }}%</h4>
-                        </div>
-                        <div class="fs-32 text-primary">
-                            <i class="ti ti-percentage"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="row g-3 mb-4">
+        <x-erp.stat-card label="Total Records" :value="$summary['total']" icon="clipboard" color="info" />
+        <x-erp.stat-card label="Present" :value="$summary['present']" icon="check" color="success" />
+        <x-erp.stat-card label="Absent" :value="$summary['absent']" icon="close" color="danger" />
+        <x-erp.stat-card label="Attendance %" :value="$summary['percentage'] . '%'" icon="percentage" color="primary" />
     </div>
 
     {{-- Charts Row --}}

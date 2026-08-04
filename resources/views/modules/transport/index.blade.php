@@ -10,61 +10,11 @@
 
 @section('content')
     <div class="row g-3 mb-4" id="transportStats">
-        <div class="col-6 col-md">
-            <div class="card card-sm border-start border-info border-4 mb-0">
-                <div class="card-body d-flex align-items-center gap-3 py-3">
-                    <div class="fs-2 text-info"><i class="ti ti-route-2"></i></div>
-                    <div>
-                        <div class="fs-3 fw-bold lh-1">{{ $stats['routes'] }}</div>
-                        <div class="text-secondary small text-nowrap">Routes</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md">
-            <div class="card card-sm border-start border-primary border-4 mb-0">
-                <div class="card-body d-flex align-items-center gap-3 py-3">
-                    <div class="fs-2 text-primary"><i class="ti ti-bus"></i></div>
-                    <div>
-                        <div class="fs-3 fw-bold lh-1">{{ $stats['vehicles'] }}</div>
-                        <div class="text-secondary small text-nowrap">Vehicles</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md">
-            <div class="card card-sm border-start border-warning border-4 mb-0">
-                <div class="card-body d-flex align-items-center gap-3 py-3">
-                    <div class="fs-2 text-warning"><i class="ti ti-user"></i></div>
-                    <div>
-                        <div class="fs-3 fw-bold lh-1">{{ $stats['drivers'] }}</div>
-                        <div class="text-secondary small text-nowrap">Drivers</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md">
-            <div class="card card-sm border-start border-success border-4 mb-0">
-                <div class="card-body d-flex align-items-center gap-3 py-3">
-                    <div class="fs-2 text-success"><i class="ti ti-users"></i></div>
-                    <div>
-                        <div class="fs-3 fw-bold lh-1">{{ $stats['assigned_students'] }}</div>
-                        <div class="text-secondary small text-nowrap">Assigned Students</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md">
-            <div class="card card-sm border-start border-secondary border-4 mb-0">
-                <div class="card-body d-flex align-items-center gap-3 py-3">
-                    <div class="fs-2 text-secondary"><i class="ti ti-chart-bar"></i></div>
-                    <div>
-                        <div class="fs-3 fw-bold lh-1">{{ $stats['avg_occupancy'] ?? 'N/A' }}%</div>
-                        <div class="text-secondary small text-nowrap">Avg Occupancy</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-erp.stat-card label="Routes" :value="$stats['routes']" icon="route-2" color="info" />
+        <x-erp.stat-card label="Vehicles" :value="$stats['vehicles']" icon="bus" color="primary" />
+        <x-erp.stat-card label="Drivers" :value="$stats['drivers']" icon="user" color="warning" />
+        <x-erp.stat-card label="Assigned Students" :value="$stats['assigned_students']" icon="users" color="success" />
+        <x-erp.stat-card label="Avg Occupancy" :value="($stats['avg_occupancy'] ?? 'N/A') . '%'" icon="chart-bar" color="secondary" />
     </div>
 
     <div class="card">

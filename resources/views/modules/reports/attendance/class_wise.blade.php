@@ -46,13 +46,13 @@
             @if (!empty($report['class_summary']))
                 <div class="row mt-3">
                     <div class="col-12">
-                        <a href="{{ route('reports.attendance.class_wise.export.excel', request()->query()) }}" class="btn btn-success me-2">
+                        <a href="{{ route('reports.attendance.class_wise.export.excel', request()->query()) }}" class="btn btn-sm btn-outline-success me-2">
                             <i class="ti ti-file-type-xls me-1"></i> Export Excel
                         </a>
-                        <a href="{{ route('reports.attendance.class_wise.export.pdf', request()->query()) }}" class="btn btn-danger me-2">
+                        <a href="{{ route('reports.attendance.class_wise.export.pdf', request()->query()) }}" class="btn btn-sm btn-outline-danger me-2">
                             <i class="ti ti-file-type-pdf me-1"></i> Export PDF
                         </a>
-                        <a href="{{ route('reports.attendance.class_wise.print', request()->query()) }}" class="btn btn-warning" target="_blank">
+                        <a href="{{ route('reports.attendance.class_wise.print', request()->query()) }}" class="btn btn-sm btn-outline-secondary" target="_blank">
                             <i class="ti ti-printer me-1"></i> Print
                         </a>
                     </div>
@@ -142,48 +142,48 @@
             <div class="card bg-body">
                 <div class="card-body">
                     <h5 class="fw-semibold card-title mb-3"><i class="ti ti-chart-bar text-primary me-2"></i>Overall Summary</h5>
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-3">
-                            <div class="d-flex align-items-center">
-                                <div class="fs-32 text-success me-3">
-                                    <i class="ti ti-check"></i>
-                                </div>
-                                <div>
-                                    <p class="text-muted mb-1">Total Present</p>
-                                    <h5 class="mb-0">{{ $totalPresent }}</h5>
+                            <div class="stat-inline-row">
+                                <div class="stat-inline-item">
+                                    <span class="stat-inline-dot" style="background:#16a34a;"></span>
+                                    <div>
+                                        <div class="stat-inline-value">{{ $totalPresent }}</div>
+                                        <div class="stat-inline-label">Total Present</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="d-flex align-items-center">
-                                <div class="fs-32 text-danger me-3">
-                                    <i class="ti ti-close"></i>
-                                </div>
-                                <div>
-                                    <p class="text-muted mb-1">Total Absent</p>
-                                    <h5 class="mb-0">{{ $totalAbsent }}</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-flex align-items-center">
-                                <div class="fs-32 text-warning me-3">
-                                    <i class="ti ti-time"></i>
-                                </div>
-                                <div>
-                                    <p class="text-muted mb-1">Total Late</p>
-                                    <h5 class="mb-0">{{ $totalLate }}</h5>
+                            <div class="stat-inline-row">
+                                <div class="stat-inline-item">
+                                    <span class="stat-inline-dot" style="background:#dc2626;"></span>
+                                    <div>
+                                        <div class="stat-inline-value">{{ $totalAbsent }}</div>
+                                        <div class="stat-inline-label">Total Absent</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="d-flex align-items-center">
-                                <div class="fs-32 text-info me-3">
-                                    <i class="ti ti-clipboard"></i>
+                            <div class="stat-inline-row">
+                                <div class="stat-inline-item">
+                                    <span class="stat-inline-dot" style="background:#d97706;"></span>
+                                    <div>
+                                        <div class="stat-inline-value">{{ $totalLate }}</div>
+                                        <div class="stat-inline-label">Total Late</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-muted mb-1">Total Leave</p>
-                                    <h5 class="mb-0">{{ $totalLeave }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-inline-row">
+                                <div class="stat-inline-item">
+                                    <span class="stat-inline-dot" style="background:#0ea5e9;"></span>
+                                    <div>
+                                        <div class="stat-inline-value">{{ $totalLeave }}</div>
+                                        <div class="stat-inline-label">Total Leave</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

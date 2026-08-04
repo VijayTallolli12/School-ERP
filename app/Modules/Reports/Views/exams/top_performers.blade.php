@@ -84,13 +84,13 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <a id="exportExcel" href="{{ route('reports.exams.top_performers.export.excel') }}" class="btn btn-success me-2">
+                    <a id="exportExcel" href="{{ route('reports.exams.top_performers.export.excel') }}" class="btn btn-sm btn-outline-success me-2">
                         <i class="ti ti-file-type-xls me-1"></i> Export Excel
                     </a>
-                    <a id="exportPdf" href="{{ route('reports.exams.top_performers.export.pdf') }}" class="btn btn-danger me-2">
+                    <a id="exportPdf" href="{{ route('reports.exams.top_performers.export.pdf') }}" class="btn btn-sm btn-outline-danger me-2">
                         <i class="ti ti-file-type-pdf me-1"></i> Export PDF
                     </a>
-                    <a id="exportPrint" href="{{ route('reports.exams.top_performers.print') }}" class="btn btn-warning" target="_blank">
+                    <a id="exportPrint" href="{{ route('reports.exams.top_performers.print') }}" class="btn btn-sm btn-outline-secondary" target="_blank">
                         <i class="ti ti-printer me-1"></i> Print
                     </a>
                 </div>
@@ -101,63 +101,39 @@
     {{-- Summary Cards --}}
     <div class="row g-3 mb-4" id="summaryCards">
         <div class="col-md-3">
-            <div class="card border-start border-warning border-4 h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted fs-13 mb-1 text-uppercase fw-medium">Highest %</p>
-                            <h3 class="fw-bold mb-0 text-warning" id="highestPercentage">--</h3>
-                        </div>
-                        <div class="fs-32 text-warning opacity-50">
-                            <i class="ti ti-trophy"></i>
-                        </div>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value text-warning" id="highestPercentage">--</div>
+                    <div class="hero-label">Highest %</div>
                 </div>
+                <div class="hero-icon warning"><i class="ti ti-trophy"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-success border-4 h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted fs-13 mb-1 text-uppercase fw-medium">Top Student</p>
-                            <h5 class="fw-bold mb-0 text-success" id="topStudent">--</h5>
-                        </div>
-                        <div class="fs-32 text-success opacity-50">
-                            <i class="ti ti-crown"></i>
-                        </div>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-label mb-1">Top Student</div>
+                    <div class="hero-value text-success" style="font-size:1.25rem;" id="topStudent">--</div>
                 </div>
+                <div class="hero-icon success"><i class="ti ti-crown"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-info border-4 h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted fs-13 mb-1 text-uppercase fw-medium">Class Average</p>
-                            <h3 class="fw-bold mb-0 text-info" id="classAverage">--</h3>
-                        </div>
-                        <div class="fs-32 text-info opacity-50">
-                            <i class="ti ti-chart-histogram"></i>
-                        </div>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value text-info" id="classAverage">--</div>
+                    <div class="hero-label">Class Average</div>
                 </div>
+                <div class="hero-icon info"><i class="ti ti-chart-histogram"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-primary border-4 h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted fs-13 mb-1 text-uppercase fw-medium">Students Evaluated</p>
-                            <h3 class="fw-bold mb-0 text-primary" id="studentsEvaluated">--</h3>
-                        </div>
-                        <div class="fs-32 text-primary opacity-50">
-                            <i class="ti ti-users"></i>
-                        </div>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="studentsEvaluated">--</div>
+                    <div class="hero-label">Students Evaluated</div>
                 </div>
+                <div class="hero-icon primary"><i class="ti ti-users"></i></div>
             </div>
         </div>
     </div>

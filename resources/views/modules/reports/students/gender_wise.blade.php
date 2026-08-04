@@ -5,7 +5,6 @@
 
 @push('styles')
 <style>
-    .stat-card-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
 </style>
 @endpush
 
@@ -52,9 +51,9 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <a id="exportExcel" href="{{ route('reports.students.gender_wise.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
-                    <a id="exportPdf" href="{{ route('reports.students.gender_wise.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
-                    <a id="exportPrint" href="{{ route('reports.students.gender_wise.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-warning" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+                    <a id="exportExcel" href="{{ route('reports.students.gender_wise.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-sm btn-outline-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
+                    <a id="exportPdf" href="{{ route('reports.students.gender_wise.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-sm btn-outline-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
+                    <a id="exportPrint" href="{{ route('reports.students.gender_wise.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
                 </div>
             </div>
         </div>
@@ -63,47 +62,39 @@
     {{-- Summary Cards --}}
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card border-start border-primary border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-primary bg-opacity-10"><i class="ti ti-users text-primary fs-24"></i></div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Total Students</p>
-                        <h3 class="fw-bold mb-0" id="totalStudents">{{ $totals['total'] }}</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="totalStudents">{{ $totals['total'] }}</div>
+                    <div class="hero-label">Total Students</div>
                 </div>
+                <div class="hero-icon primary"><i class="ti ti-users"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-info border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-info bg-opacity-10"><i class="ti ti-man text-info fs-24"></i></div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Male</p>
-                        <h3 class="fw-bold text-info mb-0" id="maleStudents">{{ $totals['male'] }}</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="maleStudents">{{ $totals['male'] }}</div>
+                    <div class="hero-label">Male</div>
                 </div>
+                <div class="hero-icon info"><i class="ti ti-man"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-warning border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-warning bg-opacity-10"><i class="ti ti-woman text-warning fs-24"></i></div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Female</p>
-                        <h3 class="fw-bold text-warning mb-0" id="femaleStudents">{{ $totals['female'] }}</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="femaleStudents">{{ $totals['female'] }}</div>
+                    <div class="hero-label">Female</div>
                 </div>
+                <div class="hero-icon warning"><i class="ti ti-woman"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-secondary border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-secondary bg-opacity-10"><i class="ti ti-gender-third text-secondary fs-24"></i></div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Other</p>
-                        <h3 class="fw-bold text-secondary mb-0" id="otherStudents">{{ $totals['other'] }}</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="otherStudents">{{ $totals['other'] }}</div>
+                    <div class="hero-label">Other</div>
                 </div>
+                <div class="hero-icon secondary"><i class="ti ti-gender-third"></i></div>
             </div>
         </div>
     </div>

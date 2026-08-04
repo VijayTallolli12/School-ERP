@@ -407,6 +407,14 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     flex-shrink: 0;
 }
 
+.erp-hero-card .hero-icon.primary   { background: rgba(37,99,235,.1);   color: #2563eb; }
+.erp-hero-card .hero-icon.success   { background: rgba(22,163,74,.1);   color: #16a34a; }
+.erp-hero-card .hero-icon.warning   { background: rgba(217,119,6,.1);   color: #d97706; }
+.erp-hero-card .hero-icon.danger    { background: rgba(220,38,38,.1);   color: #dc2626; }
+.erp-hero-card .hero-icon.info      { background: rgba(14,165,233,.1);  color: #0ea5e9; }
+.erp-hero-card .hero-icon.secondary { background: rgba(100,116,139,.1); color: #64748b; }
+.erp-hero-card .hero-icon.dark      { background: rgba(15,23,42,.1);    color: #0f172a; }
+
 .erp-hero-card .hero-trend {
     font-size: 0.78rem;
     font-weight: 600;
@@ -1879,6 +1887,24 @@ select.form-select.select2-hidden-accessible {
 .erp-empty-state .empty-action .btn {
     min-height: 2.375rem;
     padding: 0.4rem 1.25rem;
+}
+
+/* --- DATATABLES EMPTY STATE (consistent with .erp-empty-state) --- */
+div.dataTables_wrapper table.dataTable td.dataTables_empty {
+    text-align: center;
+    padding: 3rem 1rem !important;
+    color: var(--erp-text-muted);
+    font-size: 0.875rem;
+    border: 0;
+}
+
+/* --- EXPORT BUTTON TOOLBAR (consistent across report pages) --- */
+.export-toolbar,
+.d-flex.gap-2.mb-3 .btn,
+.export-btn,
+.export-pdf,
+.export-excel {
+    min-height: 2rem;
 }
 
 /* --- WELCOME SECTION --- */

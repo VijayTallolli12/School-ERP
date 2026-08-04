@@ -15,7 +15,7 @@
                         <i class="ti ti-trending-up"></i> Lifetime
                     </div>
                 </div>
-                <div class="hero-icon" style="background:rgba(22,163,74,.1);color:#16a34a;">
+                <div class="hero-icon success">
                     <i class="ti ti-wallet"></i>
                 </div>
             </div>
@@ -29,7 +29,7 @@
                         <i class="ti ti-trending-down"></i> Outstanding
                     </div>
                 </div>
-                <div class="hero-icon" style="background:rgba(245,158,11,.12);color:#d97706;">
+                <div class="hero-icon warning">
                     <i class="ti ti-hourglass"></i>
                 </div>
             </div>
@@ -43,7 +43,7 @@
                         <i class="ti ti-calendar-event"></i> {{ now()->format('M Y') }}
                     </div>
                 </div>
-                <div class="hero-icon" style="background:rgba(37,99,235,.1);color:#2563eb;">
+                <div class="hero-icon primary">
                     <i class="ti ti-calendar-stats"></i>
                 </div>
             </div>

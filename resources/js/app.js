@@ -36,6 +36,8 @@ window.lazyDT = function () {
             await import('datatables.net-responsive-bs5');
             $.extend(true, DataTable.defaults, {
                 responsive: true,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
                 language: {
                     emptyTable: 'No records available.',
                     zeroRecords: 'No matching records found.',

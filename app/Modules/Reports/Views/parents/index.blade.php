@@ -5,66 +5,10 @@
 
 @section("content")
 <div class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(37,99,235,.1);color:#2563eb;">
-                        <i class="ti ti-users fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Total Parents</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['total_parents'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(22,163,74,.1);color:#16a34a;">
-                        <i class="ti ti-user-check fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Active Parents</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['active_parents'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(14,165,233,.1);color:#0ea5e9;">
-                        <i class="ti ti-link fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Mapped Parents</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['mapped_parents'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(217,119,6,.1);color:#d97706;">
-                        <i class="ti ti-school fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Linked Students</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['linked_students'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-erp.stat-card label="Total Parents" :value="$stats['total_parents'] ?? 0" icon="users" color="primary" />
+    <x-erp.stat-card label="Active Parents" :value="$stats['active_parents'] ?? 0" icon="user-check" color="success" />
+    <x-erp.stat-card label="Mapped Parents" :value="$stats['mapped_parents'] ?? 0" icon="link" color="info" />
+    <x-erp.stat-card label="Linked Students" :value="$stats['linked_students'] ?? 0" icon="school" color="warning" />
 </div>
 
 <div class="row g-3 mb-4">

@@ -19,7 +19,7 @@
                         <i class="ti ti-arrow-up"></i> {{ $todaySummary['present_percent'] ?? 0 }}% of total
                     </div>
                 </div>
-                <div class="hero-icon" style="background:rgba(22,163,74,.1);color:#16a34a;">
+                <div class="hero-icon success">
                     <i class="ti ti-circle-check"></i>
                 </div>
             </div>
@@ -33,7 +33,7 @@
                         <i class="ti ti-arrow-down"></i> {{ $todaySummary['absent_percent'] ?? 0 }}% of total
                     </div>
                 </div>
-                <div class="hero-icon" style="background:rgba(220,38,38,.1);color:#dc2626;">
+                <div class="hero-icon danger">
                     <i class="ti ti-circle-x"></i>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                         <i class="ti ti-clock"></i> {{ $todaySummary['late_percent'] ?? 0 }}% of total
                     </div>
                 </div>
-                <div class="hero-icon" style="background:rgba(245,158,11,.12);color:#d97706;">
+                <div class="hero-icon warning">
                     <i class="ti ti-clock"></i>
                 </div>
             </div>
@@ -61,7 +61,7 @@
                         <i class="ti ti-clipboard-list"></i> {{ $todaySummary['leave_percent'] ?? 0 }}% of total
                     </div>
                 </div>
-                <div class="hero-icon" style="background:rgba(14,165,233,.1);color:#0ea5e9;">
+                <div class="hero-icon info">
                     <i class="ti ti-clipboard-list"></i>
                 </div>
             </div>

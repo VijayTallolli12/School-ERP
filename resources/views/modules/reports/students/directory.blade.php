@@ -5,7 +5,6 @@
 
 @push('styles')
 <style>
-    .stat-card-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
     .student-photo-sm { width: 40px; height: 40px; object-fit: cover; border-radius: 50%; }
     .student-initials { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 600; font-size: 14px; }
 </style>
@@ -88,55 +87,39 @@
     {{-- Summary Cards --}}
     <div class="row g-3 mb-4" id="summaryCards">
         <div class="col-md-3">
-            <div class="card border-start border-primary border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-primary bg-opacity-10">
-                        <i class="ti ti-users text-primary fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Total Students</p>
-                        <h3 class="fw-bold mb-0" id="totalStudents">0</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="totalStudents">0</div>
+                    <div class="hero-label">Total Students</div>
                 </div>
+                <div class="hero-icon primary"><i class="ti ti-users"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-success border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-success bg-opacity-10">
-                        <i class="ti ti-user-check text-success fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Active Students</p>
-                        <h3 class="fw-bold text-success mb-0" id="activeStudents">0</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="activeStudents">0</div>
+                    <div class="hero-label">Active Students</div>
                 </div>
+                <div class="hero-icon success"><i class="ti ti-user-check"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-danger border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-danger bg-opacity-10">
-                        <i class="ti ti-user-x text-danger fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Inactive Students</p>
-                        <h3 class="fw-bold text-danger mb-0" id="inactiveStudents">0</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="inactiveStudents">0</div>
+                    <div class="hero-label">Inactive Students</div>
                 </div>
+                <div class="hero-icon danger"><i class="ti ti-user-x"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-info border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-info bg-opacity-10">
-                        <i class="ti ti-user-plus text-info fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">New Admissions</p>
-                        <h3 class="fw-bold text-info mb-0" id="newAdmissions">0</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="newAdmissions">0</div>
+                    <div class="hero-label">New Admissions</div>
                 </div>
+                <div class="hero-icon info"><i class="ti ti-user-plus"></i></div>
             </div>
         </div>
     </div>

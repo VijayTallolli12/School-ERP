@@ -5,66 +5,10 @@
 
 @section("content")
 <div class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(37,99,235,.1);color:#2563eb;">
-                        <i class="ti ti-file-text fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Total Exams</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['total_exams'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(22,163,74,.1);color:#16a34a;">
-                        <i class="ti ti-checkbox fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Published Results</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['published_results'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(217,119,6,.1);color:#d97706;">
-                        <i class="ti ti-percentage fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Pass Percentage</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['pass_percentage'] ?? 0 }}%</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(139,92,246,.1);color:#8b5cf6;">
-                        <i class="ti ti-crown fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Toppers</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['toppers_count'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-erp.stat-card label="Total Exams" :value="$stats['total_exams'] ?? 0" icon="file-text" color="primary" />
+    <x-erp.stat-card label="Published Results" :value="$stats['published_results'] ?? 0" icon="checkbox" color="success" />
+    <x-erp.stat-card label="Pass Percentage" :value="($stats['pass_percentage'] ?? 0) . '%'" icon="percentage" color="warning" />
+    <x-erp.stat-card label="Toppers" :value="$stats['toppers_count'] ?? 0" icon="crown" color="secondary" />
 </div>
 
 <div class="row g-3 mb-4">

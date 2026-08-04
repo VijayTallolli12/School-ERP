@@ -35,9 +35,9 @@
                 </div>
             </form>
             <div class="mt-3">
-                <a id="exportExcel" href="#" class="btn btn-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
-                <a id="exportPdf" href="#" class="btn btn-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
-                <a id="exportPrint" href="#" class="btn btn-warning" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+                <a id="exportExcel" href="#" class="btn btn-sm btn-outline-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
+                <a id="exportPdf" href="#" class="btn btn-sm btn-outline-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
+                <a id="exportPrint" href="#" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
             </div>
         </div>
     </div>

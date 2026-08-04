@@ -5,66 +5,10 @@
 
 @section("content")
 <div class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(37,99,235,.1);color:#2563eb;">
-                        <i class="ti ti-users fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Total Teachers</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['total_teachers'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(22,163,74,.1);color:#16a34a;">
-                        <i class="ti ti-user-check fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Active Teachers</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['active_teachers'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(14,165,233,.1);color:#0ea5e9;">
-                        <i class="ti ti-chalkboard fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Class Teachers</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['class_teachers'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(217,119,6,.1);color:#d97706;">
-                        <i class="ti ti-book fs-4"></i>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="text-muted fs-6 fw-medium mb-0">Subject Allocations</p>
-                        <h3 class="fw-bold mb-0">{{ $stats['subject_allocations'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-erp.stat-card label="Total Teachers" :value="$stats['total_teachers'] ?? 0" icon="users" color="primary" />
+    <x-erp.stat-card label="Active Teachers" :value="$stats['active_teachers'] ?? 0" icon="user-check" color="success" />
+    <x-erp.stat-card label="Class Teachers" :value="$stats['class_teachers'] ?? 0" icon="chalkboard" color="info" />
+    <x-erp.stat-card label="Subject Allocations" :value="$stats['subject_allocations'] ?? 0" icon="book" color="warning" />
 </div>
 
 <div class="row g-3 mb-4">

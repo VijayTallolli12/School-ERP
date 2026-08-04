@@ -77,9 +77,9 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Report Results</h5>
             <div>
-                <a href="#" class="btn btn-sm btn-danger export-btn" data-type="pdf"><i class="ti ti-file-type-pdf me-1"></i> PDF</a>
-                <a href="#" class="btn btn-sm btn-success export-btn" data-type="excel"><i class="ti ti-file-spreadsheet me-1"></i> Excel</a>
-                <a href="#" class="btn btn-sm btn-info export-btn" data-type="print" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+                <a href="#" class="btn btn-sm btn-outline-danger export-btn" data-type="pdf"><i class="ti ti-file-type-pdf me-1"></i> PDF</a>
+                <a href="#" class="btn btn-sm btn-outline-success export-btn" data-type="excel"><i class="ti ti-file-spreadsheet me-1"></i> Excel</a>
+                <a href="#" class="btn btn-sm btn-outline-secondary export-btn" data-type="print" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
             </div>
         </div>
         <div class="card-body">

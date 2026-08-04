@@ -17,11 +17,9 @@
                         <i class="ti ti-books text-primary me-1"></i> Homework List
                     </h3>
                     @can('homework.create')
-                        <div class="d-flex align-items-center gap-3">
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#homeworkModal" id="createHomework">
-                                <i class="ti ti-plus me-1"></i> Add Homework
-                            </button>
-                        </div>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#homeworkModal" id="createHomework">
+                            <i class="ti ti-plus me-1"></i> Add Homework
+                        </button>
                     @endcan
                 </div>
                 <div class="card-body">

@@ -10,10 +10,38 @@
 @endsection
 
 @section('content')
-    <div class="mb-3">
+    <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
         <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
             <i class="ti ti-arrow-left me-1"></i> Back
         </a>
+
+        {{-- Student Lifecycle Quick Actions --}}
+        @if($student->status === 'active')
+            <div class="ms-auto d-flex flex-wrap gap-2">
+                @can('student_lifecycle.promote')
+                    <a href="{{ route('admin.lifecycle.promotions') }}" class="btn btn-outline-primary btn-sm" title="Bulk promotion">
+                        <i class="ti ti-arrow-up-circle me-1"></i> Promote
+                    </a>
+                @endcan
+                @can('student_lifecycle.transfer')
+                    <a href="{{ route('admin.lifecycle.index').'#transferPane' }}" class="btn btn-outline-primary btn-sm" title="Transfer this student">
+                        <i class="ti ti-logout me-1"></i> Transfer
+                    </a>
+                @endcan
+                @can('student_lifecycle.tc')
+                    <a href="{{ route('admin.lifecycle.index').'#tcPane' }}" class="btn btn-outline-secondary btn-sm" title="Issue transfer certificate">
+                        <i class="ti ti-file-certificate me-1"></i> Issue TC
+                    </a>
+                @endcan
+                @can('student_lifecycle.alumni')
+                    <button type="button" class="btn btn-outline-dark btn-sm lifecycle-quick-alumni"
+                            data-url="{{ route('admin.students.alumni', $student) }}"
+                            data-name="{{ $student->full_name }}">
+                        <i class="ti ti-graduation-cap me-1"></i> Mark Alumni
+                    </button>
+                @endcan
+            </div>
+        @endif
     </div>
 
     <div class="row">
@@ -192,3 +220,35 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            $(document).on('click', '.lifecycle-quick-alumni', function () {
+                const btn = $(this).prop('disabled', true);
+                const name = $(this).data('name');
+                const url = $(this).data('url');
+
+                if (!confirm('Mark ' + name + ' as alumni? This cannot be easily undone.')) {
+                    btn.prop('disabled', false);
+                    return;
+                }
+
+                $.ajax({
+                    url,
+                    method: 'POST',
+                    data: {_token: '{{ csrf_token() }}'},
+                    success: (res) => {
+                        App.toast('success', res.message || 'Done.');
+                        setTimeout(() => window.location.reload(), 800);
+                    },
+                    error: (xhr) => {
+                        const res = xhr.responseJSON || {};
+                        App.toast('error', res.message || 'Something went wrong.');
+                    },
+                    complete: () => btn.prop('disabled', false)
+                });
+            });
+        });
+    </script>
+@endpush

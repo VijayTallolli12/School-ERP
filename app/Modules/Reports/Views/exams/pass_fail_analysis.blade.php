@@ -5,7 +5,6 @@
 
 @push('styles')
 <style>
-    .stat-card-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
     .subject-high { border-left: 4px solid #198754; }
     .subject-low { border-left: 4px solid #dc3545; }
 </style>
@@ -79,13 +78,13 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <a id="exportExcel" href="#" class="btn btn-success me-2">
+                    <a id="exportExcel" href="#" class="btn btn-sm btn-outline-success me-2">
                         <i class="ti ti-file-type-xls me-1"></i> Export Excel
                     </a>
-                    <a id="exportPdf" href="#" class="btn btn-danger me-2">
+                    <a id="exportPdf" href="#" class="btn btn-sm btn-outline-danger me-2">
                         <i class="ti ti-file-type-pdf me-1"></i> Export PDF
                     </a>
-                    <a id="exportPrint" href="#" class="btn btn-warning" target="_blank">
+                    <a id="exportPrint" href="#" class="btn btn-sm btn-outline-secondary" target="_blank">
                         <i class="ti ti-printer me-1"></i> Print
                     </a>
                 </div>
@@ -96,55 +95,39 @@
     {{-- Summary Cards --}}
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card border-start border-primary border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-primary bg-opacity-10">
-                        <i class="ti ti-users text-primary fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Students Appeared</p>
-                        <h3 class="fw-bold mb-0" id="totalAppeared">{{ $analysis['overall']['total_appeared'] }}</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="totalAppeared">{{ $analysis['overall']['total_appeared'] }}</div>
+                    <div class="hero-label">Students Appeared</div>
                 </div>
+                <div class="hero-icon primary"><i class="ti ti-users"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-success border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-success bg-opacity-10">
-                        <i class="ti ti-circle-check text-success fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Passed</p>
-                        <h3 class="fw-bold text-success mb-0" id="totalPassed">{{ $analysis['overall']['total_passed'] }} <small class="fs-13 fw-normal text-muted">({{ $analysis['overall']['pass_percentage'] }}%)</small></h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="totalPassed">{{ $analysis['overall']['total_passed'] }} <small class="fs-13 fw-normal text-muted">({{ $analysis['overall']['pass_percentage'] }}%)</small></div>
+                    <div class="hero-label">Passed</div>
                 </div>
+                <div class="hero-icon success"><i class="ti ti-circle-check"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-danger border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-danger bg-opacity-10">
-                        <i class="ti ti-circle-x text-danger fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Failed</p>
-                        <h3 class="fw-bold text-danger mb-0" id="totalFailed">{{ $analysis['overall']['total_failed'] }} <small class="fs-13 fw-normal text-muted">({{ $analysis['overall']['fail_percentage'] }}%)</small></h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="totalFailed">{{ $analysis['overall']['total_failed'] }} <small class="fs-13 fw-normal text-muted">({{ $analysis['overall']['fail_percentage'] }}%)</small></div>
+                    <div class="hero-label">Failed</div>
                 </div>
+                <div class="hero-icon danger"><i class="ti ti-circle-x"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-info border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-info bg-opacity-10">
-                        <i class="ti ti-chart-bar text-info fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Avg Class Pass %</p>
-                        <h3 class="fw-bold text-info mb-0" id="avgClassPct">{{ $analysis['avgPctOverall'] }}%</h3>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="avgClassPct">{{ $analysis['avgPctOverall'] }}%</div>
+                    <div class="hero-label">Avg Class Pass %</div>
                 </div>
+                <div class="hero-icon info"><i class="ti ti-chart-bar"></i></div>
             </div>
         </div>
     </div>

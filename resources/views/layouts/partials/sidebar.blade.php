@@ -222,6 +222,15 @@
                     </li>
                 @endcan
 
+                @can('student_lifecycle.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.lifecycle.index') }}" class="nav-link @if(request()->routeIs('admin.lifecycle.*')) active @endif">
+                            <i class="nav-icon ti ti-arrows-left-right"></i>
+                            <p>Student Lifecycle</p>
+                        </a>
+                    </li>
+                @endcan
+
                 @can('teachers.view')
                     <li class="nav-item">
                         <a href="{{ route('admin.teachers.index') }}" class="nav-link @if(request()->routeIs('admin.teachers.*')) active @endif">
@@ -723,6 +732,15 @@
                         <a href="{{ route('admin.academics.index') }}" class="nav-link @if(request()->routeIs('admin.academics.*')) active @endif">
                             <i class="nav-icon ti ti-book-2"></i>
                             <p>Academic</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('student_lifecycle.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.lifecycle.index') }}" class="nav-link @if(request()->routeIs('admin.lifecycle.*')) active @endif">
+                            <i class="nav-icon ti ti-arrows-left-right"></i>
+                            <p>Student Lifecycle</p>
                         </a>
                     </li>
                 @endcan

@@ -23,6 +23,9 @@ class StudentLifecycleController extends Controller
     {
         return view('modules.lifecycle.index', [
             'types' => StudentTransfer::types(),
+            'students' => $this->promotableStudents(),
+            'academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(),
+            'classSections' => $this->classSections(),
         ]);
     }
 
@@ -66,7 +69,16 @@ class StudentLifecycleController extends Controller
 
     public function promoteIndex(Request $request)
     {
-        $students = Student::query()
+        return view('modules.lifecycle.promote', [
+            'students' => $this->promotableStudents(),
+            'academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(),
+            'classSections' => $this->classSections(),
+        ]);
+    }
+
+    private function promotableStudents()
+    {
+        return Student::query()
             ->where('status', 'active')
             ->whereHas('sessions', fn ($q) => $q->where('status', 'active'))
             ->with(['sessions.classSection.schoolClass', 'sessions.classSection.section'])
@@ -79,12 +91,6 @@ class StudentLifecycleController extends Controller
                 'class' => $this->currentClassLabel($student),
                 'roll_no' => $student->sessions->firstWhere('status', 'active')?->roll_no,
             ]);
-
-        return view('modules.lifecycle.promote', [
-            'students' => $students,
-            'academicYears' => AcademicYear::query()->orderByDesc('starts_on')->get(),
-            'classSections' => $this->classSections(),
-        ]);
     }
 
     public function promote(PromoteStudentsRequest $request): JsonResponse

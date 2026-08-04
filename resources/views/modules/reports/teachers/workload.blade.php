@@ -63,9 +63,9 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <a id="exportExcel" href="{{ route('reports.teachers.workload.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
-                    <a id="exportPdf" href="{{ route('reports.teachers.workload.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
-                    <a id="exportPrint" href="{{ route('reports.teachers.workload.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-warning" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+                    <a id="exportExcel" href="{{ route('reports.teachers.workload.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-sm btn-outline-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
+                    <a id="exportPdf" href="{{ route('reports.teachers.workload.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-sm btn-outline-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
+                    <a id="exportPrint" href="{{ route('reports.teachers.workload.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
                 </div>
             </div>
         </div>

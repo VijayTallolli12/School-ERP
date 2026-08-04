@@ -37,8 +37,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Class-wise Summary</h5>
             <div>
-                <a href="#" class="btn btn-sm btn-danger export-pdf"><i class="ti ti-file-type-pdf me-1"></i> PDF</a>
-                <a href="#" class="btn btn-sm btn-success export-excel"><i class="ti ti-file-spreadsheet me-1"></i> Excel</a>
+                <a href="#" class="btn btn-sm btn-outline-danger export-pdf"><i class="ti ti-file-type-pdf me-1"></i> PDF</a>
+                <a href="#" class="btn btn-sm btn-outline-success export-excel"><i class="ti ti-file-spreadsheet me-1"></i> Excel</a>
                 <a href="#" class="btn btn-sm btn-info export-print" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
             </div>
         </div>

@@ -58,13 +58,13 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <a id="exportExcel" href="{{ route('reports.attendance.daily.export.excel') }}" class="btn btn-success me-2">
+                    <a id="exportExcel" href="{{ route('reports.attendance.daily.export.excel') }}" class="btn btn-sm btn-outline-success me-2">
                         <i class="ti ti-file-type-xls me-1"></i> Export Excel
                     </a>
-                    <a id="exportPdf" href="{{ route('reports.attendance.daily.export.pdf') }}" class="btn btn-danger me-2">
+                    <a id="exportPdf" href="{{ route('reports.attendance.daily.export.pdf') }}" class="btn btn-sm btn-outline-danger me-2">
                         <i class="ti ti-file-type-pdf me-1"></i> Export PDF
                     </a>
-                    <a id="exportPrint" href="{{ route('reports.attendance.daily.print') }}" class="btn btn-warning" target="_blank">
+                    <a id="exportPrint" href="{{ route('reports.attendance.daily.print') }}" class="btn btn-sm btn-outline-secondary" target="_blank">
                         <i class="ti ti-printer me-1"></i> Print
                     </a>
                 </div>
@@ -73,65 +73,41 @@
     </div>
 
     {{-- Summary Cards --}}
-    <div class="row mb-4">
+    <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Present</p>
-                            <h4 class="fw-semibold mb-0">{{ $summary['summary']['present'] ?? 0 }}</h4>
-                        </div>
-                        <div class="fs-32 text-success">
-                            <i class="ti ti-check"></i>
-                        </div>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ $summary['summary']['present'] ?? 0 }}</div>
+                    <div class="hero-label">Present</div>
                 </div>
+                <div class="hero-icon success"><i class="ti ti-check"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Absent</p>
-                            <h4 class="fw-semibold mb-0">{{ $summary['summary']['absent'] ?? 0 }}</h4>
-                        </div>
-                        <div class="fs-32 text-danger">
-                            <i class="ti ti-close"></i>
-                        </div>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ $summary['summary']['absent'] ?? 0 }}</div>
+                    <div class="hero-label">Absent</div>
                 </div>
+                <div class="hero-icon danger"><i class="ti ti-close"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Late</p>
-                            <h4 class="fw-semibold mb-0">{{ $summary['summary']['late'] ?? 0 }}</h4>
-                        </div>
-                        <div class="fs-32 text-warning">
-                            <i class="ti ti-time"></i>
-                        </div>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ $summary['summary']['late'] ?? 0 }}</div>
+                    <div class="hero-label">Late</div>
                 </div>
+                <div class="hero-icon warning"><i class="ti ti-time"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Leave</p>
-                            <h4 class="fw-semibold mb-0">{{ $summary['summary']['leave'] ?? 0 }}</h4>
-                        </div>
-                        <div class="fs-32 text-info">
-                            <i class="ti ti-clipboard"></i>
-                        </div>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value">{{ $summary['summary']['leave'] ?? 0 }}</div>
+                    <div class="hero-label">Leave</div>
                 </div>
+                <div class="hero-icon info"><i class="ti ti-clipboard"></i></div>
             </div>
         </div>
     </div>

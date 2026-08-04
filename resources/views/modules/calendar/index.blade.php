@@ -440,11 +440,17 @@
             font-size: 0.8rem;
         }
         .calendar-grid .calendar-today {
-            background-color: #eef2ff;
-            box-shadow: inset 0 0 0 2px #4f46e5;
+            background-color: var(--erp-primary-light, #eef2ff);
+            box-shadow: inset 0 0 0 2px var(--erp-primary, #2563eb);
         }
         .calendar-grid .calendar-day:hover {
-            background-color: #f8f9fa;
+            background-color: rgba(15, 23, 42, .04);
+        }
+        .calendar-grid .calendar-day {
+            transition: background-color var(--erp-transition, 0.2s ease);
+        }
+        [data-bs-theme="dark"] .calendar-grid .calendar-day:hover {
+            background-color: rgba(148, 163, 184, .12);
         }
         .bg-calendar-field-trip {
             background-color: #0d9488;

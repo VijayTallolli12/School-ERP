@@ -5,7 +5,6 @@
 
 @push('styles')
 <style>
-    .stat-card-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
     .overdue-30 { background-color: #fff3cd; color: #664d03; }
     .overdue-60 { background-color: #f8d7da; color: #842029; }
     .overdue-90 { background-color: #dc3545; color: #fff; }
@@ -85,13 +84,13 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <button type="button" id="exportExcel" class="btn btn-success me-2">
+                    <button type="button" id="exportExcel" class="btn btn-sm btn-outline-success me-2">
                         <i class="ti ti-file-type-xls me-1"></i> Export Excel
                     </button>
-                    <button type="button" id="exportPdf" class="btn btn-danger me-2">
+                    <button type="button" id="exportPdf" class="btn btn-sm btn-outline-danger me-2">
                         <i class="ti ti-file-type-pdf me-1"></i> Export PDF
                     </button>
-                    <button type="button" id="exportPrint" class="btn btn-warning">
+                    <button type="button" id="exportPrint" class="btn btn-sm btn-outline-secondary">
                         <i class="ti ti-printer me-1"></i> Print
                     </button>
                 </div>
@@ -103,55 +102,39 @@
     <h5 class="mb-3">Collection Summary</h5>
     <div class="row g-3 mb-4" id="collectionSummaryCards">
         <div class="col-md-3">
-            <div class="card border-start border-primary border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-primary bg-opacity-10">
-                        <i class="ti ti-currency-rupee text-primary fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Total Assigned</p>
-                        <h4 class="fw-bold mb-0" id="totalAssigned">--</h4>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="totalAssigned">--</div>
+                    <div class="hero-label">Total Assigned</div>
                 </div>
+                <div class="hero-icon primary"><i class="ti ti-currency-rupee"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-success border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-success bg-opacity-10">
-                        <i class="ti ti-circle-check text-success fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Total Collected</p>
-                        <h4 class="fw-bold text-success mb-0" id="totalCollected">--</h4>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="totalCollected">--</div>
+                    <div class="hero-label">Total Collected</div>
                 </div>
+                <div class="hero-icon success"><i class="ti ti-circle-check"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-danger border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-danger bg-opacity-10">
-                        <i class="ti ti-alert-triangle text-danger fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Total Outstanding</p>
-                        <h4 class="fw-bold text-danger mb-0" id="totalOutstanding">--</h4>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="totalOutstanding">--</div>
+                    <div class="hero-label">Total Outstanding</div>
                 </div>
+                <div class="hero-icon danger"><i class="ti ti-alert-triangle"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-info border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-info bg-opacity-10">
-                        <i class="ti ti-percentage text-info fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Collection %</p>
-                        <h4 class="fw-bold text-info mb-0" id="collectionPct">--</h4>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="collectionPct">--</div>
+                    <div class="hero-label">Collection %</div>
                 </div>
+                <div class="hero-icon info"><i class="ti ti-percentage"></i></div>
             </div>
         </div>
     </div>
@@ -160,55 +143,39 @@
     <h5 class="mb-3">Defaulter Summary</h5>
     <div class="row g-3 mb-4" id="defaulterSummaryCards">
         <div class="col-md-3">
-            <div class="card border-start border-warning border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-warning bg-opacity-10">
-                        <i class="ti ti-users text-warning fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Students with Dues</p>
-                        <h4 class="fw-bold mb-0" id="studentsWithDues">--</h4>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="studentsWithDues">--</div>
+                    <div class="hero-label">Students with Dues</div>
                 </div>
+                <div class="hero-icon warning"><i class="ti ti-users"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-danger border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-danger bg-opacity-10">
-                        <i class="ti ti-clock text-danger fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Overdue Students</p>
-                        <h4 class="fw-bold text-danger mb-0" id="overdueStudents">--</h4>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="overdueStudents">--</div>
+                    <div class="hero-label">Overdue Students</div>
                 </div>
+                <div class="hero-icon danger"><i class="ti ti-clock"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-primary border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-primary bg-opacity-10">
-                        <i class="ti ti-arrow-up text-primary fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Highest Outstanding</p>
-                        <h4 class="fw-bold text-primary mb-0" id="highestOutstanding">--</h4>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="highestOutstanding">--</div>
+                    <div class="hero-label">Highest Outstanding</div>
                 </div>
+                <div class="hero-icon primary"><i class="ti ti-arrow-up"></i></div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-start border-secondary border-4 h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-card-icon bg-secondary bg-opacity-10">
-                        <i class="ti ti-chart-bar text-secondary fs-24"></i>
-                    </div>
-                    <div>
-                        <p class="text-muted fs-13 mb-0">Avg Outstanding</p>
-                        <h4 class="fw-bold text-secondary mb-0" id="avgOutstanding">--</h4>
-                    </div>
+            <div class="erp-hero-card">
+                <div>
+                    <div class="hero-value" id="avgOutstanding">--</div>
+                    <div class="hero-label">Avg Outstanding</div>
                 </div>
+                <div class="hero-icon secondary"><i class="ti ti-chart-bar"></i></div>
             </div>
         </div>
     </div>

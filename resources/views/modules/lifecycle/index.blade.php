@@ -5,165 +5,190 @@
 
 @section('breadcrumbs')
     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-    <li class="breadcrumb-item active">Lifecycle</li>
+    <li class="breadcrumb-item active">Student Lifecycle</li>
 @endsection
 
 @section('content')
     <div class="card">
-        <div class="card-header d-flex flex-wrap align-items-center gap-2">
-            <h3 class="card-title mb-0"><i class="ti ti-arrows-left-right text-primary me-2"></i>Promotions, Transfers & TC</h3>
-            <div class="ms-auto d-flex flex-wrap gap-2">
-                <select id="filterType" class="form-select form-select-sm" style="width: 200px;">
-                    <option value="">All Types</option>
-                    @foreach ($types as $key => $label)
-                        <option value="{{ $key }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-                @can('student_lifecycle.promote')
-                    <a href="{{ route('admin.lifecycle.promotions') }}" class="btn btn-primary btn-sm">
-                        <i class="ti ti-arrow-up-circle me-1"></i> Bulk Promotion
-                    </a>
-                @endcan
-                @can('student_lifecycle.transfer')
-                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#transferModal">
-                        <i class="ti ti-logout me-1"></i> Transfer Student
-                    </button>
-                @endcan
-                @can('student_lifecycle.tc')
-                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#tcModal">
-                        <i class="ti ti-file-certificate me-1"></i> Issue TC
-                    </button>
-                @endcan
-                @can('student_lifecycle.alumni')
-                    <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#alumniModal">
-                        <i class="ti ti-graduation-cap me-1"></i> Mark Alumni
-                    </button>
-                @endcan
-            </div>
+        <div class="card-header p-0 border-bottom-0">
+            <ul class="nav nav-tabs" id="lifecycleTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#promotionPane" type="button"><i class="ti ti-arrow-up-circle me-1"></i>Promotion</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#transferPane" type="button"><i class="ti ti-logout me-1"></i>Transfer Student</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tcPane" type="button"><i class="ti ti-file-certificate me-1"></i>Transfer Certificate</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#alumniPane" type="button"><i class="ti ti-graduation-cap me-1"></i>Alumni</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#historyPane" type="button"><i class="ti ti-history me-1"></i>History</button>
+                </li>
+            </ul>
         </div>
         <div class="card-body">
-            <table class="table table-striped table-bordered w-100" id="lifecycleTable">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Student</th>
-                    <th>Admission No</th>
-                    <th>Type</th>
-                    <th>From Class</th>
-                    <th>To Class</th>
-                    <th>Transferred On</th>
-                    <th>TC No</th>
-                    <th width="80">Actions</th>
-                </tr>
-                </thead>
-            </table>
+            <div class="tab-content">
+                {{-- ============ PROMOTION TAB ============ --}}
+                <div class="tab-pane fade show active" id="promotionPane" role="tabpanel">
+                    <div class="d-flex mb-3">
+                        <h3 class="card-title mb-0 me-3"><i class="ti ti-arrow-up-circle text-primary me-2"></i>Bulk Promotion</h3>
+                        <div class="ms-auto">
+                            <a href="{{ route('admin.lifecycle.promotions') }}" class="btn btn-outline-primary btn-sm" title="Open full-page promotion view">
+                                <i class="ti ti-maximize me-1"></i> Full Page
+                            </a>
+                        </div>
+                    </div>
+                    @include('modules.lifecycle._promote')
+                </div>
+
+                {{-- ============ TRANSFER TAB ============ --}}
+                <div class="tab-pane fade" id="transferPane" role="tabpanel">
+                    <div class="d-flex mb-3">
+                        <h3 class="card-title mb-0"><i class="ti ti-logout text-primary me-2"></i>Transfer Student</h3>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-6 col-lg-8">
+                            <div class="card card-flat mb-0">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label required">Student</label>
+                                        <select class="form-select lifecycle-student-select" name="student_id" required></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Transferred On</label>
+                                        <input class="form-control" type="date" name="transferred_on" value="{{ now()->toDateString() }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Destination School</label>
+                                        <input class="form-control" name="destination_school" maxlength="255">
+                                    </div>
+                                    <div class="mb-0">
+                                        <label class="form-label">Reason</label>
+                                        <textarea class="form-control" name="reason" rows="3" maxlength="2000"></textarea>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex gap-2">
+                                    <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.transfer') }}">
+                                        <i class="ti ti-logout me-1"></i> Transfer Student
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ============ TC TAB ============ --}}
+                <div class="tab-pane fade" id="tcPane" role="tabpanel">
+                    <div class="d-flex mb-3">
+                        <h3 class="card-title mb-0"><i class="ti ti-file-certificate text-primary me-2"></i>Issue Transfer Certificate</h3>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-6 col-lg-8">
+                            <div class="card card-flat mb-0">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label required">Student</label>
+                                        <select class="form-select lifecycle-student-select" name="student_id" required></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">TC No</label>
+                                        <input class="form-control" name="tc_no" maxlength="50" placeholder="Leave blank to auto-generate">
+                                    </div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label">Leaving Date</label>
+                                            <input class="form-control" type="date" name="transferred_on" value="{{ now()->toDateString() }}">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">Issued On</label>
+                                            <input class="form-control" type="date" name="tc_issued_on" value="{{ now()->toDateString() }}">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Conduct</label>
+                                        <input class="form-control" name="conduct" maxlength="100" placeholder="e.g. Excellent, Good">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Destination School</label>
+                                        <input class="form-control" name="destination_school" maxlength="255">
+                                    </div>
+                                    <div class="mb-0">
+                                        <label class="form-label">Reason</label>
+                                        <textarea class="form-control" name="reason" rows="3" maxlength="2000"></textarea>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex gap-2">
+                                    <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.tc') }}">
+                                        <i class="ti ti-file-certificate me-1"></i> Issue TC
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ============ ALUMNI TAB ============ --}}
+                <div class="tab-pane fade" id="alumniPane" role="tabpanel">
+                    <div class="d-flex mb-3">
+                        <h3 class="card-title mb-0"><i class="ti ti-graduation-cap text-primary me-2"></i>Mark as Alumni</h3>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-6 col-lg-8">
+                            <div class="card card-flat mb-0">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label required">Student</label>
+                                        <select class="form-select lifecycle-student-select" name="student_id" required></select>
+                                    </div>
+                                    <p class="text-muted mb-0">The student's active session will be closed and their status will be set to <strong>Alumni</strong>.</p>
+                                </div>
+                                <div class="card-footer d-flex gap-2">
+                                    <button type="button" class="btn btn-dark lifecycle-alumni-submit">
+                                        <i class="ti ti-graduation-cap me-1"></i> Mark Alumni
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ============ HISTORY TAB ============ --}}
+                <div class="tab-pane fade" id="historyPane" role="tabpanel">
+                    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                        <h3 class="card-title mb-0 me-3"><i class="ti ti-history text-primary me-2"></i>Lifecycle History</h3>
+                        <div class="ms-auto d-flex flex-wrap gap-2">
+                            <select id="filterType" class="form-select form-select-sm" style="width: 200px;">
+                                <option value="">All Types</option>
+                                @foreach ($types as $key => $label)
+                                    <option value="{{ $key }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="lifecycleTable">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Student</th>
+                            <th>Admission No</th>
+                            <th>Type</th>
+                            <th>From Class</th>
+                            <th>To Class</th>
+                            <th>Transferred On</th>
+                            <th>TC No</th>
+                            <th width="80">Actions</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 @endsection
 
-@push('modals')
-    <div class="modal fade" id="transferModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Transfer Student</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label required">Student</label>
-                        <select class="form-select lifecycle-student-select" name="student_id" required></select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Transferred On</label>
-                        <input class="form-control" type="date" name="transferred_on" value="{{ now()->toDateString() }}">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Destination School</label>
-                        <input class="form-control" name="destination_school" maxlength="255">
-                    </div>
-                    <div class="mb-0">
-                        <label class="form-label">Reason</label>
-                        <textarea class="form-control" name="reason" rows="3" maxlength="2000"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.transfer') }}">Transfer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="tcModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Issue Transfer Certificate</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label required">Student</label>
-                        <select class="form-select lifecycle-student-select" name="student_id" required></select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">TC No</label>
-                        <input class="form-control" name="tc_no" maxlength="50" placeholder="Leave blank to auto-generate">
-                    </div>
-                    <div class="row g-3 mb-3">
-                        <div class="col-6">
-                            <label class="form-label">Leaving Date</label>
-                            <input class="form-control" type="date" name="transferred_on" value="{{ now()->toDateString() }}">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Issued On</label>
-                            <input class="form-control" type="date" name="tc_issued_on" value="{{ now()->toDateString() }}">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Conduct</label>
-                        <input class="form-control" name="conduct" maxlength="100" placeholder="e.g. Excellent, Good">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Destination School</label>
-                        <input class="form-control" name="destination_school" maxlength="255">
-                    </div>
-                    <div class="mb-0">
-                        <label class="form-label">Reason</label>
-                        <textarea class="form-control" name="reason" rows="3" maxlength="2000"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.tc') }}">Issue TC</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="alumniModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Mark as Alumni</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label required">Student</label>
-                        <select class="form-select lifecycle-student-select" name="student_id" required></select>
-                    </div>
-                    <p class="text-muted mb-0">The student's active session will be closed and their status will be set to <strong>Alumni</strong>.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-dark lifecycle-alumni-submit">Mark Alumni</button>
-                </div>
-            </div>
-        </div>
-    </div>
-@endpush
 
 @push('scripts')
     <script>
@@ -197,7 +222,7 @@
             $('.lifecycle-student-select').each(function () {
                 $(this).select2({
                     placeholder: 'Search student...',
-                    dropdownParent: $(this).closest('.modal'),
+                    dropdownParent: $(this).closest('.card-flat'),
                     minimumInputLength: 1,
                     ajax: {
                         url: '{{ route('admin.lifecycle.search-students') }}',
@@ -209,9 +234,9 @@
                 });
             });
 
-            const collectModalData = (modal) => {
+            const collectPanelData = (panel) => {
                 const data = {_token: '{{ csrf_token() }}'};
-                modal.find('input, select, textarea').each(function () {
+                panel.find('input, select, textarea').each(function () {
                     const name = $(this).attr('name');
                     if (name) data[name] = $(this).val();
                 });
@@ -220,25 +245,25 @@
 
             $('.lifecycle-submit').on('click', function () {
                 const btn = $(this).prop('disabled', true);
-                const modal = $(this).closest('.modal');
-                const data = collectModalData(modal);
+                const panel = $(this).closest('.card-flat');
+                const data = collectPanelData(panel);
 
                 $.ajax({
                     url: $(this).data('url'),
                     method: 'POST',
                     data,
                     success: (res) => {
-                        modal.modal('hide');
                         if (res.success) {
-                            alert(res.message);
-                            table.ajax.reload(null, false);
+                            App.toast('success', res.message);
+                            if ($('#lifecycleTable').length) table.ajax.reload(null, false);
+                            panel.find('select, input, textarea').not('[type="hidden"]').val('').trigger('change');
                         } else {
-                            alert(res.message || 'Action failed.');
+                            App.toast('error', res.message || 'Action failed.');
                         }
                     },
                     error: (xhr) => {
                         const res = xhr.responseJSON || {};
-                        alert(res.message || 'Something went wrong.');
+                        App.toast('error', res.message || 'Something went wrong.');
                     },
                     complete: () => btn.prop('disabled', false)
                 });
@@ -246,11 +271,11 @@
 
             $('.lifecycle-alumni-submit').on('click', function () {
                 const btn = $(this).prop('disabled', true);
-                const modal = $(this).closest('.modal');
-                const studentId = modal.find('select[name="student_id"]').val();
+                const panel = $(this).closest('.card-flat');
+                const studentId = panel.find('select[name="student_id"]').val();
 
                 if (!studentId) {
-                    alert('Please select a student.');
+                    App.toast('error', 'Please select a student.');
                     btn.prop('disabled', false);
                     return;
                 }
@@ -265,17 +290,19 @@
                     method: 'POST',
                     data: {_token: '{{ csrf_token() }}'},
                     success: (res) => {
-                        modal.modal('hide');
-                        alert(res.message || 'Done.');
-                        table.ajax.reload(null, false);
+                        App.toast('success', res.message || 'Done.');
+                        if ($('#lifecycleTable').length) table.ajax.reload(null, false);
+                        panel.find('select').val('').trigger('change');
                     },
                     error: (xhr) => {
                         const res = xhr.responseJSON || {};
-                        alert(res.message || 'Something went wrong.');
+                        App.toast('error', res.message || 'Something went wrong.');
                     },
                     complete: () => btn.prop('disabled', false)
                 });
             });
+
+            initTabPersistence('#lifecycleTabs');
         })(); });
     </script>
 @endpush

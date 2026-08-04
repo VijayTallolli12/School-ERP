@@ -23,33 +23,15 @@
     @if(count($dashboard->statCards) > 0)
         <div class="row g-3 mb-3">
             @foreach($dashboard->statCards as $card)
-                <div class="col-xl-3 col-md-6">
-                    @if($card->route)
-                        <a href="{{ $card->route }}" class="text-decoration-none">
-                    @endif
-                    <div class="erp-hero-card">
-                        <div>
-                            <div class="hero-value">{{ $card->formattedValue }}</div>
-                            <div class="hero-label">{{ $card->label }}</div>
-                            @if($card->trend)
-                                <div class="hero-trend trend-{{ $card->trend === 'up' ? 'up' : 'down' }}">
-                                    <i class="ti ti-arrow-{{ $card->trend === 'up' ? 'up' : 'down' }}"></i>
-                                    @if($card->trendValue)
-                                        {{ $card->trendValue }}
-                                    @endif
-                                </div>
-                            @endif
-                        </div>
-                        @if($card->icon)
-                            <div class="hero-icon" style="background:rgba(37,99,235,.1);color:#2563eb;">
-                                <i class="ti ti-{{ $card->icon }}"></i>
-                            </div>
-                        @endif
-                    </div>
-                    @if($card->route)
-                        </a>
-                    @endif
-                </div>
+                <x-erp.stat-card
+                    :label="$card->label"
+                    :value="$card->formattedValue"
+                    :icon="$card->icon"
+                    :color="$card->color"
+                    :trend="$card->trend"
+                    :trend-value="$card->trendValue"
+                    :route="$card->route"
+                />
             @endforeach
         </div>
     @endif

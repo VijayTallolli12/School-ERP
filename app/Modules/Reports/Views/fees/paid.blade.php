@@ -44,9 +44,9 @@
                 </div>
             </form>
             <div class="mt-3">
-                <button type="button" id="exportExcel" class="btn btn-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</button>
-                <button type="button" id="exportPdf" class="btn btn-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</button>
-                <button type="button" id="exportPrint" class="btn btn-warning"><i class="ti ti-printer me-1"></i> Print</button>
+                <button type="button" id="exportExcel" class="btn btn-sm btn-outline-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</button>
+                <button type="button" id="exportPdf" class="btn btn-sm btn-outline-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</button>
+                <button type="button" id="exportPrint" class="btn btn-sm btn-outline-secondary"><i class="ti ti-printer me-1"></i> Print</button>
             </div>
         </div>
     </div>

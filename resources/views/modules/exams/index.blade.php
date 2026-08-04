@@ -48,11 +48,11 @@
                         <i class="ti ti-clipboard-list text-primary me-1"></i> Exam Results
                     </h3>
                     @can('exams.update')
-                        <div class="d-flex align-items-center gap-3 exam-results-toolbar">
-                            <a class="btn btn-primary" id="bulkEntryButton" disabled>
+                        <div class="d-flex align-items-center gap-2 exam-results-toolbar">
+                            <a class="btn btn-sm btn-primary" id="bulkEntryButton" disabled>
                                 <i class="ti ti-table me-1"></i> Bulk Entry
                             </a>
-                            <button class="btn btn-outline-primary" id="addResultButton" disabled>
+                            <button class="btn btn-sm btn-outline-primary" id="addResultButton" disabled>
                                 <i class="ti ti-plus me-1"></i> Add Result
                             </button>
                         </div>
