@@ -425,8 +425,10 @@
             if ($('#calendar-tab').hasClass('active')) {
                 loadCalendarEvents(currentYear, currentMonth);
             }
-        })(); });
+        })();
+
         initTabPersistence('#calendarTabs');
+    });
     </script>
 @endpush
 

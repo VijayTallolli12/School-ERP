@@ -101,13 +101,24 @@ class ExamMarkController extends Controller
         ]);
     }
 
+    private ?\App\Modules\Teachers\Models\Teacher $currentTeacher = null;
+
+    private function getCurrentTeacher(): ?\App\Modules\Teachers\Models\Teacher
+    {
+        if ($this->currentTeacher === null) {
+            $this->currentTeacher = \App\Modules\Teachers\Models\Teacher::query()->where('user_id', auth()->id())->first();
+        }
+
+        return $this->currentTeacher;
+    }
+
     private function assertTeacherScheduleAccess(ExamSchedule $schedule): void
     {
         if (! auth()->user()->hasRole('Teacher')) {
             return;
         }
 
-        $teacher = \App\Modules\Teachers\Models\Teacher::query()->where('user_id', auth()->id())->first();
+        $teacher = $this->getCurrentTeacher();
 
         if (! $teacher || ! $teacher->classSections->pluck('id')->contains($schedule->exam->class_section_id)) {
             abort(403, 'You do not have access to this exam.');

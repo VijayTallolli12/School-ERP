@@ -39,7 +39,7 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            jquery: resolve(__dirname, 'resources/js/jquery-shim.js'),
+            jquery: resolve(__dirname, 'resources/js/jquery-shim.cjs'),
         },
     },
     build: {

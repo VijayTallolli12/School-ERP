@@ -11,6 +11,7 @@ use App\Modules\Dashboard\Services\DataCollectors\TeacherCollector;
 use App\Modules\Exams\Models\Exam;
 use App\Modules\Leave\Models\LeaveRequest;
 use App\Modules\Teachers\Models\TeacherAttendance;
+use Illuminate\Support\Facades\Cache;
 
 class PrincipalDashboardBuilder extends BaseDashboardBuilder
 {
@@ -48,13 +49,18 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
     {
         $widgets = [];
         $calendarCollector = app(CalendarCollector::class);
+        $attendanceCollector = app(AttendanceCollector::class);
+        $feeCollector = app(FeeCollector::class);
+
+        $attendanceRate = $attendanceCollector->todayAttendanceRate($this->schoolId);
+        $feeStats = $feeCollector->dashboardStats($this->schoolId);
 
         if ($this->can('attendance.view')) {
             $widgets[] = $this->widget(
                 'attendance_today',
                 "Today's Attendance",
                 'donut',
-                ['rate' => app(AttendanceCollector::class)->todayAttendanceRate($this->schoolId)],
+                ['rate' => $attendanceRate],
                 'calendar-check',
                 'info',
                 4, 2,
@@ -62,7 +68,6 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
         }
 
         if ($this->can('fees.view')) {
-            $feeStats = app(FeeCollector::class)->dashboardStats($this->schoolId);
             $widgets[] = $this->widget(
                 'fee_collection',
                 'Fee Collection',
@@ -83,7 +88,7 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
                 'pending_approvals',
                 'Pending Leave Approvals',
                 'list',
-                LeaveRequest::query()->with(['student', 'leaveType', 'user'])->where('status', 'pending')->limit(5)->get()->toArray(),
+                Cache::remember("dashboard.principal.pending_leaves.{$this->schoolId}", 60, fn () => LeaveRequest::query()->with(['student', 'leaveType', 'user'])->where('status', 'pending')->limit(5)->get()->toArray()),
                 'check-double',
                 'success',
                 4, 2,
@@ -106,15 +111,18 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
             );
         }
 
+        $examsCount = Cache::remember("dashboard.principal.exams.{$this->schoolId}", 300, fn () => Exam::query()->count());
+        $examsPublishedCount = Cache::remember("dashboard.principal.exams_published.{$this->schoolId}", 300, fn () => Exam::query()->where('is_published', 1)->count());
+
         $widgets[] = $this->widget(
             'school_stats',
             'School Overview',
             'stats_grid',
             [
                 'active_classes' => $calendarCollector->activeClassCount($this->schoolId),
-                'exams' => Exam::query()->count(),
+                'exams' => $examsCount,
                 'today_schedules' => $calendarCollector->todaySchedulesCount($this->schoolId),
-                'exams_published' => Exam::query()->where('is_published', 1)->count(),
+                'exams_published' => $examsPublishedCount,
             ],
             'school',
             'primary',

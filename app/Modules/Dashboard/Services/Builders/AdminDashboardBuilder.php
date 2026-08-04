@@ -10,6 +10,7 @@ use App\Modules\Dashboard\Services\DataCollectors\StudentCollector;
 use App\Modules\Dashboard\Services\DataCollectors\TeacherCollector;
 use App\Modules\Documents\Services\DocumentService;
 use App\Modules\Exams\Models\Exam;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Role;
 
 class AdminDashboardBuilder extends BaseDashboardBuilder
@@ -51,13 +52,18 @@ class AdminDashboardBuilder extends BaseDashboardBuilder
         $calendarCollector = app(CalendarCollector::class);
         $studentCollector = app(StudentCollector::class);
         $teacherCollector = app(TeacherCollector::class);
+        $attendanceCollector = app(AttendanceCollector::class);
+        $feeCollector = app(FeeCollector::class);
+
+        $attendanceRate = $attendanceCollector->todayAttendanceRate($this->schoolId);
+        $feeStats = $feeCollector->dashboardStats($this->schoolId);
 
         if ($this->can('attendance.view')) {
             $widgets[] = $this->widget(
                 'attendance_today',
                 "Today's Attendance",
                 'donut',
-                ['rate' => app(AttendanceCollector::class)->todayAttendanceRate($this->schoolId)],
+                ['rate' => $attendanceRate],
                 'calendar-check',
                 'info',
                 4, 2,
@@ -70,7 +76,7 @@ class AdminDashboardBuilder extends BaseDashboardBuilder
                 'fee_summary',
                 'Fee Summary',
                 'donut',
-                app(FeeCollector::class)->dashboardStats($this->schoolId),
+                $feeStats,
                 'money-bill-wave',
                 'warning',
                 4, 2,
@@ -115,10 +121,10 @@ class AdminDashboardBuilder extends BaseDashboardBuilder
             'stats_grid',
             [
                 'active_classes' => $calendarCollector->activeClassCount($this->schoolId),
-                'exams' => Exam::query()->count(),
+                'exams' => Cache::remember("dashboard.admin.exams.{$this->schoolId}", 300, fn () => Exam::query()->count()),
                 'today_schedules' => $calendarCollector->todaySchedulesCount($this->schoolId),
-                'logins_today' => LoginActivity::query()->withoutGlobalScopes()->whereDate('created_at', today())->count(),
-                'roles' => Role::query()->when($this->schoolId, fn ($q) => $q->where('school_id', $this->schoolId))->count(),
+                'logins_today' => Cache::remember("dashboard.admin.logins_today.{$this->schoolId}", 60, fn () => LoginActivity::query()->withoutGlobalScopes()->whereDate('created_at', today())->count()),
+                'roles' => Cache::remember("dashboard.admin.roles.{$this->schoolId}", 300, fn () => Role::query()->when($this->schoolId, fn ($q) => $q->where('school_id', $this->schoolId))->count()),
                 'new_students' => $studentCollector->newAdmissions($this->schoolId),
             ],
             'chart-bar',

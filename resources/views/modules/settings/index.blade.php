@@ -308,7 +308,8 @@ $(function () {
         };
         reader.readAsDataURL(file);
     });
+
+    initTabPersistence('#settingsTabs');
 });
-initTabPersistence('#settingsTabs');
 </script>
 @endpush

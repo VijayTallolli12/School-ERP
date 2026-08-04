@@ -18,7 +18,7 @@ class IssueBookRequest extends FormRequest
         $schoolId = app(SchoolContext::class)->id();
 
         return [
-            'book_id' => ['required', 'integer', 'exists:library_books,id'],
+            'book_id' => ['required', 'integer', Rule::exists('library_books')->where('school_id', $schoolId)],
             'issueable_type' => ['required', 'string', Rule::in(['student', 'teacher'])],
             'issueable_id' => ['required', 'integer'],
             'issue_date' => ['nullable', 'date'],

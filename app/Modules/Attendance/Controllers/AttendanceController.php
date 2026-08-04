@@ -316,9 +316,20 @@ class AttendanceController extends Controller
         ], fn ($v) => $v !== null && $v !== '');
     }
 
+    private ?\App\Modules\Teachers\Models\Teacher $currentTeacher = null;
+
+    private function getCurrentTeacher(): ?\App\Modules\Teachers\Models\Teacher
+    {
+        if ($this->currentTeacher === null) {
+            $this->currentTeacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+        }
+
+        return $this->currentTeacher;
+    }
+
     private function verifyTeacherClassAccess(int $classSectionId): void
     {
-        $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+        $teacher = $this->getCurrentTeacher();
         if (! $teacher || ! $teacher->classSections->pluck('id')->contains($classSectionId)) {
             abort(403, 'You do not have access to this class section.');
         }

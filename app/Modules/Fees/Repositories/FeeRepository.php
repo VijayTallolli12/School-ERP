@@ -25,31 +25,21 @@ class FeeRepository implements FeeRepositoryInterface
     public function studentFeesQuery(): Builder
     {
         return StudentFee::query()
-            ->with([
-                'student',
-                'academicYear',
-                'feeStructure.classSection.schoolClass',
-                'feeStructure.classSection.section',
-                'items.feeCategory',
-            ]);
+            ->with(['student', 'academicYear', 'feeStructure.classSection.schoolClass', 'feeStructure.classSection.section'])
+            ->withCount('items');
     }
 
     public function feePaymentsQuery(): Builder
     {
         return FeePayment::query()
-            ->with(['student', 'academicYear', 'collector', 'items.studentFeeItem.feeCategory']);
+            ->with(['student', 'academicYear', 'collector']);
     }
 
     public function studentFeeItemsDueBaseQuery(): Builder
     {
         return StudentFeeItem::query()
             ->whereHas('studentFee', fn ($q) => $q->where('status', 'active'))
-            ->with([
-                'feeCategory',
-                'studentFee.student.sessions.classSection.schoolClass',
-                'studentFee.student.sessions.classSection.section',
-                'studentFee.academicYear',
-            ])
+            ->with(['feeCategory', 'studentFee.student', 'studentFee.academicYear'])
             ->withSum(['paymentItems as paid_sum' => function ($q): void {
                 $q->whereHas('feePayment', fn ($p) => $p->completed());
             }], 'amount');

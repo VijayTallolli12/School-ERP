@@ -38,7 +38,7 @@ class ExamController extends Controller
         $examsQuery = Exam::query()->orderByDesc('exam_date');
 
         if (auth()->user()->hasRole('Teacher')) {
-            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            $teacher = $this->getCurrentTeacher();
             if ($teacher) {
                 $assignedIds = $teacher->classSections->pluck('id');
                 $classSectionsQuery->whereIn('id', $assignedIds);
@@ -62,7 +62,7 @@ class ExamController extends Controller
         $query = $this->exams->query();
 
         if (auth()->user()->hasRole('Teacher')) {
-            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            $teacher = $this->getCurrentTeacher();
             if ($teacher) {
                 $assignedIds = $teacher->classSections->pluck('id');
                 $query->whereIn('class_section_id', $assignedIds);
@@ -179,7 +179,7 @@ class ExamController extends Controller
         $this->authorize('update', $exam);
 
         if (auth()->user()->hasRole('Teacher')) {
-            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            $teacher = $this->getCurrentTeacher();
             if (! $teacher || ! $teacher->classSections->pluck('id')->contains($exam->class_section_id)) {
                 return response()->json(['success' => false, 'message' => 'You do not have access to this exam.'], 403);
             }
@@ -238,7 +238,7 @@ class ExamController extends Controller
     public function getStudentsByClassSection(ClassSection $classSection): JsonResponse
     {
         if (auth()->user()->hasRole('Teacher')) {
-            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            $teacher = $this->getCurrentTeacher();
             if (! $teacher || ! $teacher->classSections->pluck('id')->contains($classSection->id)) {
                 return response()->json(['success' => false, 'message' => 'You do not have access to this class section.'], 403);
             }
@@ -266,7 +266,7 @@ class ExamController extends Controller
     {
         $this->authorize('view', $exam);
         if (auth()->user()->hasRole('Teacher')) {
-            $teacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+            $teacher = $this->getCurrentTeacher();
             if (! $teacher || ! $teacher->classSections->pluck('id')->contains($exam->class_section_id)) {
                 abort(403, 'You do not have access to this exam.');
             }
@@ -315,5 +315,16 @@ class ExamController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => $message]);
+    }
+
+    private ?\App\Modules\Teachers\Models\Teacher $currentTeacher = null;
+
+    private function getCurrentTeacher(): ?\App\Modules\Teachers\Models\Teacher
+    {
+        if ($this->currentTeacher === null) {
+            $this->currentTeacher = \App\Modules\Teachers\Models\Teacher::where('user_id', auth()->id())->first();
+        }
+
+        return $this->currentTeacher;
     }
 }

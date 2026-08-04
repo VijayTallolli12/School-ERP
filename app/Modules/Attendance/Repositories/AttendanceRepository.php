@@ -21,13 +21,7 @@ class AttendanceRepository implements AttendanceRepositoryInterface
     public function query(): Builder
     {
         return Attendance::query()
-            ->with([
-                'student.sessions.classSection',
-                'classSection.schoolClass',
-                'classSection.section',
-                'academicYear',
-                'markedBy',
-            ]);
+            ->with(['student', 'classSection.schoolClass', 'classSection.section', 'academicYear', 'markedBy']);
     }
 
     public function filterQuery(Builder $query, array $filters): Builder

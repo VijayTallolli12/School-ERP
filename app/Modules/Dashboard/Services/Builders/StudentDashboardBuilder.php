@@ -27,16 +27,18 @@ class StudentDashboardBuilder extends BaseDashboardBuilder
             return [];
         }
 
+        $activeSessionIds = $student->sessions()->where('status', 'active')->pluck('class_section_id');
+
         $totalDays = Attendance::query()->where('student_id', $student->id)->count();
         $presentDays = Attendance::query()->where('student_id', $student->id)->whereIn('status', ['present', 'late', 'half_day'])->count();
         $attendancePct = $totalDays > 0 ? round(($presentDays / $totalDays) * 100, 1) : 0;
 
         $homeworkCount = Homework::query()
-            ->whereHas('classSection', fn ($q) => $q->whereIn('id', $student->sessions()->where('status', 'active')->pluck('class_section_id')))
+            ->whereIn('class_section_id', $activeSessionIds)
             ->count();
 
         $upcomingExams = Exam::query()
-            ->whereIn('class_section_id', $student->sessions()->where('status', 'active')->pluck('class_section_id'))
+            ->whereIn('class_section_id', $activeSessionIds)
             ->where('exam_date', '>=', now())
             ->count();
 
@@ -44,7 +46,7 @@ class StudentDashboardBuilder extends BaseDashboardBuilder
             $this->statCard('Attendance', $attendancePct.'%', 'calendar-check', 'info'),
             $this->statCard('Homework', $homeworkCount, 'books', 'primary'),
             $this->statCard('Upcoming Exams', $upcomingExams, 'chart-arrows-vertical', 'warning'),
-            $this->statCard('Active Sessions', $student->sessions()->where('status', 'active')->count(), 'school', 'success'),
+            $this->statCard('Active Sessions', count($activeSessionIds), 'school', 'success'),
         ];
     }
 

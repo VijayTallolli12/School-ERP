@@ -10,14 +10,7 @@ class StudentRepository implements StudentRepositoryInterface
     public function query(): Builder
     {
         return Student::query()
-            ->with([
-                'user',
-                'guardians',
-                'parents',
-                'sessions.academicYear',
-                'sessions.classSection.schoolClass',
-                'sessions.classSection.section',
-            ]);
+            ->with(['user']);
     }
 
     public function create(array $data): Student

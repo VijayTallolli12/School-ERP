@@ -115,6 +115,10 @@ class LibraryService
     public function returnBook(BookIssue $issue, array $data): BookIssue
     {
         return DB::transaction(function () use ($issue, $data): BookIssue {
+            if ($issue->status === 'returned') {
+                throw new \RuntimeException('This book has already been returned.');
+            }
+
             $returnDate = $data['return_date'] ?? now()->format('Y-m-d');
             $data['return_date'] = $returnDate;
             $data['status'] = 'returned';

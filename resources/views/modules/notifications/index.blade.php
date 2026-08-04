@@ -306,7 +306,9 @@
                     }
                 });
             });
-        })(); });
+        })();
+
         initTabPersistence('#notificationsTabs');
+    });
     </script>
 @endpush

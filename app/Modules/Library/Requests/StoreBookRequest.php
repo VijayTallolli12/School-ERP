@@ -20,9 +20,9 @@ class StoreBookRequest extends FormRequest
         return [
             'isbn' => ['nullable', 'string', 'max:40', Rule::unique('library_books')->where('school_id', $schoolId)],
             'title' => ['required', 'string', 'max:255'],
-            'category_id' => ['nullable', 'integer', 'exists:library_categories,id'],
-            'author_id' => ['nullable', 'integer', 'exists:library_authors,id'],
-            'publisher_id' => ['nullable', 'integer', 'exists:library_publishers,id'],
+            'category_id' => ['nullable', 'integer', Rule::exists('library_categories')->where('school_id', $schoolId)],
+            'author_id' => ['nullable', 'integer', Rule::exists('library_authors')->where('school_id', $schoolId)],
+            'publisher_id' => ['nullable', 'integer', Rule::exists('library_publishers')->where('school_id', $schoolId)],
             'edition' => ['nullable', 'string', 'max:60'],
             'language' => ['nullable', 'string', 'max:60'],
             'rack_number' => ['nullable', 'string', 'max:60'],

@@ -10,14 +10,7 @@ class TeacherRepository implements TeacherRepositoryInterface
     public function query(): Builder
     {
         return Teacher::query()
-            ->with([
-                'subjects',
-                'classSections.schoolClass',
-                'classSections.section',
-                'classTeacherSections.schoolClass',
-                'classTeacherSections.section',
-                'documents',
-            ]);
+            ->with(['subjects', 'classSections.schoolClass', 'classSections.section', 'classTeacherSections.schoolClass', 'classTeacherSections.section']);
     }
 
     public function create(array $data): Teacher

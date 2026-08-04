@@ -6,6 +6,7 @@ use App\Models\LoginActivity;
 use App\Modules\Dashboard\Services\DataCollectors\AttendanceCollector;
 use App\Modules\Dashboard\Services\DataCollectors\CalendarCollector;
 use App\Modules\Leave\Models\LeaveRequest;
+use Illuminate\Support\Facades\Cache;
 
 class StaffDashboardBuilder extends BaseDashboardBuilder
 {
@@ -36,7 +37,12 @@ class StaffDashboardBuilder extends BaseDashboardBuilder
     protected function buildWidgets(): array
     {
         $widgets = [];
-        $pendingCount = LeaveRequest::query()->where('status', 'pending')->count();
+        $calendarCollector = app(CalendarCollector::class);
+        $attendanceCollector = app(AttendanceCollector::class);
+
+        $attendanceRate = $attendanceCollector->todayAttendanceRate($this->schoolId);
+        $pendingCount = Cache::remember("dashboard.staff.pending_leaves.{$this->schoolId}", 60, fn () => LeaveRequest::query()->where('status', 'pending')->count());
+        $approvedToday = Cache::remember("dashboard.staff.approved_today.{$this->schoolId}", 60, fn () => LeaveRequest::query()->where('status', 'approved')->whereDate('created_at', today())->count());
 
         $widgets[] = $this->widget(
             'leave_requests',
@@ -44,7 +50,7 @@ class StaffDashboardBuilder extends BaseDashboardBuilder
             'summary',
             [
                 'pending' => $pendingCount,
-                'approved_today' => LeaveRequest::query()->where('status', 'approved')->whereDate('created_at', today())->count(),
+                'approved_today' => $approvedToday,
             ],
             'calendar-minus',
             'warning',
@@ -56,7 +62,7 @@ class StaffDashboardBuilder extends BaseDashboardBuilder
             'upcoming_events',
             'Upcoming Events',
             'list',
-            app(CalendarCollector::class)->upcomingEvents($this->schoolId, 4),
+            $calendarCollector->upcomingEvents($this->schoolId, 4),
             'calendar-alt',
             'info',
             4, 2,
@@ -68,7 +74,7 @@ class StaffDashboardBuilder extends BaseDashboardBuilder
             'attendance',
             "Today's Attendance",
             'donut',
-            ['rate' => app(AttendanceCollector::class)->todayAttendanceRate($this->schoolId)],
+            ['rate' => $attendanceRate],
             'calendar-check',
             'info',
             4, 1,
