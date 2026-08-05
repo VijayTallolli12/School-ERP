@@ -22,6 +22,8 @@ use App\Modules\Parents\Services\ParentService;
 use App\Modules\Students\Models\Student;
 use App\Modules\Students\Models\StudentDocument;
 use App\Modules\Timetable\Models\TimetableSlot;
+use App\Modules\Transport\Models\RouteStop;
+use App\Modules\Transport\Models\TransportAssignment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -793,5 +795,83 @@ class ParentApiController extends ApiBaseController
         }
 
         return $this->success(message: 'Password changed successfully.');
+    }
+
+    public function childTransport(string $uuid, string $childUuid): JsonResponse
+    {
+        $parent = $this->resolveParent($uuid);
+
+        if (! $parent) {
+            return $this->notFound('Parent not found.');
+        }
+
+        $student = $parent->students()->where('students.uuid', $childUuid)->first();
+
+        if (! $student) {
+            return $this->notFound('Child not found for this parent.');
+        }
+
+        $assignment = TransportAssignment::query()
+            ->where('student_id', $student->id)
+            ->where('status', 'active')
+            ->with(['route', 'vehicle', 'stop', 'vehicle.driver'])
+            ->first();
+
+        if (! $assignment) {
+            return $this->success([
+                'assigned' => false,
+                'message' => 'No transport assigned.',
+            ], 'No transport assigned.');
+        }
+
+        $route = $assignment->route;
+        $vehicle = $assignment->vehicle;
+        $driver = $vehicle?->driver;
+
+        $stops = $route?->stops ?? collect();
+
+        $studentStop = $stops->firstWhere('id', $assignment->route_stop_id);
+        $pickupStop = $studentStop ?? $stops->first();
+        $dropStop = $stops->last();
+
+        $formatTime = function (?string $time): ?string {
+            if ($time === null) {
+                return null;
+            }
+            try {
+                return \Carbon\Carbon::parse($time)->format('H:i');
+            } catch (\Exception $e) {
+                return null;
+            }
+        };
+
+        return $this->success([
+            'assigned' => true,
+            'transport' => [
+                'vehicle_number' => $vehicle?->vehicle_number ?? null,
+                'vehicle_name' => $vehicle?->vehicle_name ?? null,
+                'vehicle_type' => $vehicle?->vehicle_type ?? null,
+                'driver_name' => $driver?->name ?? null,
+                'driver_mobile' => $driver?->mobile ?? null,
+                'driver_license' => $driver?->license_number ?? null,
+                'route_name' => $route?->route_name ?? null,
+                'route_start' => $route?->start_point ?? null,
+                'route_end' => $route?->end_point ?? null,
+                'pickup_stop' => $pickupStop?->stop_name ?? $assignment->pickup_point ?? null,
+                'drop_stop' => $dropStop?->stop_name ?? null,
+                'pickup_time' => $formatTime($pickupStop?->pickup_time),
+                'drop_time' => $formatTime($dropStop?->drop_time),
+                'status' => $assignment->status,
+                'monthly_fee' => $assignment->monthly_fee,
+            ],
+            'stops' => $stops->map(fn (RouteStop $s) => [
+                'id' => $s->id,
+                'stop_name' => $s->stop_name,
+                'pickup_time' => $formatTime($s->pickup_time),
+                'drop_time' => $formatTime($s->drop_time),
+                'sequence' => $s->sequence,
+                'is_student_stop' => $s->id === $assignment->route_stop_id,
+            ]),
+        ], 'Transport details retrieved.');
     }
 }

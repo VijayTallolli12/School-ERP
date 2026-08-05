@@ -13,6 +13,11 @@ use App\Modules\Notifications\Models\Notification;
 use App\Modules\Parents\Models\Guardian;
 use App\Modules\Students\Models\Student;
 use App\Modules\Students\Models\StudentSession;
+use App\Modules\Transport\Models\Driver;
+use App\Modules\Transport\Models\Route;
+use App\Modules\Transport\Models\RouteStop;
+use App\Modules\Transport\Models\TransportAssignment;
+use App\Modules\Transport\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -325,5 +330,133 @@ class ParentWorkflowApiTest extends TestCase
             ->get(route('admin.parent-portal.notifications'))
             ->assertOk()
             ->assertSee('Parent Announcement');
+    }
+
+    // ─── Transport ───────────────────────────────────────────────────────
+
+    public function test_guardian_can_view_child_transport_with_assignment(): void
+    {
+        $token = $this->parentToken();
+
+        $route = Route::query()->create([
+            'school_id' => $this->school->id,
+            'route_name' => 'North Zone Route',
+            'start_point' => 'Sector 15',
+            'end_point' => 'School Main Gate',
+            'status' => 'active',
+        ]);
+
+        $stop1 = RouteStop::query()->create([
+            'school_id' => $this->school->id,
+            'route_id' => $route->id,
+            'stop_name' => 'Sector 15 Park',
+            'pickup_time' => '07:30',
+            'drop_time' => null,
+            'sequence' => 1,
+        ]);
+        $stop2 = RouteStop::query()->create([
+            'school_id' => $this->school->id,
+            'route_id' => $route->id,
+            'stop_name' => 'School Main Gate',
+            'pickup_time' => '07:50',
+            'drop_time' => '13:30',
+            'sequence' => 5,
+        ]);
+
+        $vehicle = Vehicle::query()->create([
+            'school_id' => $this->school->id,
+            'vehicle_number' => 'MH-12-AB-1234',
+            'vehicle_name' => 'School Bus 1',
+            'vehicle_type' => 'school_bus',
+            'capacity' => 40,
+            'status' => 'active',
+        ]);
+
+        $driver = Driver::query()->create([
+            'school_id' => $this->school->id,
+            'user_id' => null,
+            'name' => 'Rajesh Kumar',
+            'mobile' => '+91-9876543210',
+            'license_number' => 'DL-0420190012345',
+            'license_expiry_date' => '2028-12-31',
+            'status' => 'active',
+        ]);
+
+        $vehicle->driver()->associate($driver);
+        $vehicle->save();
+
+        TransportAssignment::query()->create([
+            'school_id' => $this->school->id,
+            'student_id' => $this->student->id,
+            'route_id' => $route->id,
+            'route_stop_id' => $stop1->id,
+            'vehicle_id' => $vehicle->id,
+            'pickup_point' => 'Sector 15 Park',
+            'monthly_fee' => 2500.00,
+            'status' => 'active',
+        ]);
+
+        $this->withToken($token)
+            ->getJson(route('api.v1.parents.child.transport', [
+                'uuid' => $this->guardian->uuid,
+                'childUuid' => $this->student->uuid,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.assigned', true)
+            ->assertJsonPath('data.transport.vehicle_number', 'MH-12-AB-1234')
+            ->assertJsonPath('data.transport.driver_name', 'Rajesh Kumar')
+            ->assertJsonPath('data.transport.route_name', 'North Zone Route')
+            ->assertJsonPath('data.transport.pickup_stop', 'Sector 15 Park')
+            ->assertJsonPath('data.transport.drop_stop', 'School Main Gate')
+            ->assertJsonPath('data.transport.pickup_time', '07:30')
+            ->assertJsonPath('data.transport.drop_time', '13:30')
+            ->assertJsonCount(2, 'data.stops');
+    }
+
+    public function test_guardian_gets_not_assigned_when_no_transport(): void
+    {
+        $token = $this->parentToken();
+
+        $this->withToken($token)
+            ->getJson(route('api.v1.parents.child.transport', [
+                'uuid' => $this->guardian->uuid,
+                'childUuid' => $this->student->uuid,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.assigned', false)
+            ->assertJsonPath('data.message', 'No transport assigned.');
+    }
+
+    public function test_guardian_blocked_from_other_parent_child_transport(): void
+    {
+        $token = $this->parentToken();
+
+        $this->withToken($token)
+            ->getJson(route('api.v1.parents.child.transport', [
+                'uuid' => $this->otherGuardian->uuid,
+                'childUuid' => $this->otherStudent->uuid,
+            ]))
+            ->assertNotFound();
+    }
+
+    public function test_guardian_blocked_from_other_parent_child_transport_wrong_child(): void
+    {
+        $token = $this->parentToken();
+
+        $this->withToken($token)
+            ->getJson(route('api.v1.parents.child.transport', [
+                'uuid' => $this->guardian->uuid,
+                'childUuid' => $this->otherStudent->uuid,
+            ]))
+            ->assertNotFound();
+    }
+
+    public function test_transport_endpoint_requires_token(): void
+    {
+        $this->getJson(route('api.v1.parents.child.transport', [
+            'uuid' => $this->guardian->uuid,
+            'childUuid' => $this->student->uuid,
+        ]))
+            ->assertStatus(401);
     }
 }

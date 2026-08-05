@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
     // ───────────────────────────────────────────────────────────────────
+    // Branding (public — no auth required)
+    // ───────────────────────────────────────────────────────────────────
+    require __DIR__.'/api/branding.php';
+
+    // ───────────────────────────────────────────────────────────────────
     // Authentication (public + throttled)
     // ───────────────────────────────────────────────────────────────────
     Route::post('auth/login', [ApiAuthController::class, 'login'])

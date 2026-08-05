@@ -92,6 +92,40 @@ class SettingsService
         return $this->settings->update($school, $attributes, $settings);
     }
 
+    public function updateBranding(School $school, array $data): School
+    {
+        $currentSettings = $school->settings ?? [];
+
+        $brand = [
+            'primary_color' => $data['brand']['primary_color'] ?? Arr::get($currentSettings, 'brand.primary_color', '#2563eb'),
+            'secondary_color' => $data['brand']['secondary_color'] ?? Arr::get($currentSettings, 'brand.secondary_color', '#64748b'),
+        ];
+
+        $settings = array_replace_recursive($currentSettings, ['brand' => $brand]);
+
+        $school->settings = $settings;
+        $school->save();
+
+        return $school->refresh();
+    }
+
+    public function branding(School $school): array
+    {
+        $settings = $school->settings ?? [];
+
+        return [
+            'school_name' => $school->name,
+            'school_logo' => $school->logo_path ? asset('storage/' . $school->logo_path) : null,
+            'favicon' => ($fav = data_get($settings, 'school.favicon_path')) ? asset('storage/' . $fav) : null,
+            'primary_color' => data_get($settings, 'brand.primary_color', '#2563eb'),
+            'secondary_color' => data_get($settings, 'brand.secondary_color', '#64748b'),
+            'school_website' => data_get($settings, 'school.website'),
+            'school_address' => $school->address,
+            'school_phone' => $school->phone,
+            'app_name' => config('app.name', 'School ERP'),
+        ];
+    }
+
     private function storeImage(UploadedFile $file, string $directory, ?string $oldPath = null): string
     {
         $disk = Storage::disk('public');

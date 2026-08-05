@@ -891,9 +891,15 @@
 
                 @can('settings.view')
                     <li class="nav-item">
-                        <a href="{{ route('admin.settings.index') }}" class="nav-link @if(request()->routeIs('admin.settings.*')) active @endif">
+                        <a href="{{ route('admin.settings.index') }}" class="nav-link @if(request()->routeIs('admin.settings.index')) active @endif">
                             <i class="nav-icon ti ti-settings"></i>
                             <p>Settings</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.settings.mobile.branding') }}" class="nav-link @if(request()->routeIs('admin.settings.mobile.*')) active @endif">
+                            <i class="nav-icon ti ti-palette"></i>
+                            <p>Mobile Branding</p>
                         </a>
                     </li>
                 @endcan

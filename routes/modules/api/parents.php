@@ -32,6 +32,10 @@ Route::get('parents/{uuid}/children/{childUuid}/calendar', [ParentApiController:
 Route::get('parents/{uuid}/children/{childUuid}/documents', [ParentApiController::class, 'childDocuments'])
     ->middleware('permission:student_documents.view')->name('parents.child.documents');
 
+// Transport
+Route::get('parents/{uuid}/children/{childUuid}/transport', [ParentApiController::class, 'childTransport'])
+    ->middleware('permission:dashboard.view')->name('parents.child.transport');
+
 // Leave requests
 Route::get('parents/{uuid}/children/{childUuid}/leave-requests', [ParentApiController::class, 'childLeaveRequests'])
     ->middleware('permission:leave_management.view')->name('parents.child.leave-requests');

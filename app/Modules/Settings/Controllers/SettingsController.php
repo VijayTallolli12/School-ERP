@@ -4,6 +4,7 @@ namespace App\Modules\Settings\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
+use App\Modules\Settings\Requests\UpdateMobileBrandingRequest;
 use App\Modules\Settings\Requests\UpdateSettingsRequest;
 use App\Modules\Settings\Services\SettingsService;
 use Illuminate\Http\JsonResponse;
@@ -32,6 +33,29 @@ class SettingsController extends Controller
                 'Y-m-d' => now()->format('Y-m-d'),
                 'd M Y' => now()->format('d M Y'),
             ],
+        ]);
+    }
+
+    public function mobileBranding(): View
+    {
+        $school = $this->settings->currentSchool();
+
+        return view('modules.settings.mobile-branding', [
+            'school' => $school,
+            'branding' => $this->settings->branding($school),
+        ]);
+    }
+
+    public function updateMobileBranding(UpdateMobileBrandingRequest $request): JsonResponse
+    {
+        $school = $this->settings->currentSchool();
+
+        $this->settings->updateBranding($school, $request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mobile branding updated successfully.',
+            'reload' => false,
         ]);
     }
 
