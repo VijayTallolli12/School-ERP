@@ -1,0 +1,1255 @@
+openapi: 3.0.3
+info:
+  title: School ERP — Student Mobile App API
+  description: >-
+    Verified REST API contract for the Student Mobile App.
+    Base path /api/v1. All authenticated endpoints require a Sanctum Bearer token.
+    Common envelope: { success, message, data } ; paginated adds meta + links.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: https://api.example.com/api/v1
+    description: Production
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Profile
+  - name: Dashboard
+  - name: Attendance
+  - name: Fees
+  - name: Homework
+  - name: Assignments
+  - name: Timetable
+  - name: Exams
+  - name: Calendar
+  - name: Documents
+  - name: Transport
+  - name: Leave
+  - name: Library
+  - name: Notifications
+  - name: Circulars
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate any role (student users get student context)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: student.arjun.verma@example.com }
+                password: { type: string, example: password }
+                school_id: { type: integer, nullable: true }
+                device_name: { type: string, nullable: true, example: student-mobile }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /student/login:
+    post:
+      tags: [Auth]
+      summary: Student login (self-contained)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                device_name: { type: string, nullable: true }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudentLoginResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      token: { type: string }
+                      token_type: { type: string, example: Bearer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (revoke current token)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  message: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /branding:
+    get:
+      tags: [Auth]
+      summary: School branding (public)
+      security: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Branding' }
+  /me:
+    get:
+      tags: [Profile]
+      summary: Current user + student context
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      user: { $ref: '#/components/schemas/User' }
+                      roles: { type: array, items: { type: string } }
+                      permissions: { type: array, items: { type: string } }
+                      student: { $ref: '#/components/schemas/CompactStudent' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [Profile]
+      summary: Update profile (phone, email, address, profile_photo)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone: { type: string, maxLength: 20 }
+                email: { type: string, format: email }
+                address: { type: string, maxLength: 500 }
+                profile_photo: { type: string, maxLength: 500 }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      user: { $ref: '#/components/schemas/User' }
+                      student: { $ref: '#/components/schemas/CompactStudent' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /me/change-password:
+    put:
+      tags: [Profile]
+      summary: Change password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, new_password, confirm_password]
+              properties:
+                current_password: { type: string }
+                new_password: { type: string, minLength: 8 }
+                confirm_password: { type: string }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessageResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /student/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Aggregated student dashboard
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/StudentNotLinked' }
+  /student/attendance:
+    get:
+      tags: [Attendance]
+      summary: Monthly attendance records
+      parameters:
+        - { name: month, in: query, schema: { type: integer, minimum: 1, maximum: 12 } }
+        - { name: year, in: query, schema: { type: integer, minimum: 2000, maximum: 2100 } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttendanceData' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /student/attendance/summary:
+    get:
+      tags: [Attendance]
+      summary: Attendance summary for academic year
+      parameters:
+        - { name: academic_year_id, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      academic_year_id: { type: integer, nullable: true }
+                      total_days: { type: integer }
+                      present_days: { type: integer }
+                      present_count: { type: integer }
+                      percentage: { type: number }
+                      breakdown:
+                        type: object
+                        additionalProperties:
+                          type: object
+                          properties:
+                            count: { type: integer }
+                            label: { type: string }
+  /student/fees:
+    get:
+      tags: [Fees]
+      summary: Student fee structure + items
+      parameters:
+        - { name: academic_year_id, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/StudentFee' }
+  /student/homework:
+    get:
+      tags: [Homework]
+      summary: Homework list
+      parameters:
+        - { name: subject_id, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      student: { $ref: '#/components/schemas/StudentList' }
+                      homework:
+                        type: array
+                        items: { $ref: '#/components/schemas/HomeworkItem' }
+  /student/homework/{id}:
+    get:
+      tags: [Homework]
+      summary: Homework detail
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Success }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /student/assignments:
+    get:
+      tags: [Assignments]
+      summary: Assignment list
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      assignments:
+                        type: array
+                        items: { $ref: '#/components/schemas/AssignmentItem' }
+  /student/timetable:
+    get:
+      tags: [Timetable]
+      summary: Weekly timetable grouped by day
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      timetable:
+                        type: array
+                        items: { $ref: '#/components/schemas/TimetableDay' }
+  /student/exams:
+    get:
+      tags: [Exams]
+      summary: Exam results grouped by academic year (Results screen)
+      parameters:
+        - { name: academic_year_id, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExamResults' }
+  /student/results:
+    get:
+      tags: [Exams]
+      summary: Exam results (detailed shape)
+      parameters:
+        - { name: academic_year_id, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExamResults' }
+  /student/report-card:
+    get:
+      tags: [Exams]
+      summary: Report card grouped by exam type
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      student: { type: object }
+                      class_section:
+                        type: object
+                        properties:
+                          class: { type: string }
+                          section: { type: string }
+                          roll_no: { type: integer }
+                      academic_year: { type: string, nullable: true }
+                      results_by_type:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            exam_type: { type: string }
+                            results:
+                              type: array
+                              items: { $ref: '#/components/schemas/ExamResultItem' }
+  /student/exam-schedule:
+    get:
+      tags: [Exams]
+      summary: Exam schedule
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      schedules:
+                        type: array
+                        items: { $ref: '#/components/schemas/ExamScheduleItem' }
+  /student/calendar:
+    get:
+      tags: [Calendar]
+      summary: Academic calendar events
+      parameters:
+        - { name: month, in: query, schema: { type: integer, minimum: 1, maximum: 12 } }
+        - { name: year, in: query, schema: { type: integer, minimum: 2000, maximum: 2100 } }
+        - { name: type, in: query, schema: { type: string, enum: [holiday, exam, school_event, ptm, sports_day, annual_day, field_trip, workshop, other] } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      month: { type: integer }
+                      year: { type: integer }
+                      events:
+                        type: array
+                        items: { $ref: '#/components/schemas/CalendarEvent' }
+  /student/documents:
+    get:
+      tags: [Documents]
+      summary: Student documents
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      student: { $ref: '#/components/schemas/StudentList' }
+                      documents:
+                        type: array
+                        items: { $ref: '#/components/schemas/StudentDocument' }
+  /student/transport:
+    get:
+      tags: [Transport]
+      summary: Transport dashboard
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TransportData' }
+  /student/leave-requests:
+    get:
+      tags: [Leave]
+      summary: Leave request list
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      leave_requests:
+                        type: array
+                        items: { $ref: '#/components/schemas/LeaveRequest' }
+    post:
+      tags: [Leave]
+      summary: Submit leave request
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [from_date, to_date, reason]
+              properties:
+                leave_type_id: { type: integer, nullable: true }
+                leave_type: { type: string, maxLength: 100 }
+                from_date: { type: string, format: date }
+                to_date: { type: string, format: date }
+                reason: { type: string, maxLength: 500 }
+                attachment: { type: string, format: binary }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      leave_request: { $ref: '#/components/schemas/LeaveRequest' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /student/leave-requests/{id}:
+    get:
+      tags: [Leave]
+      summary: Leave request detail
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Success
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Leave]
+      summary: Update pending leave request
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                leave_type_id: { type: integer, nullable: true }
+                leave_type: { type: string, maxLength: 100 }
+                from_date: { type: string, format: date }
+                to_date: { type: string, format: date }
+                reason: { type: string, maxLength: 500 }
+                attachment: { type: string, format: binary }
+      responses:
+        '200': { description: Success }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /student/library/books:
+    get:
+      tags: [Library]
+      summary: Currently issued books
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      total_issued: { type: integer }
+                      books: { type: array, items: { type: object } }
+  /student/library/history:
+    get:
+      tags: [Library]
+      summary: Library history (paginated)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: per_page, in: query, schema: { type: integer, default: 15, maximum: 100 } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedResponse' }
+  /student/library/fines:
+    get:
+      tags: [Library]
+      summary: Outstanding library fines
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      total_outstanding_price: { type: number }
+                      total_items: { type: integer }
+                      fines: { type: array, items: { type: object } }
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Notification list (paginated)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: type, in: query, schema: { type: string } }
+        - { name: priority, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedResponse' }
+  /notifications/unread:
+    get:
+      tags: [Notifications]
+      summary: Unread notifications + count
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      unread_count: { type: integer }
+                      notifications:
+                        type: array
+                        items: { $ref: '#/components/schemas/NotificationItem' }
+  /notifications/{id}/read:
+    post:
+      tags: [Notifications]
+      summary: Mark notification read
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Success }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /notifications/read-all:
+    post:
+      tags: [Notifications]
+      summary: Mark all notifications read
+      responses:
+        '200': { description: Success }
+  /circulars:
+    get:
+      tags: [Circulars]
+      summary: Circular list (paginated)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedResponse' }
+  /circulars/{id}:
+    get:
+      tags: [Circulars]
+      summary: Circular detail
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Success }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /circulars/{id}/read:
+    post:
+      tags: [Circulars]
+      summary: Mark circular read
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Success }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { type: boolean, example: false }
+              message: { type: string, example: Unauthenticated. }
+    Forbidden:
+      description: Forbidden / inactive student / school context unresolved
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { type: boolean, example: false }
+              message: { type: string }
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { type: boolean, example: false }
+              message: { type: string }
+    StudentNotLinked:
+      description: No / ambiguous / archived linked student
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { type: boolean, example: false }
+              message: { type: string }
+    Conflict:
+      description: Conflict (email in use / non-pending leave edit)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { type: boolean, example: false }
+              message: { type: string }
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items: { type: string }
+    TooManyRequests:
+      description: Rate limited
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string, example: Too Many Attempts. }
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: string, nullable: true }
+        avatar_url: { type: string, nullable: true }
+        status: { type: string }
+    CompactStudent:
+      type: object
+      properties:
+        uuid: { type: string }
+        name: { type: string }
+        admission_no: { type: string }
+        class: { type: string }
+        section: { type: string }
+        roll_number: { type: string }
+        academic_year: { type: string }
+        photo: { type: string, nullable: true }
+    StudentList:
+      type: object
+      properties:
+        id: { type: integer }
+        uuid: { type: string }
+        admission_no: { type: string }
+        full_name: { type: string }
+        gender: { type: string, nullable: true }
+        status: { type: string }
+        photo_url: { type: string, nullable: true }
+        class: { type: string, nullable: true }
+        section: { type: string, nullable: true }
+        roll_no: { type: integer, nullable: true }
+    Branding:
+      type: object
+      properties:
+        school_name: { type: string }
+        school_logo: { type: string, nullable: true }
+        favicon: { type: string, nullable: true }
+        primary_color: { type: string }
+        secondary_color: { type: string }
+        school_website: { type: string, nullable: true }
+        school_address: { type: string, nullable: true }
+        school_phone: { type: string, nullable: true }
+        app_name: { type: string }
+    LoginResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            token: { type: string }
+            token_type: { type: string, example: Bearer }
+            user: { $ref: '#/components/schemas/User' }
+            school_id: { type: integer }
+            student: { $ref: '#/components/schemas/CompactStudent' }
+    StudentLoginResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            token: { type: string }
+            token_type: { type: string, example: Bearer }
+            role: { type: string, example: Student }
+            permissions:
+              type: array
+              items: { type: string }
+            user: { $ref: '#/components/schemas/User' }
+            student: { type: object }
+            student_id: { type: integer }
+            student_uuid: { type: string }
+            school_id: { type: integer }
+            academic_year:
+              type: object
+              nullable: true
+              properties:
+                id: { type: integer }
+                name: { type: string }
+            class: { type: string, nullable: true }
+            section: { type: string, nullable: true }
+            branding: { $ref: '#/components/schemas/Branding' }
+    MessageResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+    Dashboard:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            student:
+              type: object
+              properties:
+                id: { type: integer }
+                uuid: { type: string }
+                full_name: { type: string }
+                photo_url: { type: string, nullable: true }
+            students:
+              type: array
+              items: { $ref: '#/components/schemas/StudentList' }
+            current_session:
+              type: object
+              nullable: true
+              properties:
+                class: { type: string }
+                section: { type: string }
+                roll_no: { type: integer }
+                academic_year: { type: string }
+            attendance:
+              type: object
+              properties:
+                total_days: { type: integer }
+                present_days: { type: integer }
+                percentage: { type: number }
+            attendance_summary:
+              type: object
+              properties:
+                present: { type: integer }
+                absent: { type: integer }
+                total: { type: integer }
+                percentage: { type: number }
+            fees_summary:
+              type: object
+              properties:
+                total: { type: number }
+                paid: { type: number }
+                pending: { type: number }
+            exam_results_summary:
+              type: object
+              properties:
+                average: { type: number }
+                subjects: { type: integer }
+                total_marks: { type: number }
+                obtained_marks: { type: number }
+            leave_summary:
+              type: object
+              properties:
+                pending: { type: integer }
+                approved: { type: integer }
+                rejected: { type: integer }
+                total: { type: integer }
+            pending_homework_count: { type: integer }
+            upcoming_exams:
+              type: array
+              items: { type: object }
+            issued_books_count: { type: integer }
+            notifications:
+              type: object
+              properties:
+                unread_count: { type: integer }
+            recent_notifications:
+              type: array
+              items: { type: object }
+    AttendanceData:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            student: { $ref: '#/components/schemas/StudentList' }
+            month: { type: integer }
+            year: { type: integer }
+            total_records: { type: integer }
+            summary:
+              type: object
+              properties:
+                total_days: { type: integer }
+                counts:
+                  type: object
+                  additionalProperties:
+                    type: integer
+            records:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: integer }
+                  student_id: { type: integer }
+                  date: { type: string, format: date }
+                  attendance_date: { type: string, format: date }
+                  status:
+                    type: string
+                    enum: [present, absent, late, half_day, excused]
+                  status_label: { type: string }
+                  remark: { type: string, nullable: true }
+                  remarks: { type: string, nullable: true }
+    StudentFee:
+      type: object
+      properties:
+        id: { type: integer }
+        student_id: { type: integer }
+        student_name: { type: string }
+        admission_no: { type: string }
+        academic_year_id: { type: integer }
+        academic_year: { type: string }
+        fee_structure_id: { type: integer, nullable: true }
+        status:
+          type: string
+          enum: [paid, partial, unpaid]
+        assigned_at: { type: string, nullable: true }
+        total_amount: { type: number }
+        total_paid: { type: number }
+        total_balance: { type: number }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              fee_category_id: { type: integer }
+              fee_category: { type: string, nullable: true }
+              amount: { type: number }
+              due_date: { type: string, nullable: true }
+              paid: { type: number }
+              balance: { type: number }
+              status:
+                type: string
+                enum: [paid, partial, pending]
+    HomeworkItem:
+      type: object
+      properties:
+        id: { type: integer }
+        subject_name: { type: string, nullable: true }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        assigned_date: { type: string, format: date }
+        due_date: { type: string, format: date, nullable: true }
+        attachment_url: { type: string, nullable: true }
+        status: { type: string }
+    AssignmentItem:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        subject_name: { type: string, nullable: true }
+        assigned_date: { type: string, format: date }
+        due_date: { type: string, format: date, nullable: true }
+        status: { type: string }
+        attachment_url: { type: string, nullable: true }
+    TimetableDay:
+      type: object
+      properties:
+        day_of_week: { type: integer }
+        day_name: { type: string }
+        slots:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              period_label: { type: string, nullable: true }
+              start_time: { type: string, example: '08:00' }
+              end_time: { type: string, example: '08:45' }
+              subject:
+                type: object
+                nullable: true
+                properties:
+                  id: { type: integer }
+                  name: { type: string }
+                  code: { type: string }
+              teacher:
+                type: object
+                nullable: true
+                properties:
+                  id: { type: integer }
+                  name: { type: string }
+              room: { type: string, nullable: true }
+    ExamResults:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            student: { type: object }
+            results_by_academic_year:
+              type: array
+              items:
+                type: object
+                properties:
+                  academic_year_id: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/ExamResultItem' }
+    ExamResultItem:
+      type: object
+      properties:
+        id: { type: integer }
+        exam_id: { type: integer }
+        exam_name: { type: string }
+        exam_type: { type: string }
+        exam_date: { type: string, format: date }
+        subject_name: { type: string, nullable: true }
+        subject: { type: string, nullable: true }
+        maximum_marks: { type: integer }
+        pass_marks: { type: integer }
+        student_id: { type: integer }
+        student_name: { type: string }
+        admission_no: { type: string }
+        marks_obtained: { type: number }
+        grade: { type: string, nullable: true }
+        remarks: { type: string, nullable: true }
+        status: { type: string }
+        percentage: { type: number, nullable: true }
+    ExamScheduleItem:
+      type: object
+      properties:
+        id: { type: integer }
+        exam_name: { type: string }
+        subject_name: { type: string, nullable: true }
+        exam_date: { type: string, format: date }
+        start_time: { type: string, nullable: true }
+        end_time: { type: string, nullable: true }
+        room: { type: string, nullable: true }
+        maximum_marks: { type: integer }
+        pass_marks: { type: integer }
+    CalendarEvent:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        event_type: { type: string }
+        event_type_label: { type: string }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date, nullable: true }
+        is_published: { type: boolean }
+        location: { type: string, nullable: true }
+        audience: { type: string, nullable: true }
+    StudentDocument:
+      type: object
+      properties:
+        id: { type: integer }
+        document_type: { type: string }
+        document_type_label: { type: string }
+        title: { type: string }
+        file_name: { type: string }
+        file_size: { type: integer }
+        file_size_formatted: { type: string }
+        mime_type: { type: string }
+        issue_date: { type: string, nullable: true }
+        expiry_date: { type: string, nullable: true }
+        is_verified: { type: boolean }
+        verification_status_label: { type: string }
+        remarks: { type: string, nullable: true }
+        download_url: { type: string, nullable: true }
+        created_at: { type: string }
+    TransportData:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            transport:
+              type: object
+              nullable: true
+              properties:
+                vehicle_number: { type: string, nullable: true }
+                vehicle_name: { type: string, nullable: true }
+                vehicle_type: { type: string, nullable: true }
+                driver_name: { type: string, nullable: true }
+                driver_mobile: { type: string, nullable: true }
+                driver_license: { type: string, nullable: true }
+                route_name: { type: string, nullable: true }
+                route_start: { type: string, nullable: true }
+                route_end: { type: string, nullable: true }
+                pickup_stop: { type: string, nullable: true }
+                drop_stop: { type: string, nullable: true }
+                pickup_time: { type: string, nullable: true }
+                drop_time: { type: string, nullable: true }
+                status: { type: string }
+                monthly_fee: { type: number, nullable: true }
+            stops:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: integer }
+                  stop_name: { type: string }
+                  pickup_time: { type: string, nullable: true }
+                  drop_time: { type: string, nullable: true }
+                  sequence: { type: integer }
+                  is_student_stop: { type: boolean }
+    LeaveRequest:
+      type: object
+      properties:
+        id: { type: integer }
+        student_id: { type: integer }
+        student_name: { type: string }
+        leave_type_id: { type: integer, nullable: true }
+        leave_type: { type: string, nullable: true }
+        from_date: { type: string, format: date }
+        to_date: { type: string, format: date }
+        days: { type: integer }
+        reason: { type: string }
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+        status_label: { type: string }
+        attachment_url: { type: string, nullable: true }
+        remarks: { type: string, nullable: true }
+        approved_by: { type: string, nullable: true }
+        approved_at: { type: string, nullable: true }
+        created_at: { type: string }
+    NotificationItem:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        body: { type: string }
+        message: { type: string }
+        type: { type: string }
+        type_label: { type: string }
+        priority: { type: string }
+        is_read: { type: boolean }
+        read_at: { type: string, nullable: true }
+        created_at: { type: string }
+    PaginatedResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: array
+          items: { type: object }
+        meta:
+          type: object
+          properties:
+            current_page: { type: integer }
+            last_page: { type: integer }
+            per_page: { type: integer }
+            total: { type: integer }
+            from: { type: integer, nullable: true }
+            to: { type: integer, nullable: true }
+        links:
+          type: object
+          properties:
+            first: { type: string }
+            last: { type: string }
+            prev: { type: string, nullable: true }
+            next: { type: string, nullable: true }

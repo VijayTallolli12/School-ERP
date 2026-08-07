@@ -99,6 +99,7 @@ class GoldenSchoolSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         $this->teacher1User->assignRole('Teacher');
+        $this->teacher1User->schools()->syncWithoutDetaching([$this->school->id => ['status' => 'active', 'is_primary' => true]]);
 
         $this->teacher2User = User::factory()->create([
             'name' => 'Rahul Mehta',
@@ -109,6 +110,7 @@ class GoldenSchoolSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         $this->teacher2User->assignRole('Teacher');
+        $this->teacher2User->schools()->syncWithoutDetaching([$this->school->id => ['status' => 'active', 'is_primary' => true]]);
 
         $this->parent1User = User::factory()->create([
             'name' => 'John Doe',
@@ -119,6 +121,7 @@ class GoldenSchoolSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         $this->parent1User->assignRole('Parent');
+        $this->parent1User->schools()->syncWithoutDetaching([$this->school->id => ['status' => 'active', 'is_primary' => true]]);
 
         $this->parent2User = User::factory()->create([
             'name' => 'Jane Smith',
@@ -129,6 +132,7 @@ class GoldenSchoolSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         $this->parent2User->assignRole('Parent');
+        $this->parent2User->schools()->syncWithoutDetaching([$this->school->id => ['status' => 'active', 'is_primary' => true]]);
     }
 
     private function createAcademicStructure(): void
@@ -192,6 +196,7 @@ class GoldenSchoolSeeder extends Seeder
                 'email_verified_at' => now(),
             ]);
             $stuUser->assignRole('Student');
+            $stuUser->schools()->syncWithoutDetaching([$this->school->id => ['status' => 'active', 'is_primary' => true]]);
 
             $student->update(['user_id' => $stuUser->id]);
         }

@@ -1,0 +1,304 @@
+openapi: 3.0.3
+info:
+  title: School ERP Driver API - Phase 1
+  version: 1.0.0
+  description: Driver mobile app APIs under /api/v1/driver with standardized response envelope.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: Driver Auth
+  - name: Driver Profile
+  - name: Driver Trips
+  - name: Driver Realtime
+paths:
+  /driver/login:
+    post:
+      tags: [Driver Auth]
+      summary: Driver login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                device_name: { type: string }
+                school_id: { type: integer }
+      responses:
+        '200':
+          description: Driver logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverLoginResponse'
+  /driver/profile:
+    get:
+      tags: [Driver Profile]
+      summary: Driver profile
+      responses:
+        '200':
+          description: Driver profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverProfileResponse'
+  /driver/dashboard:
+    get:
+      tags: [Driver Profile]
+      summary: Driver dashboard
+      responses:
+        '200':
+          description: Driver dashboard retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/trips/today:
+    get:
+      tags: [Driver Trips]
+      summary: Today's trips
+      responses:
+        '200':
+          description: Trips retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/trips/{trip}:
+    get:
+      tags: [Driver Trips]
+      summary: Trip details
+      parameters:
+        - in: path
+          name: trip
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Trip details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/trips/{trip}/start:
+    post:
+      tags: [Driver Trips]
+      summary: Start trip
+      parameters:
+        - in: path
+          name: trip
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Trip started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/trips/{trip}/complete:
+    post:
+      tags: [Driver Trips]
+      summary: Complete trip
+      parameters:
+        - in: path
+          name: trip
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Trip completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/trips/{trip}/students:
+    get:
+      tags: [Driver Trips]
+      summary: Trip student lists
+      parameters:
+        - in: path
+          name: trip
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Trip students retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/trips/{trip}/pickup:
+    post:
+      tags: [Driver Trips]
+      summary: Mark student pickup
+      parameters:
+        - in: path
+          name: trip
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripStudentActionRequest'
+      responses:
+        '200':
+          description: Pickup marked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/trips/{trip}/drop:
+    post:
+      tags: [Driver Trips]
+      summary: Mark student drop
+      parameters:
+        - in: path
+          name: trip
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripStudentActionRequest'
+      responses:
+        '200':
+          description: Drop marked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/trips/{trip}/eta:
+    get:
+      tags: [Driver Trips]
+      summary: ETA by route stops
+      parameters:
+        - in: path
+          name: trip
+          required: true
+          schema: { type: integer }
+        - in: query
+          name: current_latitude
+          required: true
+          schema: { type: number }
+        - in: query
+          name: current_longitude
+          required: true
+          schema: { type: number }
+      responses:
+        '200':
+          description: ETA retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/location:
+    post:
+      tags: [Driver Realtime]
+      summary: Update driver location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicle_id, latitude, longitude]
+              properties:
+                vehicle_id: { type: integer }
+                latitude: { type: number }
+                longitude: { type: number }
+                speed: { type: number }
+                heading: { type: number }
+                captured_at: { type: string, format: date-time }
+                trip_id: { type: integer }
+      responses:
+        '200':
+          description: Location updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+  /driver/sos:
+    post:
+      tags: [Driver Realtime]
+      summary: Send SOS alert
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude: { type: number }
+                longitude: { type: number }
+                message: { type: string }
+                trip_id: { type: integer }
+      responses:
+        '200':
+          description: SOS sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Envelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          nullable: true
+    DriverLoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                token: { type: string }
+                token_type: { type: string }
+                user:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    name: { type: string }
+                    email: { type: string, format: email }
+                school_id: { type: integer }
+                driver:
+                  type: object
+                  nullable: true
+    DriverProfileResponse:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                driver: { type: object }
+                vehicle: { type: object, nullable: true }
+                route: { type: object, nullable: true }
+    TripStudentActionRequest:
+      type: object
+      required: [trip_student_id]
+      properties:
+        trip_student_id: { type: integer }
+        latitude: { type: number }
+        longitude: { type: number }

@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role' => RoleMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'student.linked' => \App\Http\Middleware\EnsureStudentLinked::class,
         ]);
 
         $middleware->append(SecurityHeaders::class);

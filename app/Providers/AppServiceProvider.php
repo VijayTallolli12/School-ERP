@@ -16,6 +16,8 @@ use App\Modules\Documents\Policies\DocumentPolicy;
 use App\Modules\Documents\Policies\TeacherDocumentPolicy;
 use App\Modules\Documents\Repositories\DocumentRepository;
 use App\Modules\Documents\Repositories\DocumentRepositoryInterface;
+use App\Modules\Driver\Repositories\DriverApiRepository;
+use App\Modules\Driver\Repositories\DriverApiRepositoryInterface;
 use App\Modules\Students\Models\StudentDocument;
 use App\Modules\Teachers\Models\TeacherDocument;
 use App\Modules\Academics\Policies\AcademicYearPolicy;
@@ -181,6 +183,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CalendarRepositoryInterface::class, CalendarRepository::class);
         $this->app->bind(DocumentRepositoryInterface::class, DocumentRepository::class);
         $this->app->bind(TransportRepositoryInterface::class, TransportRepository::class);
+        $this->app->bind(DriverApiRepositoryInterface::class, DriverApiRepository::class);
         $this->app->bind(LibraryRepositoryInterface::class, LibraryRepository::class);
         $this->app->bind(PayrollRepositoryInterface::class, PayrollRepository::class);
         $this->app->bind(EmployeeRepositoryInterface::class, EmployeeRepository::class);

@@ -82,6 +82,7 @@ class StudentAppApiTest extends TestCase
         $this->studentUser->schools()->syncWithoutDetaching([
             $this->school->id => ['status' => 'active', 'is_primary' => true],
         ]);
+        $this->studentUser->assignRole('Student');
 
         // Create student profile
         $this->student = Student::query()->create([
@@ -505,6 +506,122 @@ class StudentAppApiTest extends TestCase
 
         $response = $this->getJson(route('api.v1.student.timetable'));
         $response->assertStatus(401);
+    }
+
+    public function test_student_login_returns_resolved_school_id(): void
+    {
+        $response = $this->postJson(route('api.v1.student.login'), [
+            'email' => 'student@test.com',
+            'password' => 'password',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.school_id', $this->school->id);
+    }
+
+    public function test_student_login_token_carries_full_permission_abilities(): void
+    {
+        $response = $this->postJson(route('api.v1.student.login'), [
+            'email' => 'student@test.com',
+            'password' => 'password',
+        ]);
+
+        $response->assertOk();
+        $token = $response->json('data.token');
+
+        $abilities = \Laravel\Sanctum\PersonalAccessToken::findToken($token)->abilities;
+
+        $this->assertContains('dashboard.view', $abilities);
+        $this->assertContains('attendance.view', $abilities);
+        $this->assertContains('fees.view', $abilities);
+        $this->assertContains('exams.view', $abilities);
+    }
+
+    public function test_generic_login_returns_student_context_for_student_users(): void
+    {
+        $response = $this->postJson(route('api.v1.auth.login'), [
+            'email' => 'student@test.com',
+            'password' => 'password',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.school_id', $this->school->id)
+            ->assertJsonPath('data.student.uuid', $this->student->uuid)
+            ->assertJsonPath('data.student.name', 'Test Student')
+            ->assertJsonPath('data.student.class', '10')
+            ->assertJsonPath('data.student.section', 'A')
+            ->assertJsonPath('data.student.academic_year', '2025-26');
+    }
+
+    public function test_me_returns_student_context_for_student_users(): void
+    {
+        $token = $this->getToken();
+
+        $response = $this->withToken($token)
+            ->getJson(route('api.v1.me'));
+
+        $response->assertOk()
+            ->assertJsonPath('data.student.uuid', $this->student->uuid)
+            ->assertJsonPath('data.student.name', 'Test Student')
+            ->assertJsonPath('data.student.class', '10')
+            ->assertJsonPath('data.student.section', 'A')
+            ->assertJsonPath('data.student.academic_year', '2025-26');
+    }
+
+    public function test_put_me_updates_student_profile(): void
+    {
+        $token = $this->getToken();
+
+        $response = $this->withToken($token)
+            ->putJson(route('api.v1.me.update'), [
+                'phone' => '9876543211',
+                'address' => 'Test Address, Block 7',
+            ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['success', 'message', 'data' => ['user', 'student']])
+            ->assertJsonPath('data.user.phone', '9876543211');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->studentUser->id,
+            'phone' => '9876543211',
+        ]);
+
+        $this->assertDatabaseHas('students', [
+            'id' => $this->student->id,
+            'current_address' => 'Test Address, Block 7',
+        ]);
+    }
+
+    public function test_put_me_change_password(): void
+    {
+        $token = $this->getToken();
+
+        $response = $this->withToken($token)
+            ->putJson(route('api.v1.me.change-password'), [
+                'current_password' => 'password',
+                'new_password' => 'newpassword123',
+                'confirm_password' => 'newpassword123',
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertTrue(Hash::check('newpassword123', $this->studentUser->fresh()->password));
+    }
+
+    public function test_put_me_change_password_fails_with_wrong_current(): void
+    {
+        $token = $this->getToken();
+
+        $response = $this->withToken($token)
+            ->putJson(route('api.v1.me.change-password'), [
+                'current_password' => 'wrongpassword',
+                'new_password' => 'newpassword123',
+                'confirm_password' => 'newpassword123',
+            ]);
+
+        $response->assertUnprocessable();
     }
 
     private function getToken(): string

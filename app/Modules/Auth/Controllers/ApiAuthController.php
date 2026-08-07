@@ -82,6 +82,10 @@ class ApiAuthController extends ApiBaseController
             $response['parent_uuid'] = $guardian?->uuid;
         }
 
+        if ($roleNames->contains('Student')) {
+            $response['student'] = $this->studentContext($user);
+        }
+
         return $this->success($response, 'Logged in successfully.');
     }
 
@@ -111,6 +115,10 @@ class ApiAuthController extends ApiBaseController
                 ? $this->loadLinkedStudents($guardian)
                 : [];
             $response['parent_uuid'] = $guardian?->uuid;
+        }
+
+        if ($user->hasRole('Student')) {
+            $response['student'] = $this->studentContext($user);
         }
 
         return $this->success($response);
@@ -143,6 +151,84 @@ class ApiAuthController extends ApiBaseController
         }
 
         return $this->success(message: 'Logged out successfully.');
+    }
+
+    /**
+     * Update the authenticated user's profile (mobile apps).
+     *
+     * Fields accepted: phone, email, address, profile_photo.
+     * For Student users, address/phone also persist onto the linked Student record.
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'phone' => ['sometimes', 'string', 'max:20'],
+            'email' => ['sometimes', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users', 'email')->ignore($user->id)],
+            'address' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'profile_photo' => ['sometimes', 'nullable', 'string', 'max:500'],
+        ]);
+
+        $updates = [];
+        if (array_key_exists('phone', $validated)) {
+            $updates['phone'] = $validated['phone'];
+        }
+        if (array_key_exists('email', $validated)) {
+            $updates['email'] = $validated['email'];
+        }
+        if (array_key_exists('address', $validated)) {
+            $updates['address'] = $validated['address'];
+        }
+        if (array_key_exists('profile_photo', $validated)) {
+            $updates['avatar_path'] = $validated['profile_photo'];
+        }
+
+        if (! empty($updates)) {
+            $user->update($updates);
+        }
+
+        // Mirror address onto the linked student profile (student users)
+        $student = $user->student;
+        if ($student && (array_key_exists('address', $validated) || array_key_exists('phone', $validated))) {
+            $studentUpdates = [];
+            if (array_key_exists('address', $validated)) {
+                $studentUpdates['current_address'] = $validated['address'];
+            }
+            if (array_key_exists('phone', $validated)) {
+                $studentUpdates['phone'] = $validated['phone'];
+            }
+            if (! empty($studentUpdates)) {
+                $student->update($studentUpdates);
+            }
+        }
+
+        return $this->success([
+            'user' => new UserResource($user->fresh()),
+            'student' => $student ? $this->studentContext($user->loadMissing('student')) : null,
+        ], 'Profile updated successfully.');
+    }
+
+    /**
+     * Change the authenticated user's password (mobile apps).
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8', 'different:current_password'],
+            'confirm_password' => ['required', 'string', 'same:new_password'],
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            return $this->error('Current password is incorrect.', Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $user->update(['password' => Hash::make($validated['new_password'])]);
+
+        return $this->success(message: 'Password changed successfully.');
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -235,6 +321,33 @@ class ApiAuthController extends ApiBaseController
         }
 
         return null;
+    }
+
+    /**
+     * Load a compact student context for a student user.
+     */
+    private function studentContext(User $user): ?array
+    {
+        $student = $user->student;
+
+        if (! $student) {
+            return null;
+        }
+
+        $student->load(['sessions.classSection.schoolClass', 'sessions.classSection.section', 'sessions.academicYear']);
+
+        $session = $student->sessions->where('status', 'active')->first();
+
+        return [
+            'uuid' => $student->uuid,
+            'name' => $student->full_name,
+            'admission_no' => $student->admission_no,
+            'class' => $session?->classSection?->schoolClass?->name ?? '',
+            'section' => $session?->classSection?->section?->name ?? '',
+            'roll_number' => $session?->roll_no ?? '',
+            'academic_year' => $session?->academicYear?->name ?? '',
+            'photo' => $student->photo_path ? url('storage/' . $student->photo_path) : null,
+        ];
     }
 
     /**

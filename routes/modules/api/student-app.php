@@ -9,7 +9,7 @@
 use App\Http\Controllers\Api\V1\StudentAppController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('student')->name('student.')->group(function (): void {
+Route::prefix('student')->middleware('student.linked')->name('student.')->group(function (): void {
 
     // Auth
     Route::post('logout', [StudentAppController::class, 'logout'])->name('logout');
@@ -27,17 +27,39 @@ Route::prefix('student')->name('student.')->group(function (): void {
     Route::get('attendance/monthly', [StudentAppController::class, 'attendanceMonthly'])->name('attendance.monthly');
     Route::get('attendance/summary', [StudentAppController::class, 'attendanceSummary'])->name('attendance.summary');
 
+    // Fees
+    Route::get('fees', [StudentAppController::class, 'fees'])->name('fees');
+
     // Homework
     Route::get('homework', [StudentAppController::class, 'homeworkIndex'])->name('homework.index');
     Route::get('homework/{id}', [StudentAppController::class, 'homeworkShow'])->name('homework.show');
+
+    // Assignments
+    Route::get('assignments', [StudentAppController::class, 'assignments'])->name('assignments');
 
     // Timetable
     Route::get('timetable', [StudentAppController::class, 'timetable'])->name('timetable');
 
     // Exams
     Route::get('exams', [StudentAppController::class, 'examsIndex'])->name('exams.index');
+    Route::get('exam-schedule', [StudentAppController::class, 'examSchedule'])->name('exam-schedule');
     Route::get('results', [StudentAppController::class, 'results'])->name('results');
     Route::get('report-card', [StudentAppController::class, 'reportCard'])->name('report-card');
+
+    // Academic Calendar
+    Route::get('calendar', [StudentAppController::class, 'calendar'])->name('calendar');
+
+    // Documents
+    Route::get('documents', [StudentAppController::class, 'documents'])->name('documents');
+
+    // Transport
+    Route::get('transport', [StudentAppController::class, 'transport'])->name('transport');
+
+    // Leave requests
+    Route::get('leave-requests', [StudentAppController::class, 'leaveRequests'])->name('leave-requests');
+    Route::post('leave-requests', [StudentAppController::class, 'storeLeaveRequest'])->name('leave-requests.store');
+    Route::get('leave-requests/{id}', [StudentAppController::class, 'showLeaveRequest'])->name('leave-requests.show');
+    Route::put('leave-requests/{id}', [StudentAppController::class, 'updateLeaveRequest'])->name('leave-requests.update');
 
     // Library
     Route::get('library/books', [StudentAppController::class, 'libraryBooks'])->name('library.books');
@@ -47,4 +69,9 @@ Route::prefix('student')->name('student.')->group(function (): void {
     // Notifications
     Route::get('notifications', [StudentAppController::class, 'notificationsIndex'])->name('notifications.index');
     Route::post('notifications/read', [StudentAppController::class, 'notificationsRead'])->name('notifications.read');
+
+    // Circulars / Announcements
+    Route::get('circulars', [StudentAppController::class, 'circulars'])->name('circulars');
+    Route::get('circulars/{id}', [StudentAppController::class, 'showCircular'])->name('circulars.show');
+    Route::post('circulars/{id}/read', [StudentAppController::class, 'markCircularRead'])->name('circulars.read');
 });

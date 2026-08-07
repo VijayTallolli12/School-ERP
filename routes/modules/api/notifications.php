@@ -6,6 +6,7 @@
 
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\NotificationApiController;
+use App\Http\Controllers\Api\V1\StudentAppController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('notifications', [NotificationApiController::class, 'index'])
@@ -18,6 +19,14 @@ Route::post('notifications/read-all', [NotificationApiController::class, 'markAl
     ->middleware('permission:notifications.view')->name('notifications.read-all');
 Route::get('notifications/announcements', [NotificationApiController::class, 'announcements'])
     ->middleware('permission:notifications.view')->name('notifications.announcements');
+
+// ────────────────────────────────────────────────────────────────────────────
+// Circulars / Announcements (self-scoped to authenticated user — mobile app)
+// ────────────────────────────────────────────────────────────────────────────
+
+Route::get('circulars', [StudentAppController::class, 'circulars'])->name('circulars');
+Route::get('circulars/{id}', [StudentAppController::class, 'showCircular'])->name('circulars.show');
+Route::post('circulars/{id}/read', [StudentAppController::class, 'markCircularRead'])->name('circulars.read');
 
 // ────────────────────────────────────────────────────────────────────────────
 // Phase 5.4 — Real-Time Infrastructure

@@ -90,6 +90,7 @@ class DriverApiTest extends TestCase
         $this->driverUser->schools()->syncWithoutDetaching([
             $this->school->id => ['status' => 'active', 'is_primary' => true],
         ]);
+        $this->driverUser->assignRole('Driver');
 
         $this->driver = Driver::query()->create([
             'school_id' => $this->school->id,
@@ -282,6 +283,16 @@ class DriverApiTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    public function test_non_driver_cannot_login_driver_api(): void
+    {
+        $response = $this->postJson(route('api.v1.driver.login'), [
+            'email' => 'parent@test.com',
+            'password' => 'password',
+        ]);
+
+        $response->assertStatus(403);
     }
 
     // ─── Profile ──────────────────────────────────────────────────────
