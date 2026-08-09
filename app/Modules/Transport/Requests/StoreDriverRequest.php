@@ -24,6 +24,19 @@ class StoreDriverRequest extends FormRequest
             'license_expiry_date' => ['required', 'date'],
             'address' => ['nullable', 'string'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
+            'enable_login' => ['nullable', 'boolean'],
+            'email' => ['nullable', 'required_if:enable_login,1', 'string', 'email', 'max:255', Rule::unique('users', 'email')->whereNull('deleted_at')],
+            'password' => ['nullable', 'required_if:enable_login,1', 'string', 'min:6'],
+            'password_confirmation' => ['nullable', 'required_if:enable_login,1', 'string', 'same:password'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'email.unique' => 'This email is already linked to another account.',
+            'password.min' => 'Password must be at least 6 characters.',
+            'password_confirmation.same' => 'Password confirmation does not match.',
         ];
     }
 }

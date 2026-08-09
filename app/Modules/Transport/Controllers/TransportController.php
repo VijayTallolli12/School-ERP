@@ -8,9 +8,11 @@ use App\Modules\Transport\Exports\TransportReportExport;
 use App\Modules\Transport\Models\Driver;
 use App\Modules\Transport\Models\Route;
 use App\Modules\Transport\Models\RouteStop;
+use App\Modules\Transport\Models\SosAlert;
 use App\Modules\Transport\Models\TransportAssignment;
 use App\Modules\Transport\Models\Vehicle;
 use App\Modules\Transport\Repositories\TransportRepositoryInterface;
+use App\Modules\Transport\Requests\ResetDriverPasswordRequest;
 use App\Modules\Transport\Requests\StoreAssignmentRequest;
 use App\Modules\Transport\Requests\StoreDriverRequest;
 use App\Modules\Transport\Requests\StoreRouteRequest;
@@ -21,6 +23,7 @@ use App\Modules\Transport\Requests\UpdateDriverRequest;
 use App\Modules\Transport\Requests\UpdateRouteRequest;
 use App\Modules\Transport\Requests\UpdateRouteStopRequest;
 use App\Modules\Transport\Requests\UpdateVehicleRequest;
+use App\Modules\Transport\Requests\UpdateSosRequest;
 use App\Modules\Transport\Services\TransportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -33,8 +36,7 @@ class TransportController extends Controller
     public function __construct(
         private readonly TransportRepositoryInterface $transport,
         private readonly TransportService $service,
-    ) {
-    }
+    ) {}
 
     public function index()
     {
@@ -121,8 +123,11 @@ class TransportController extends Controller
         return DataTables::of($this->transport->drivers())
             ->editColumn('license_expiry_date', fn (Driver $d) => $d->license_expiry_date?->format('d M Y'))
             ->editColumn('status', fn (Driver $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success' : 'secondary').'">'.$d->status.'</span>')
+            ->addColumn('login', fn (Driver $d) => $d->user
+                ? '<span class="badge bg-success">Login Enabled</span>'
+                : '<span class="badge bg-secondary">No Login</span>')
             ->addColumn('actions', fn (Driver $d) => view('modules.transport._actions', ['type' => 'driver', 'model' => $d])->render())
-            ->rawColumns(['status', 'actions'])
+            ->rawColumns(['status', 'login', 'actions'])
             ->toJson();
     }
 
@@ -133,12 +138,23 @@ class TransportController extends Controller
 
     public function showDriver(Driver $driver): JsonResponse
     {
-        return $this->jsonData($driver);
+        $driver->load('user');
+
+        return $this->jsonData([
+            ...$driver->toArray(),
+            'enable_login' => $driver->user !== null,
+            'email' => $driver->user?->email,
+        ]);
     }
 
     public function updateDriver(UpdateDriverRequest $request, Driver $driver): JsonResponse
     {
-        return $this->jsonCreated('Driver updated successfully.', $this->service->updateDriver($driver, $request->validated()));
+        $updated = $this->service->updateDriver($driver, $request->validated());
+
+        return $this->jsonCreated(
+            $updated->user_id ? 'Driver updated successfully (login enabled).' : 'Driver updated successfully.',
+            $updated
+        );
     }
 
     public function destroyDriver(Driver $driver): JsonResponse
@@ -147,6 +163,13 @@ class TransportController extends Controller
         $driver->delete();
 
         return $this->jsonMessage('Driver deleted successfully.');
+    }
+
+    public function resetDriverPassword(ResetDriverPasswordRequest $request, Driver $driver): JsonResponse
+    {
+        $this->service->resetDriverPassword($driver, $request->validated());
+
+        return $this->jsonMessage('Driver password reset successfully.');
     }
 
     // ─── Routes ─────────────────────────────────────────────────────────────────
@@ -565,6 +588,88 @@ class TransportController extends Controller
 
             default => [],
         };
+    }
+
+    // ─── SOS Alerts ─────────────────────────────────────────────────────────────
+
+    public function sosIndex()
+    {
+        $query = SosAlert::query();
+
+        return view('modules.transport.sos', [
+            'stats' => [
+                'new' => (clone $query)->where('status', 'new')->count(),
+                'acknowledged' => (clone $query)->where('status', 'acknowledged')->count(),
+                'resolved' => (clone $query)->where('status', 'resolved')->count(),
+                'total' => (clone $query)->count(),
+            ],
+        ]);
+    }
+
+    public function sosData(): JsonResponse
+    {
+        return DataTables::of(SosAlert::query()->with(['driver', 'trip.route', 'trip.vehicle', 'vehicle', 'handledBy']))
+            ->editColumn('status', fn (SosAlert $s) => view('modules.transport._sos_status', ['sos' => $s])->render())
+            ->editColumn('created_at', fn (SosAlert $s) => $s->created_at ? $s->created_at->format('M d, Y H:i') : '-')
+            ->addColumn('driver_info', fn (SosAlert $s) => e($s->driver?->name ?? '-').'<br><small class="text-muted">'.e($s->driver?->mobile ?? '').'</small>')
+            ->addColumn('trip_info', fn (SosAlert $s) => $s->trip
+                ? 'Trip #'.$s->trip->id.'<br><small class="text-muted">'.e($s->trip->route?->route_name ?? '').'</small>'
+                : '-')
+            ->addColumn('vehicle_number', fn (SosAlert $s) => $s->vehicle?->vehicle_number ?? $s->trip?->vehicle?->vehicle_number ?? '-')
+            ->addColumn('message', fn (SosAlert $s) => $s->message ? e((string) str($s->message)->limit(60)) : '-')
+            ->addColumn('location', fn (SosAlert $s) => $this->sosLocationHtml($s))
+            ->addColumn('actions', fn (SosAlert $s) => view('modules.transport._sos_actions', ['sos' => $s])->render())
+            ->rawColumns(['status', 'driver_info', 'trip_info', 'message', 'location', 'actions'])
+            ->orderColumn('id', fn ($q, $dir) => $q->orderBy('id', $dir))
+            ->toJson();
+    }
+
+    public function sosShow(SosAlert $sos): JsonResponse
+    {
+        return $this->jsonData([
+            'id' => $sos->id,
+            'status' => $sos->status,
+            'notes' => $sos->notes,
+            'driver' => $sos->driver?->name,
+            'driver_mobile' => $sos->driver?->mobile,
+            'trip_id' => $sos->trip_id,
+            'route_name' => $sos->trip?->route?->route_name,
+            'vehicle_number' => $sos->vehicle?->vehicle_number ?? $sos->trip?->vehicle?->vehicle_number,
+            'message' => $sos->message,
+            'latitude' => $sos->latitude,
+            'longitude' => $sos->longitude,
+            'triggered_at' => $sos->created_at ? $sos->created_at->format('M d, Y H:i') : null,
+            'handled_by' => $sos->handledBy?->name,
+            'handled_at' => $sos->handled_at ? $sos->handled_at->format('M d, Y H:i') : null,
+        ]);
+    }
+
+    public function updateSos(UpdateSosRequest $request, SosAlert $sos): JsonResponse
+    {
+        $data = $request->validated();
+        $sos->status = $data['status'];
+        $sos->notes = $data['notes'] ?? $sos->notes;
+
+        if ($data['status'] !== 'new') {
+            $sos->handled_by = $request->user()?->id;
+            $sos->handled_at = now();
+        }
+
+        $sos->save();
+
+        return $this->jsonCreated('SOS alert updated.', $sos);
+    }
+
+    private function sosLocationHtml(SosAlert $sos): string
+    {
+        if ($sos->latitude === null || $sos->longitude === null) {
+            return '-';
+        }
+
+        $query = "{$sos->latitude},{$sos->longitude}";
+
+        return '<a href="https://www.google.com/maps?q='.$query.'" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">'
+            .'<i class="ti ti-map-pin me-1"></i>View on map</a>';
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────────

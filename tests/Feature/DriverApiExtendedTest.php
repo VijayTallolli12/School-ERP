@@ -577,7 +577,7 @@ class DriverApiExtendedTest extends TestCase
             'route_id' => $this->route->id,
             'type' => 'both',
             'status' => 'scheduled',
-            'trip_date' => now()->startOfDay(),
+            'trip_date' => app(SchoolContext::class)->startOfToday()->toDateString(),
             'total_students' => 2,
         ]);
 

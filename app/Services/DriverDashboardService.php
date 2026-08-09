@@ -2,19 +2,24 @@
 
 namespace App\Services;
 
+use App\Core\Tenant\SchoolContext;
 use App\Models\Trip;
 use App\Modules\Transport\Models\Driver;
 use Illuminate\Support\Collection;
 
 class DriverDashboardService
 {
+    public function __construct(
+        private readonly SchoolContext $context,
+    ) {}
+
     public function dashboard(Driver $driver): array
     {
-        $today = now()->startOfDay();
+        $today = $this->context->startOfToday()->toDateString();
 
         $todayTrips = Trip::query()
             ->where('driver_id', $driver->id)
-            ->where('trip_date', $today)
+            ->whereDate('trip_date', $today)
             ->with('route', 'vehicle')
             ->orderBy('created_at')
             ->get();

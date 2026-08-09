@@ -4,6 +4,7 @@ namespace App\Core\Tenant;
 
 use App\Models\AcademicYear;
 use App\Models\School;
+use Illuminate\Support\Carbon;
 
 class SchoolContext
 {
@@ -37,5 +38,22 @@ class SchoolContext
             ->where('school_id', $this->id())
             ->where('status', 'active')
             ->value('id');
+    }
+
+    public function timezone(): string
+    {
+        $school = $this->school();
+
+        return $school?->timezone ?: config('app.timezone', 'UTC');
+    }
+
+    public function now(): Carbon
+    {
+        return Carbon::now($this->timezone());
+    }
+
+    public function startOfToday(): Carbon
+    {
+        return Carbon::now($this->timezone())->startOfDay();
     }
 }

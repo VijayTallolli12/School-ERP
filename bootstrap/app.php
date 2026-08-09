@@ -7,6 +7,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
@@ -57,4 +58,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return null;
         });
+    })
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('transport:generate-trips')
+            ->dailyAt('04:30')
+            ->withoutOverlapping();
     })->create();

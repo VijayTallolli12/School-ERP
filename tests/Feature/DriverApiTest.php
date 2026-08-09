@@ -515,7 +515,7 @@ class DriverApiTest extends TestCase
         ]);
     }
 
-    public function test_cannot_pickup_twice(): void
+    public function test_pickup_is_idempotent(): void
     {
         $token = $this->getDriverToken();
         $trip = $this->createTrip();
@@ -526,14 +526,24 @@ class DriverApiTest extends TestCase
         $this->withToken($token)
             ->postJson(route('api.v1.driver.trips.pickup', $trip->id), [
                 'trip_student_id' => $tripStudent->id,
-            ]);
+            ])->assertOk();
 
         $response = $this->withToken($token)
             ->postJson(route('api.v1.driver.trips.pickup', $trip->id), [
                 'trip_student_id' => $tripStudent->id,
             ]);
 
-        $response->assertStatus(422);
+        $response->assertOk();
+        $response->assertJsonPath('data.trip_student.pickup_status', 'picked_up');
+
+        $this->assertSame(
+            1,
+            \DB::table('trip_events')
+                ->where('trip_id', $trip->id)
+                ->where('trip_student_id', $tripStudent->id)
+                ->where('event_type', 'student_pickup')
+                ->count(),
+        );
     }
 
     // ─── Trip Students ────────────────────────────────────────────────
@@ -604,6 +614,27 @@ class DriverApiTest extends TestCase
 
         $response = $this->withToken($token)
             ->postJson(route('api.v1.driver.location.update'), [
+                'vehicle_id' => $this->vehicle->id,
+                'latitude' => 28.6128,
+                'longitude' => 77.2295,
+                'trip_id' => $trip->id,
+            ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('trip_events', [
+            'trip_id' => $trip->id,
+            'event_type' => 'location_update',
+        ]);
+    }
+
+    public function test_driver_location_update_via_trip_route(): void
+    {
+        $token = $this->getDriverToken();
+        $trip = $this->createTrip();
+
+        $response = $this->withToken($token)
+            ->postJson(route('api.v1.driver.trips.location', $trip->id), [
                 'vehicle_id' => $this->vehicle->id,
                 'latitude' => 28.6128,
                 'longitude' => 77.2295,
@@ -765,7 +796,7 @@ class DriverApiTest extends TestCase
             'route_id' => $this->route->id,
             'type' => 'both',
             'status' => 'scheduled',
-            'trip_date' => now()->startOfDay(),
+            'trip_date' => app(SchoolContext::class)->startOfToday()->toDateString(),
             'total_students' => 2,
         ]);
 

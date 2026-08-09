@@ -18,11 +18,13 @@ use App\Modules\Driver\Requests\DriverLoginRequest;
 use App\Modules\Driver\Requests\DriverTripActionRequest;
 use App\Modules\Driver\Requests\EtaRequest;
 use App\Modules\Driver\Requests\MarkAttendanceRequest;
+use App\Modules\Driver\Requests\MarkMissedRequest;
 use App\Modules\Driver\Requests\MarkNotificationsReadRequest;
 use App\Modules\Driver\Requests\MarkTripStudentRequest;
 use App\Modules\Driver\Requests\SosAlertRequest;
 use App\Modules\Driver\Requests\StopArrivalRequest;
 use App\Modules\Driver\Requests\TripStartRequest;
+use App\Modules\Driver\Requests\TripLocationUpdateRequest;
 use App\Modules\Driver\Requests\UpdateAttendanceRequest;
 use App\Modules\Driver\Requests\UpdateDriverLocationRequest;
 use App\Modules\Transport\Models\Route;
@@ -109,11 +111,25 @@ class DriverApiController extends ApiBaseController
         return $this->success(DriverTripStudentStatusResource::make($data)->resolve(), 'Student drop confirmed.');
     }
 
+    public function markMissed(MarkMissedRequest $request, Trip $trip): JsonResponse
+    {
+        $data = $this->service->markMissed($request->user(), $trip, $request->validated());
+
+        return $this->success($data, 'Student marked as missed.');
+    }
+
     public function updateLocation(UpdateDriverLocationRequest $request): JsonResponse
     {
         $data = $this->service->updateLocation($request->user(), $request->validated());
 
         return $this->success(DriverLocationResource::make($data)->resolve(), 'Location updated successfully.');
+    }
+
+    public function tripLocation(TripLocationUpdateRequest $request, Trip $trip): JsonResponse
+    {
+        $data = $this->service->updateTripLocation($request->user(), $trip, $request->validated());
+
+        return $this->success($data, 'Trip location updated successfully.');
     }
 
     public function eta(EtaRequest $request, Trip $trip): JsonResponse

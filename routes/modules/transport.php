@@ -21,6 +21,7 @@ Route::prefix('transport')
         Route::post('drivers', [TransportController::class, 'storeDriver'])->middleware('permission:transport.create')->name('drivers.store');
         Route::get('drivers/{driver}', [TransportController::class, 'showDriver'])->name('drivers.show');
         Route::put('drivers/{driver}', [TransportController::class, 'updateDriver'])->middleware('permission:transport.update')->name('drivers.update');
+        Route::put('drivers/{driver}/reset-password', [TransportController::class, 'resetDriverPassword'])->middleware('permission:transport.update')->name('drivers.reset-password');
         Route::delete('drivers/{driver}', [TransportController::class, 'destroyDriver'])->middleware('permission:transport.delete')->name('drivers.destroy');
 
         // Routes
@@ -51,6 +52,12 @@ Route::prefix('transport')
         // Reports
         // Route detail (stops in pickup/drop order)
         Route::get('routes/{route}/detail', [TransportController::class, 'routeDetail'])->name('routes.detail');
+
+        // SOS Alerts
+        Route::get('sos', [TransportController::class, 'sosIndex'])->name('sos.index');
+        Route::get('sos/data', [TransportController::class, 'sosData'])->name('sos.data');
+        Route::get('sos/{sos}', [TransportController::class, 'sosShow'])->name('sos.show');
+        Route::put('sos/{sos}', [TransportController::class, 'updateSos'])->middleware('permission:transport.update')->name('sos.update');
 
         Route::get('reports', [TransportController::class, 'reports'])->name('reports.index');
         Route::get('reports/vehicles/data', [TransportController::class, 'vehicleReportData'])->name('reports.vehicles.data');

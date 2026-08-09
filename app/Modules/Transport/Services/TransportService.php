@@ -3,6 +3,7 @@
 namespace App\Modules\Transport\Services;
 
 use App\Core\Tenant\SchoolContext;
+use App\Models\User;
 use App\Modules\Transport\Models\Driver;
 use App\Modules\Transport\Models\Route;
 use App\Modules\Transport\Models\RouteStop;
@@ -10,12 +11,13 @@ use App\Modules\Transport\Models\TransportAssignment;
 use App\Modules\Transport\Models\Vehicle;
 use App\Modules\Transport\Repositories\TransportRepositoryInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use Spatie\Permission\PermissionRegistrar;
 
 class TransportService
 {
-    public function __construct(private readonly TransportRepositoryInterface $transport)
-    {
-    }
+    public function __construct(private readonly TransportRepositoryInterface $transport) {}
 
     public function createVehicle(array $data): Vehicle
     {
@@ -36,19 +38,64 @@ class TransportService
 
     public function createDriver(array $data): Driver
     {
-        $data['school_id'] = app(SchoolContext::class)->id();
-        $driver = $this->transport->createDriver($data);
-        activity()->causedBy(auth()->user())->performedOn($driver)->event('created')->log('Driver created');
+        return DB::transaction(function () use ($data): Driver {
+            $schoolId = app(SchoolContext::class)->id();
+            $data['school_id'] = $schoolId;
+            $user = $this->createOrUpdateLoginUser(null, $data, $schoolId);
+            $data['user_id'] = $user?->id;
 
-        return $driver;
+            $driver = $this->transport->createDriver($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($driver)
+                ->event('created')
+                ->withProperties(['login_enabled' => $user !== null])
+                ->log('Driver created');
+
+            return $driver;
+        });
     }
 
     public function updateDriver(Driver $driver, array $data): Driver
     {
-        $driver = $this->transport->updateDriver($driver, $data);
-        activity()->causedBy(auth()->user())->performedOn($driver)->event('updated')->log('Driver updated');
+        return DB::transaction(function () use ($driver, $data): Driver {
+            $schoolId = app(SchoolContext::class)->id();
+            $user = $this->createOrUpdateLoginUser($driver, $data, $schoolId);
 
-        return $driver;
+            $data['school_id'] = $schoolId;
+            $data['user_id'] = $user?->id ?? $driver->user_id;
+
+            $driver = $this->transport->updateDriver($driver, $data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($driver)
+                ->event('updated')
+                ->withProperties(['login_enabled' => $data['user_id'] !== null])
+                ->log('Driver updated');
+
+            return $driver;
+        });
+    }
+
+    public function resetDriverPassword(Driver $driver, array $data): void
+    {
+        $user = $driver->user;
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'driver' => ['This driver does not have a login account yet. Enable Driver Login to create one.'],
+            ]);
+        }
+
+        $user->update(['password' => Hash::make($data['password'])]);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($driver)
+            ->event('password_reset')
+            ->log('Driver password reset');
     }
 
     public function createRoute(array $data): Route
@@ -104,5 +151,61 @@ class TransportService
 
             return $assignment;
         });
+    }
+
+    /**
+     * Create or update the User account behind a driver when login is enabled.
+     * When login is disabled the existing account (if any) is left untouched.
+     */
+    private function createOrUpdateLoginUser(?Driver $driver, array $data, ?int $schoolId): ?User
+    {
+        if (! filter_var($data['enable_login'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            return null;
+        }
+
+        $payload = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'status' => 'active',
+            'current_school_id' => $schoolId,
+            'email_verified_at' => now(),
+        ];
+
+        if (! empty($data['password'])) {
+            $payload['password'] = Hash::make($data['password']);
+        }
+
+        $user = $driver?->user;
+
+        if ($user) {
+            $user->update(array_filter($payload));
+        } else {
+            if (! isset($payload['password'])) {
+                throw ValidationException::withMessages([
+                    'password' => ['Password is required.'],
+                ]);
+            }
+
+            $user = User::query()->create($payload);
+        }
+
+        if ($schoolId) {
+            $user->schools()->syncWithoutDetaching([
+                $schoolId => [
+                    'designation' => 'Driver',
+                    'joined_at' => now()->toDateString(),
+                    'status' => 'active',
+                    'is_primary' => true,
+                ],
+            ]);
+
+            app(PermissionRegistrar::class)->setPermissionsTeamId($schoolId);
+
+            if (! $user->hasRole('Driver')) {
+                $user->assignRole('Driver');
+            }
+        }
+
+        return $user;
     }
 }

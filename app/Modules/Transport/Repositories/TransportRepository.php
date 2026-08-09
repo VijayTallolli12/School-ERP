@@ -18,7 +18,10 @@ class TransportRepository implements TransportRepositoryInterface
 
     public function drivers(): Builder
     {
-        return Driver::query()->withCount('vehicles')->orderBy('name');
+        return Driver::query()
+            ->with('user:id,email,status')
+            ->withCount('vehicles')
+            ->orderBy('name');
     }
 
     public function routes(): Builder

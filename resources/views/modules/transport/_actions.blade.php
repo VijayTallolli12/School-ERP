@@ -22,6 +22,14 @@
                 data-update-url="{{ route('admin.transport.'.$routeBase.'.update', $model) }}">
             <i class="ti ti-pencil"></i>
         </button>
+        @if ($type === 'driver' && $model->user_id)
+            <button type="button" class="btn btn-sm btn-outline-warning reset-driver-password"
+                    data-url="{{ route('admin.transport.drivers.reset-password', $model) }}"
+                    data-name="{{ $model->name }}"
+                    title="Reset Driver Password">
+                <i class="ti ti-key"></i>
+            </button>
+        @endif
     @endcan
     @can('transport.delete')
         <button type="button" class="btn btn-sm btn-outline-danger delete-transport"

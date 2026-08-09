@@ -2,6 +2,7 @@
 
 namespace App\Modules\Driver\Repositories;
 
+use App\Core\Tenant\SchoolContext;
 use App\Models\Trip;
 use App\Models\TripEvent;
 use App\Models\TripStudent;
@@ -14,6 +15,10 @@ use Illuminate\Support\Collection;
 
 class DriverApiRepository implements DriverApiRepositoryInterface
 {
+    public function __construct(
+        private readonly SchoolContext $context,
+    ) {}
+
     public function findDriverByUserId(int $userId): ?Driver
     {
         return Driver::query()->where('user_id', $userId)->first();
@@ -31,7 +36,7 @@ class DriverApiRepository implements DriverApiRepositoryInterface
     {
         return Trip::query()
             ->where('driver_id', $driverId)
-            ->where('trip_date', now()->startOfDay())
+            ->whereDate('trip_date', $this->context->startOfToday()->toDateString())
             ->with(['route', 'vehicle'])
             ->orderBy('created_at')
             ->get();

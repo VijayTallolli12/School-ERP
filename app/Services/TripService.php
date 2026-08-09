@@ -29,7 +29,7 @@ class TripService
             ->where('school_id', $schoolId)
             ->where('vehicle_id', $vehicleId)
             ->where('status', 'active')
-            ->with('routeStop')
+            ->with('stop')
             ->get();
 
         $stops = RouteStop::query()
@@ -205,6 +205,35 @@ class TripService
                 'dropped_off_at' => now()->toIso8601String(),
                 'latitude' => $latitude,
                 'longitude' => $longitude,
+            ],
+        ]);
+
+        return $tripStudent->fresh(['student', 'stop']);
+    }
+
+    /**
+     * Mark a trip student as missed for the active side of the trip.
+     * A pickup trip misses `pickup_status`; a drop trip misses `drop_status`.
+     */
+    public function markMissed(TripStudent $tripStudent, ?float $latitude = null, ?float $longitude = null): TripStudent
+    {
+        if ($tripStudent->trip->type === 'drop') {
+            $tripStudent->update(['drop_status' => 'missed']);
+        } else {
+            $tripStudent->update(['pickup_status' => 'missed']);
+        }
+
+        TripEvent::query()->create([
+            'school_id' => $tripStudent->school_id,
+            'trip_id' => $tripStudent->trip_id,
+            'trip_student_id' => $tripStudent->id,
+            'event_type' => 'student_missed',
+            'metadata' => [
+                'student_id' => $tripStudent->student_id,
+                'side' => $tripStudent->trip->type,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'at' => now()->toIso8601String(),
             ],
         ]);
 

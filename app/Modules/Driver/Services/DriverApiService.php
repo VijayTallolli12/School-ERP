@@ -6,6 +6,7 @@ use App\Core\Tenant\SchoolContext;
 use App\Events\LocationUpdated;
 use App\Http\Resources\Api\V1\DriverAuthResource;
 use App\Models\Trip;
+use App\Models\TripEvent;
 use App\Models\TripStudent;
 use App\Models\User;
 use App\Modules\Driver\Repositories\DriverApiRepositoryInterface;
@@ -13,6 +14,7 @@ use App\Modules\Notifications\Services\NotificationService;
 use App\Modules\Transport\Models\Driver;
 use App\Modules\Transport\Models\Route;
 use App\Modules\Transport\Models\RouteStop;
+use App\Modules\Transport\Models\SosAlert;
 use App\Services\DriverDashboardService;
 use App\Services\EtaService;
 use App\Services\TripService;
@@ -188,6 +190,7 @@ class DriverApiService
 
         $stops = $trip->route?->stops ?? collect();
         $studentsByStop = $trip->tripStudents->groupBy('route_stop_id');
+        $stopProgress = $this->deriveTripProgress($trip);
 
         return [
             'trip' => [
@@ -200,6 +203,9 @@ class DriverApiService
                 'total_students' => $trip->total_students,
                 'picked_up_count' => $trip->picked_up_count,
                 'dropped_off_count' => $trip->dropped_off_count,
+                'current_stop_id' => $stopProgress['current_stop_id'],
+                'next_stop_id' => $stopProgress['next_stop_id'],
+                'completed_stops' => $stopProgress['completed_stops'],
                 'notes' => $trip->notes,
             ],
             'route' => [
@@ -219,16 +225,11 @@ class DriverApiService
                 'pickup_time' => $stop->pickup_time?->format('H:i'),
                 'drop_time' => $stop->drop_time?->format('H:i'),
                 'sequence' => $stop->sequence,
-                'students' => ($studentsByStop->get($stop->id) ?? collect())->map(fn (TripStudent $ts) => [
-                    'id' => $ts->id,
-                    'student_id' => $ts->student_id,
-                    'student_name' => $ts->student?->full_name,
-                    'pickup_status' => $ts->pickup_status,
-                    'drop_status' => $ts->drop_status,
-                    'picked_up_at' => $ts->picked_up_at?->toIso8601String(),
-                    'dropped_off_at' => $ts->dropped_off_at?->toIso8601String(),
-                ])->values()->all(),
+                'arrived_at' => $stopProgress['progress'][$stop->id]['arrived_at'] ?? null,
+                'left_at' => $stopProgress['progress'][$stop->id]['left_at'] ?? null,
+                'students' => ($studentsByStop->get($stop->id) ?? collect())->map(fn (TripStudent $ts) => $this->tripStudentPayload($ts))->values()->all(),
             ])->values()->all(),
+            'students' => $trip->tripStudents->values()->map(fn (TripStudent $ts) => $this->tripStudentPayload($ts))->all(),
         ];
     }
 
@@ -672,8 +673,74 @@ class DriverApiService
         ];
     }
 
+    private function tripStudentPayload(TripStudent $ts): array
+    {
+        return [
+            'id' => $ts->id,
+            'trip_student_id' => $ts->id,
+            'student_id' => $ts->student_id,
+            'name' => $ts->student?->full_name,
+            'class' => $this->studentClassName($ts->student),
+            'route_stop_id' => $ts->route_stop_id,
+            'stop_name' => $ts->stop?->stop_name,
+            'stop_sequence' => $ts->stop?->sequence,
+            'pickup_status' => $ts->pickup_status,
+            'drop_status' => $ts->drop_status,
+            'picked_up_at' => $ts->picked_up_at?->toIso8601String(),
+            'dropped_off_at' => $ts->dropped_off_at?->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Derive per-stop progress for a trip from recorded stop_arrived /
+     * stop_left events. This is the authoritative source of truth for where
+     * the driver currently is, and survives app reloads / device switches.
+     */
+    private function deriveTripProgress(Trip $trip): array
+    {
+        $stops = $trip->route?->stops ?? collect();
+        $events = TripEvent::query()
+            ->where('trip_id', $trip->id)
+            ->whereIn('event_type', ['stop_arrived', 'stop_left'])
+            ->orderBy('id')
+            ->get();
+
+        $progress = [];
+        foreach ($events as $event) {
+            $stopId = (int) ($event->metadata['route_stop_id'] ?? 0);
+            if ($stopId <= 0) {
+                continue;
+            }
+            $stamp = $event->created_at?->toIso8601String();
+            if ($event->event_type === 'stop_left') {
+                $progress[$stopId]['left_at'] = $stamp;
+                $progress[$stopId]['arrived_at'] ??= $stamp;
+            } else {
+                $progress[$stopId]['arrived_at'] ??= $stamp;
+            }
+        }
+
+        $ordered = $stops->sortBy('sequence')->values();
+        $current = $ordered->first(fn ($stop) => isset($progress[$stop->id]['arrived_at']) && ! isset($progress[$stop->id]['left_at']));
+        $currentId = $current?->id;
+        $nextId = null;
+        if ($currentId !== null) {
+            $idx = $ordered->search(fn ($stop) => $stop->id === $currentId);
+            $nextId = $idx !== false && isset($ordered[$idx + 1]) ? $ordered[$idx + 1]->id : null;
+        }
+
+        return [
+            'progress' => $progress,
+            'current_stop_id' => $currentId,
+            'next_stop_id' => $nextId,
+            'completed_stops' => $stops->filter(fn ($stop) => isset($progress[$stop->id]['left_at']))->count(),
+        ];
+    }
+
     private function buildTripDetails(Trip $trip): array
     {
+        $stopProgress = $this->deriveTripProgress($trip);
+
         return [
             'trip' => [
                 'id' => $trip->id,
@@ -685,6 +752,9 @@ class DriverApiService
                 'total_students' => $trip->total_students,
                 'picked_up_count' => $trip->picked_up_count,
                 'dropped_off_count' => $trip->dropped_off_count,
+                'current_stop_id' => $stopProgress['current_stop_id'],
+                'next_stop_id' => $stopProgress['next_stop_id'],
+                'completed_stops' => $stopProgress['completed_stops'],
             ],
             'route' => [
                 'route_id' => $trip->route?->id,
@@ -698,11 +768,14 @@ class DriverApiService
                 'vehicle_number' => $trip->vehicle->vehicle_number,
                 'vehicle_name' => $trip->vehicle->vehicle_name,
             ] : null,
+            'students' => $trip->tripStudents->values()->map(fn (TripStudent $ts) => $this->tripStudentPayload($ts))->all(),
             'stops' => ($trip->route?->stops ?? collect())->map(fn (RouteStop $s) => [
                 'stop_id' => $s->id,
                 'stop_name' => $s->stop_name,
                 'sequence' => $s->sequence,
-                'students' => $trip->tripStudents->where('route_stop_id', $s->id)->values()->map(fn (TripStudent $ts) => $this->compactStudent($ts))->all(),
+                'arrived_at' => $stopProgress['progress'][$s->id]['arrived_at'] ?? null,
+                'left_at' => $stopProgress['progress'][$s->id]['left_at'] ?? null,
+                'students' => $trip->tripStudents->where('route_stop_id', $s->id)->values()->map(fn (TripStudent $ts) => $this->tripStudentPayload($ts))->all(),
             ])->values()->all(),
         ];
     }
@@ -804,10 +877,10 @@ class DriverApiService
             ]);
         }
 
+        // Idempotent (offline-retry safe): an already-picked-up student returns
+        // the current state instead of erroring or writing a duplicate event.
         if ($tripStudent->pickup_status === 'picked_up') {
-            throw ValidationException::withMessages([
-                'trip_student_id' => ['Student already picked up.'],
-            ]);
+            return $this->tripStudentStatus($tripStudent);
         }
 
         $tripStudent = $this->tripService->markPickup(
@@ -818,15 +891,7 @@ class DriverApiService
 
         activity()->causedBy($user)->performedOn($tripStudent)->event('pickup')->log('Driver marked student pickup');
 
-        return [
-            'trip_student' => [
-                'id' => $tripStudent->id,
-                'student_id' => $tripStudent->student_id,
-                'student_name' => $tripStudent->student?->full_name,
-                'pickup_status' => $tripStudent->pickup_status,
-                'picked_up_at' => $tripStudent->picked_up_at?->toIso8601String(),
-            ],
-        ];
+        return $this->tripStudentStatus($tripStudent);
     }
 
     public function drop(User $user, Trip $trip, array $validated): array
@@ -848,10 +913,10 @@ class DriverApiService
             ]);
         }
 
+        // Idempotent (offline-retry safe): an already-dropped-off student returns
+        // the current state instead of erroring or writing a duplicate event.
         if ($tripStudent->drop_status === 'dropped_off') {
-            throw ValidationException::withMessages([
-                'trip_student_id' => ['Student already dropped off.'],
-            ]);
+            return $this->tripStudentStatus($tripStudent);
         }
 
         $tripStudent = $this->tripService->markDrop(
@@ -862,15 +927,50 @@ class DriverApiService
 
         activity()->causedBy($user)->performedOn($tripStudent)->event('drop')->log('Driver marked student drop');
 
-        return [
-            'trip_student' => [
-                'id' => $tripStudent->id,
-                'student_id' => $tripStudent->student_id,
-                'student_name' => $tripStudent->student?->full_name,
-                'drop_status' => $tripStudent->drop_status,
-                'dropped_off_at' => $tripStudent->dropped_off_at?->toIso8601String(),
-            ],
-        ];
+        return $this->tripStudentStatus($tripStudent);
+    }
+
+    public function markMissed(User $user, Trip $trip, array $validated): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.update');
+        $trip = $this->ensureDriverOwnsTrip($driver, $trip, false);
+
+        if ($trip->status !== 'in_progress') {
+            throw ValidationException::withMessages([
+                'trip' => ['Trip must be in progress to mark a student as missed.'],
+            ]);
+        }
+
+        $tripStudent = $this->drivers->findTripStudentInTrip($trip->id, (int) $validated['trip_student_id']);
+
+        if (! $tripStudent) {
+            throw ValidationException::withMessages([
+                'trip_student_id' => ['Trip student does not belong to this trip.'],
+            ]);
+        }
+
+        $status = $trip->type === 'drop' ? $tripStudent->drop_status : $tripStudent->pickup_status;
+
+        // Idempotent (offline-retry safe): already missed returns the current state.
+        if ($status === 'missed') {
+            return $this->tripStudentStatus($tripStudent);
+        }
+
+        if ($status === 'picked_up' || $status === 'dropped_off') {
+            throw ValidationException::withMessages([
+                'trip_student_id' => [ucfirst($trip->type === 'drop' ? 'drop already recorded' : 'pickup already recorded').'.'],
+            ]);
+        }
+
+        $tripStudent = $this->tripService->markMissed(
+            $tripStudent,
+            $validated['latitude'] ?? null,
+            $validated['longitude'] ?? null,
+        );
+
+        activity()->causedBy($user)->performedOn($tripStudent)->event('missed')->log('Driver marked student missed');
+
+        return $this->tripStudentStatus($tripStudent);
     }
 
     public function updateLocation(User $user, array $validated): array
@@ -943,6 +1043,83 @@ class DriverApiService
                 'heading' => $location->heading,
                 'captured_at' => $location->captured_at->toIso8601String(),
             ],
+        ];
+    }
+
+    /**
+     * Batch live-location recording scoped to a trip. Accepts the driver app's
+     * format: { locations: [{ lat, lng, speed, heading, accuracy, timestamp }] }
+     * or a single flat point. vehicle/trip are derived from the route binding.
+     */
+    public function updateTripLocation(User $user, Trip $trip, array $validated): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.update');
+        $trip = $this->ensureDriverOwnsTrip($driver, $trip, false);
+
+        $vehicleId = $trip->vehicle_id;
+
+        if ($vehicleId === null) {
+            throw new AuthorizationException('Trip has no assigned vehicle.', Response::HTTP_FORBIDDEN);
+        }
+
+        $vehicle = $this->drivers->findDriverVehicle($driver, (int) $vehicleId);
+
+        if (! $vehicle) {
+            throw new AuthorizationException('Vehicle not assigned to this driver.', Response::HTTP_FORBIDDEN);
+        }
+
+        $points = $validated['locations']
+            ?? [array_intersect_key($validated, array_flip(['lat', 'lng', 'speed', 'heading', 'accuracy', 'timestamp']))];
+
+        $received = count($points);
+        $latest = null;
+
+        foreach ($points as $point) {
+            $latest = $this->drivers->createVehicleLocation([
+                'vehicle_id' => $vehicleId,
+                'latitude' => (float) $point['lat'],
+                'longitude' => (float) $point['lng'],
+                'speed' => isset($point['speed']) ? (float) $point['speed'] : null,
+                'heading' => isset($point['heading']) ? (float) $point['heading'] : null,
+                'captured_at' => ! empty($point['timestamp']) ? $point['timestamp'] : now(),
+                'source' => 'driver_app',
+            ]);
+
+            $this->drivers->createTripEvent([
+                'school_id' => $driver->school_id,
+                'trip_id' => $trip->id,
+                'event_type' => 'location_update',
+                'metadata' => [
+                    'latitude' => (float) $point['lat'],
+                    'longitude' => (float) $point['lng'],
+                    'speed' => isset($point['speed']) ? (float) $point['speed'] : null,
+                    'heading' => isset($point['heading']) ? (float) $point['heading'] : null,
+                    'accuracy' => isset($point['accuracy']) ? (float) $point['accuracy'] : null,
+                    'captured_at' => $latest->captured_at->toIso8601String(),
+                ],
+            ]);
+        }
+
+        if ($latest) {
+            LocationUpdated::dispatch(
+                vehicleId: (int) $vehicleId,
+                latitude: (float) $latest->latitude,
+                longitude: (float) $latest->longitude,
+                speed: $latest->speed ? (float) $latest->speed : null,
+                heading: $latest->heading ? (float) $latest->heading : null,
+                capturedAt: $latest->captured_at->toIso8601String(),
+                extra: array_filter(['trip_id' => $trip->id]),
+            );
+        }
+
+        return [
+            'received' => $received,
+            'trip_id' => $trip->id,
+            'latest' => $latest ? [
+                'latitude' => (float) $latest->latitude,
+                'longitude' => (float) $latest->longitude,
+                'captured_at' => $latest->captured_at->toIso8601String(),
+            ] : null,
         ];
     }
 
@@ -1019,6 +1196,15 @@ class DriverApiService
                 'message' => $validated['message'] ?? null,
                 'triggered_at' => now()->toIso8601String(),
             ],
+        ]);
+
+        SosAlert::query()->create([
+            'driver_id' => $driver->id,
+            'trip_id' => $validated['trip_id'] ?? null,
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
+            'message' => $validated['message'] ?? null,
+            'status' => 'new',
         ]);
 
         activity()

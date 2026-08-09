@@ -38,6 +38,7 @@ Route::prefix('driver')->name('driver.')->group(function (): void {
     Route::put('trips/{trip}/attendance/{tripStudent}', [DriverApiController::class, 'updateAttendance'])->name('attendance.update');
     Route::post('trips/{trip}/pickup', [DriverApiController::class, 'pickup'])->name('trips.pickup');
     Route::post('trips/{trip}/drop', [DriverApiController::class, 'drop'])->name('trips.drop');
+    Route::post('trips/{trip}/mark-missed', [DriverApiController::class, 'markMissed'])->name('trips.mark-missed');
 
     // ─── STOP FLOW ───────────────────────────────────────────────────
     Route::post('trips/{trip}/arrive-stop', [DriverApiController::class, 'arriveStop'])->name('trips.arrive-stop');
@@ -49,5 +50,6 @@ Route::prefix('driver')->name('driver.')->group(function (): void {
 
     // ─── LOCATION / SOS ──────────────────────────────────────────────
     Route::post('location', [DriverApiController::class, 'updateLocation'])->name('location.update');
+    Route::post('trips/{trip}/location', [DriverApiController::class, 'tripLocation'])->name('trips.location');
     Route::post('sos', [DriverApiController::class, 'sos'])->name('sos');
 });

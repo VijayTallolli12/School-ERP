@@ -458,6 +458,12 @@
                             <p>Transport</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.transport.sos.index') }}" class="nav-link @if(request()->routeIs('admin.transport.sos.*')) active @endif">
+                            <i class="nav-icon ti ti-alert-octagon text-danger"></i>
+                            <p>SOS Alerts</p>
+                        </a>
+                    </li>
                 @endcan
 
                 @can('fees.reports')

@@ -13,6 +13,7 @@ class DriverTripDetailsResource extends JsonResource
             'trip' => $this['trip'],
             'route' => $this['route'],
             'vehicle' => $this['vehicle'],
+            'students' => $this['students'] ?? [],
             'stops' => $this['stops'],
         ];
     }

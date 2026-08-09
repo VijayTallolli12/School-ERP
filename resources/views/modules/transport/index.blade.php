@@ -61,7 +61,7 @@
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="driversTable">
-                        <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>License No</th><th>License Expiry</th><th>Status</th><th>Vehicles</th><th width="120">Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>License No</th><th>License Expiry</th><th>Status</th><th>Login</th><th>Vehicles</th><th width="140">Actions</th></tr></thead>
                     </table>
                 </div>
 
@@ -142,6 +142,23 @@
                     <div class="col-md-6"><label class="form-label required">License Expiry</label><input class="form-control" type="date" name="license_expiry_date" required></div>
                     <div class="col-12"><label class="form-label">Address</label><textarea class="form-control" name="address" rows="2"></textarea></div>
                     <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+
+                    <div class="col-12 border-top pt-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="enable_login" value="1" id="enableDriverLogin">
+                            <label class="form-check-label" for="enableDriverLogin">
+                                <i class="ti ti-key me-1"></i> Enable Driver Login
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12" id="driverLoginFields" style="display:none;" data-email-label="Email">
+                        <div class="row g-3">
+                            <div class="col-12"><label class="form-label required" id="driverEmailLabel">Email</label><input class="form-control" type="email" name="email" id="driverEmail" maxlength="255"></div>
+                            <div class="col-md-6"><label class="form-label required" id="driverPasswordLabel">Password</label><input class="form-control" type="password" name="password" id="driverPassword" autocomplete="new-password"></div>
+                            <div class="col-md-6"><label class="form-label required" id="driverPasswordConfirmLabel">Confirm Password</label><input class="form-control" type="password" name="password_confirmation" id="driverPasswordConfirm" autocomplete="new-password"></div>
+                            <div class="col-12"><div class="form-text" id="driverPasswordHint">New password. Leave blank to keep the current password.</div></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
             </form>
@@ -216,6 +233,28 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="driverResetPasswordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <form class="modal-content ajax-form transport-form" method="POST" id="driverResetPasswordForm">
+                @csrf
+                <input type="hidden" name="_method" value="PUT">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reset Driver Password</h5>
+                    <button class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Resetting password for: <strong id="driverResetPasswordName">—</strong></p>
+                    <div class="mb-3"><label class="form-label required">New Password</label><input class="form-control" type="password" name="password" required autocomplete="new-password"></div>
+                    <div class="mb-0"><label class="form-label required">Confirm Password</label><input class="form-control" type="password" name="password_confirmation" required autocomplete="new-password"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <button class="btn btn-warning py-2" type="submit"><i class="ti ti-key me-1"></i> Reset Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endpush
 
 @push('scripts')
@@ -230,7 +269,7 @@
                     {data:'id'}, {data:'vehicle_number'}, {data:'vehicle_name'}, {data:'vehicle_type'}, {data:'capacity'}, {data:'driver_name', orderable:false, searchable:false}, {data:'attendant'}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
                 ]}),
                 drivers: $('#driversTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.transport.drivers.data') }}', columns: [
-                    {data:'id'}, {data:'name'}, {data:'mobile'}, {data:'license_number'}, {data:'license_expiry_date'}, {data:'status'}, {data:'vehicles_count', searchable:false}, {data:'actions', orderable:false, searchable:false}
+                    {data:'id'}, {data:'name'}, {data:'mobile'}, {data:'license_number'}, {data:'license_expiry_date'}, {data:'status'}, {data:'login', orderable:false, searchable:false}, {data:'vehicles_count', searchable:false}, {data:'actions', orderable:false, searchable:false}
                 ]}),
                 routes: $('#routesTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: '{{ route('admin.transport.routes.data') }}', columns: [
                     {data:'id'}, {data:'route_name'}, {data:'start_point'}, {data:'end_point'}, {data:'distance'}, {data:'vehicle_name', orderable:false, searchable:false}, {data:'driver_name', orderable:false, searchable:false}, {data:'stops_count', searchable:false}, {data:'status'}, {data:'actions', orderable:false, searchable:false}
@@ -251,6 +290,34 @@
                 'route-stop': {modal: '#routeStopModal', store: '{{ route('admin.transport.route-stops.store') }}', table: tables.routeStops},
                 assignment: {modal: '#assignmentModal', store: '{{ route('admin.transport.assignments.store') }}', table: tables.assignments}
             };
+
+            function toggleDriverLoginFields(existingUser) {
+                const checked = !!$('#driverModal [name="enable_login"]').prop('checked');
+                $('#driverLoginFields').toggle(checked);
+                $('#driverEmailLabel').toggleClass('required', checked);
+                if (!checked) {
+                    return;
+                }
+                // New login (create OR driver with no account yet) -> password required.
+                // Existing login -> password optional (leave blank keeps current).
+                const passwordRequired = !existingUser;
+                $('#driverPasswordLabel, #driverPasswordConfirmLabel').toggleClass('required', passwordRequired);
+                $('#driverPasswordHint').toggle(!passwordRequired);
+            }
+
+            $('#driverModal').on('change', '[name="enable_login"]', function () {
+                const existingUser = $(this).data('existing-user');
+                toggleDriverLoginFields(existingUser);
+            });
+
+            $(document).on('click', '.reset-driver-password', function () {
+                $('#driverResetPasswordForm')[0].reset();
+                $('#driverResetPasswordForm').attr('action', $(this).data('url'));
+                $('#driverResetPasswordForm').find('.is-invalid').removeClass('is-invalid');
+                $('#driverResetPasswordForm').find('.invalid-feedback.dynamic').remove();
+                $('#driverResetPasswordName').text($(this).data('name'));
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('driverResetPasswordModal')).show();
+            });
 
             function populateAssignmentStops(routeId, selectedStopId) {
                 const $stop = $('#assignmentStop');
@@ -307,6 +374,11 @@
                     $('#assignmentVehicle').val('');
                     $('#assignmentPickupTime').val('');
                     $('#assignmentDropTime').val('');
+                }
+                if (modalId === '#driverModal') {
+                    const $checkbox = form.find('[name="enable_login"]');
+                    $checkbox.data('existing-user', false);
+                    toggleDriverLoginFields(false);
                 }
                 bootstrap.Modal.getOrCreateInstance(document.querySelector(modalId)).show();
             });
@@ -366,6 +438,15 @@
                         // re-call with correct stopId to select the saved stop
                         populateAssignmentStops(routeId, stopId);
                         setAssignmentTimes(stopId);
+                    }
+                    if (type === 'driver') {
+                        const existingUser = !!response.data.user?.id;
+                        const $checkbox = form.find('[name="enable_login"]');
+                        $checkbox.data('existing-user', existingUser);
+                        form.find('[name="password"]').val('');
+                        form.find('[name="password_confirmation"]').val('');
+                        form.find('#driverPasswordHint').text(existingUser ? 'New password. Leave blank to keep the current password.' : '');
+                        toggleDriverLoginFields(existingUser);
                     }
                     bootstrap.Modal.getOrCreateInstance(document.querySelector(setup.modal)).show();
                 });
