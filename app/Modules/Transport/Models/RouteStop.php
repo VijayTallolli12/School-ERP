@@ -20,6 +20,8 @@ class RouteStop extends Model
         'school_id',
         'route_id',
         'stop_name',
+        'latitude',
+        'longitude',
         'pickup_time',
         'drop_time',
         'sequence',
@@ -30,6 +32,8 @@ class RouteStop extends Model
         return [
             'pickup_time' => 'datetime:H:i',
             'drop_time' => 'datetime:H:i',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 

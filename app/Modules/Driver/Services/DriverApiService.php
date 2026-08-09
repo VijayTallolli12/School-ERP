@@ -9,11 +9,15 @@ use App\Models\Trip;
 use App\Models\TripStudent;
 use App\Models\User;
 use App\Modules\Driver\Repositories\DriverApiRepositoryInterface;
+use App\Modules\Notifications\Services\NotificationService;
 use App\Modules\Transport\Models\Driver;
+use App\Modules\Transport\Models\Route;
+use App\Modules\Transport\Models\RouteStop;
 use App\Services\DriverDashboardService;
 use App\Services\EtaService;
 use App\Services\TripService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -27,6 +31,7 @@ class DriverApiService
         private readonly DriverDashboardService $dashboardService,
         private readonly TripService $tripService,
         private readonly EtaService $etaService,
+        private readonly NotificationService $notificationService,
     ) {}
 
     public function login(array $validated, ?int $schoolIdFromHeader = null): array
@@ -232,6 +237,23 @@ class DriverApiService
         $driver = $this->resolveDriverForUser($user, 'transport.update');
         $trip = $this->ensureDriverOwnsTrip($driver, $trip, false);
 
+        return $this->performTripStart($user, $driver, $trip);
+    }
+
+    public function tripStartById(User $user, array $validated): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.update');
+        $trip = $this->drivers->findTripForDriver($driver->id, (int) $validated['trip_id']);
+
+        if (! $trip) {
+            throw new AuthorizationException('Trip not assigned to this driver.', Response::HTTP_FORBIDDEN);
+        }
+
+        return $this->performTripStart($user, $driver, $trip);
+    }
+
+    private function performTripStart(User $user, Driver $driver, Trip $trip): array
+    {
         if ($trip->status !== 'scheduled') {
             throw ValidationException::withMessages([
                 'trip' => ['Trip can only be started from scheduled status.'],
@@ -249,6 +271,463 @@ class DriverApiService
                 'started_at' => $trip->started_at?->toIso8601String(),
             ],
         ];
+    }
+
+    public function tripEnd(User $user, Trip $trip): array
+    {
+        return $this->tripComplete($user, $trip);
+    }
+
+    public function tripCurrent(User $user): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.view');
+        $trip = $this->drivers->findCurrentTripForDriver($driver->id);
+
+        if (! $trip) {
+            return [
+                'has_current_trip' => false,
+                'trip' => null,
+            ];
+        }
+
+        return $this->buildTripDetails($trip) + ['has_current_trip' => true];
+    }
+
+    public function routesToday(User $user): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.view');
+        $trips = $this->drivers->getTodayTripsForDriver($driver->id);
+        $tripByRoute = $trips->groupBy('route_id');
+        $routes = $this->drivers->getRoutesForDriver($driver->id);
+
+        return [
+            'routes' => $routes->map(fn (Route $r) => [
+                'route_id' => $r->id,
+                'route_name' => $r->route_name,
+                'start_point' => $r->start_point,
+                'end_point' => $r->end_point,
+                'distance' => $r->distance,
+                'stops_count' => $r->stops->count(),
+                'today_trips' => ($tripByRoute->get($r->id) ?? collect())->values()->map(fn (Trip $t) => [
+                    'trip_id' => $t->id,
+                    'type' => $t->type,
+                    'status' => $t->status,
+                    'total_students' => $t->total_students,
+                    'started_at' => $t->started_at?->toIso8601String(),
+                    'completed_at' => $t->completed_at?->toIso8601String(),
+                ])->all(),
+            ])->values()->all(),
+        ];
+    }
+
+    public function routeShow(User $user, Route $route): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.view');
+        $route = $this->ensureDriverOwnsRoute($driver, $route);
+
+        return $this->buildRoutePayload($route);
+    }
+
+    public function routeStops(User $user, Route $route): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.view');
+        $route = $this->ensureDriverOwnsRoute($driver, $route);
+
+        $stops = $route->stops()->with('assignments.student')->get();
+
+        return [
+            'route_id' => $route->id,
+            'route_name' => $route->route_name,
+            'stops' => $stops->map(fn (RouteStop $s) => [
+                'stop_id' => $s->id,
+                'stop_name' => $s->stop_name,
+                'latitude' => $s->latitude,
+                'longitude' => $s->longitude,
+                'sequence' => $s->sequence,
+                'pickup_time' => $s->pickup_time?->format('H:i'),
+                'drop_time' => $s->drop_time?->format('H:i'),
+                'students_count' => $s->assignments->where('status', 'active')->count(),
+            ])->values()->all(),
+        ];
+    }
+
+    public function routeStudents(User $user, Route $route): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.view');
+        $route = $this->ensureDriverOwnsRoute($driver, $route);
+
+        $students = collect();
+        foreach ($route->stops()->with('assignments.student')->get() as $stop) {
+            foreach ($stop->assignments->where('status', 'active') as $assignment) {
+                $student = $assignment->student;
+                if (! $student) {
+                    continue;
+                }
+                $students->push([
+                    'student_id' => $assignment->student_id,
+                    'name' => $student->full_name,
+                    'class' => $this->studentClassName($student),
+                    'stop_id' => $stop->id,
+                    'stop_name' => $stop->stop_name,
+                    'stop_sequence' => $stop->sequence,
+                ]);
+            }
+        }
+
+        return [
+            'route_id' => $route->id,
+            'route_name' => $route->route_name,
+            'students' => $students->values()->all(),
+        ];
+    }
+
+    public function tripHistory(User $user, ?string $from, ?string $to, int $perPage): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.view');
+        $paginator = $this->drivers->getTripHistoryForDriver($driver->id, $from, $to, $perPage);
+
+        return [
+            'trips' => collect($paginator->items())->map(fn (Trip $t) => [
+                'id' => $t->id,
+                'trip_date' => $t->trip_date->format('Y-m-d'),
+                'type' => $t->type,
+                'status' => $t->status,
+                'route_id' => $t->route_id,
+                'route_name' => $t->route?->route_name,
+                'vehicle_number' => $t->vehicle?->vehicle_number,
+                'total_students' => $t->total_students,
+                'picked_up_count' => $t->picked_up_count,
+                'dropped_off_count' => $t->dropped_off_count,
+                'started_at' => $t->started_at?->toIso8601String(),
+                'completed_at' => $t->completed_at?->toIso8601String(),
+            ])->values()->all(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ];
+    }
+
+    public function markAttendance(User $user, Trip $trip, array $validated): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.update');
+        $trip = $this->ensureDriverOwnsTrip($driver, $trip, false);
+
+        if ($trip->status !== 'in_progress') {
+            throw ValidationException::withMessages([
+                'trip' => ['Trip must be in progress to mark attendance.'],
+            ]);
+        }
+
+        $tripStudent = TripStudent::query()
+            ->where('trip_id', $trip->id)
+            ->where('student_id', (int) $validated['student_id'])
+            ->first();
+
+        if (! $tripStudent) {
+            throw ValidationException::withMessages([
+                'student_id' => ['Student is not part of this trip.'],
+            ]);
+        }
+
+        return $this->markAction($user, $trip, $tripStudent, $validated['action'], $validated['latitude'] ?? null, $validated['longitude'] ?? null, $validated['request_id'] ?? null);
+    }
+
+    public function updateAttendance(User $user, Trip $trip, TripStudent $tripStudent, array $validated): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.update');
+        $trip = $this->ensureDriverOwnsTrip($driver, $trip, false);
+
+        $owned = $this->drivers->findTripStudentInTrip($trip->id, $tripStudent->id);
+        if (! $owned) {
+            throw new AuthorizationException('Student is not part of this trip.', Response::HTTP_FORBIDDEN);
+        }
+
+        if ($trip->status !== 'in_progress') {
+            throw ValidationException::withMessages([
+                'trip' => ['Trip must be in progress to mark attendance.'],
+            ]);
+        }
+
+        return $this->markAction($user, $trip, $owned, $validated['action'], $validated['latitude'] ?? null, $validated['longitude'] ?? null, $validated['request_id'] ?? null);
+    }
+
+    private function markAction(User $user, Trip $trip, TripStudent $tripStudent, string $action, ?float $latitude, ?float $longitude, ?string $requestId): array
+    {
+        $alreadyDone = $action === 'pickup'
+            ? $tripStudent->pickup_status === 'picked_up'
+            : $tripStudent->drop_status === 'dropped_off';
+
+        // Idempotent: duplicate-safe attendance marking (offline retry safe) -> return current state.
+        if ($alreadyDone) {
+            return $this->tripStudentStatus($tripStudent);
+        }
+
+        $tripStudent = $action === 'pickup'
+            ? $this->tripService->markPickup($tripStudent, $latitude, $longitude)
+            : $this->tripService->markDrop($tripStudent, $latitude, $longitude);
+
+        activity()
+            ->causedBy($user)
+            ->performedOn($tripStudent)
+            ->withProperties(['request_id' => $requestId])
+            ->event($action)
+            ->log('Driver marked student '.$action);
+
+        return $this->tripStudentStatus($tripStudent);
+    }
+
+    public function arriveStop(User $user, Trip $trip, array $validated): array
+    {
+        return $this->recordStop($user, $trip, $validated, 'stop_arrived');
+    }
+
+    public function leaveStop(User $user, Trip $trip, array $validated): array
+    {
+        return $this->recordStop($user, $trip, $validated, 'stop_left');
+    }
+
+    public function logout(User $user, array $validated): void
+    {
+        $token = $user->currentAccessToken();
+
+        if ($token) {
+            $token->delete();
+        } else {
+            $user->tokens()->delete();
+        }
+
+        activity()->causedBy($user)->event('driver_logout')->log('Driver logged out');
+    }
+
+    public function me(User $user): array
+    {
+        return $this->profile($user);
+    }
+
+    public function notifications(User $user): array
+    {
+        $notifications = $user->appNotifications()
+            ->with('creator:id,name')
+            ->orderByDesc('id')
+            ->limit(30)
+            ->get();
+
+        $unreadCount = $user->appNotifications()
+            ->wherePivot('is_read', false)
+            ->count();
+
+        return [
+            'unread_count' => $unreadCount,
+            'notifications' => $notifications->map(fn ($n) => [
+                'id' => $n->id,
+                'title' => $n->title,
+                'message' => $n->message,
+                'type' => $n->type,
+                'priority' => $n->priority,
+                'is_read' => (bool) ($n->pivot?->is_read ?? false),
+                'sent_at' => $n->sent_at?->toIso8601String(),
+            ])->values()->all(),
+        ];
+    }
+
+    public function markNotificationsRead(User $user, array $validated): array
+    {
+        $ids = $validated['ids'] ?? [];
+        $readAll = (bool) ($validated['read_all'] ?? count($ids) === 0);
+
+        if ($readAll) {
+            $this->notificationService->markAllRead($user->id);
+            $unreadCount = 0;
+        } else {
+            foreach ($ids as $id) {
+                $notification = $user->appNotifications()->where('notifications.id', $id)->first();
+                if ($notification) {
+                    $this->notificationService->markRead($notification, $user->id);
+                }
+            }
+            $unreadCount = $user->appNotifications()->wherePivot('is_read', false)->count();
+        }
+
+        return [
+            'unread_count' => $unreadCount,
+        ];
+    }
+
+    private function recordStop(User $user, Trip $trip, array $validated, string $eventType): array
+    {
+        $driver = $this->resolveDriverForUser($user, 'transport.update');
+        $trip = $this->ensureDriverOwnsTrip($driver, $trip, false);
+
+        if ($trip->status !== 'in_progress') {
+            throw ValidationException::withMessages([
+                'trip' => ['Trip must be in progress to record stop events.'],
+            ]);
+        }
+
+        $stop = RouteStop::query()->find((int) $validated['route_stop_id']);
+
+        if (! $stop || $stop->route_id !== $trip->route_id) {
+            throw ValidationException::withMessages([
+                'route_stop_id' => ['Stop does not belong to this trip route.'],
+            ]);
+        }
+
+        $this->drivers->createTripEvent([
+            'school_id' => $driver->school_id,
+            'trip_id' => $trip->id,
+            'event_type' => $eventType,
+            'metadata' => [
+                'route_stop_id' => $stop->id,
+                'stop_name' => $stop->stop_name,
+                'sequence' => $stop->sequence,
+                'latitude' => $validated['latitude'] ?? $stop->latitude,
+                'longitude' => $validated['longitude'] ?? $stop->longitude,
+                'request_id' => $validated['request_id'] ?? null,
+                'at' => now()->toIso8601String(),
+            ],
+        ]);
+
+        activity()
+            ->causedBy($user)
+            ->performedOn($trip)
+            ->event($eventType)
+            ->withProperties(['route_stop_id' => $stop->id])
+            ->log('Driver '.str_replace('_', ' ', $eventType));
+
+        $students = $trip->tripStudents->filter(fn ($ts) => $ts->route_stop_id === $stop->id)->values();
+
+        return [
+            'stop' => [
+                'stop_id' => $stop->id,
+                'stop_name' => $stop->stop_name,
+                'sequence' => $stop->sequence,
+                'latitude' => isset($validated['latitude']) ? (float) $validated['latitude'] : (float) $stop->latitude,
+                'longitude' => isset($validated['longitude']) ? (float) $validated['longitude'] : (float) $stop->longitude,
+            ],
+            'event' => $eventType,
+            'recorded_at' => now()->toIso8601String(),
+            'students' => $students->map(fn (TripStudent $ts) => $this->compactStudent($ts))->all(),
+        ];
+    }
+
+    private function tripStudentStatus(TripStudent $tripStudent): array
+    {
+        return [
+            'trip_student' => [
+                'id' => $tripStudent->id,
+                'student_id' => $tripStudent->student_id,
+                'student_name' => $tripStudent->student?->full_name,
+                'pickup_status' => $tripStudent->pickup_status,
+                'drop_status' => $tripStudent->drop_status,
+                'picked_up_at' => $tripStudent->picked_up_at?->toIso8601String(),
+                'dropped_off_at' => $tripStudent->dropped_off_at?->toIso8601String(),
+            ],
+        ];
+    }
+
+    private function compactStudent(TripStudent $ts): array
+    {
+        return [
+            'id' => $ts->id,
+            'student_id' => $ts->student_id,
+            'name' => $ts->student?->full_name,
+            'pickup_status' => $ts->pickup_status,
+            'drop_status' => $ts->drop_status,
+        ];
+    }
+
+    private function buildRoutePayload(Route $route): array
+    {
+        $stops = $route->stops()->with('assignments.student')->get();
+
+        return [
+            'route_id' => $route->id,
+            'route_name' => $route->route_name,
+            'start_point' => $route->start_point,
+            'end_point' => $route->end_point,
+            'distance' => $route->distance,
+            'vehicle' => $route->vehicle ? [
+                'id' => $route->vehicle->id,
+                'vehicle_number' => $route->vehicle->vehicle_number,
+                'vehicle_name' => $route->vehicle->vehicle_name,
+            ] : null,
+            'driver' => $route->driver ? [
+                'id' => $route->driver->id,
+                'name' => $route->driver->name,
+                'mobile' => $route->driver->mobile,
+            ] : null,
+            'stops' => $stops->map(fn (RouteStop $s) => [
+                'stop_id' => $s->id,
+                'stop_name' => $s->stop_name,
+                'latitude' => $s->latitude,
+                'longitude' => $s->longitude,
+                'sequence' => $s->sequence,
+                'pickup_time' => $s->pickup_time?->format('H:i'),
+                'drop_time' => $s->drop_time?->format('H:i'),
+                'students_count' => $s->assignments->where('status', 'active')->count(),
+            ])->values()->all(),
+        ];
+    }
+
+    private function buildTripDetails(Trip $trip): array
+    {
+        return [
+            'trip' => [
+                'id' => $trip->id,
+                'type' => $trip->type,
+                'status' => $trip->status,
+                'trip_date' => $trip->trip_date->format('Y-m-d'),
+                'started_at' => $trip->started_at?->toIso8601String(),
+                'completed_at' => $trip->completed_at?->toIso8601String(),
+                'total_students' => $trip->total_students,
+                'picked_up_count' => $trip->picked_up_count,
+                'dropped_off_count' => $trip->dropped_off_count,
+            ],
+            'route' => [
+                'route_id' => $trip->route?->id,
+                'route_name' => $trip->route?->route_name,
+                'start_point' => $trip->route?->start_point,
+                'end_point' => $trip->route?->end_point,
+                'total_stops' => $trip->route?->stops?->count() ?? 0,
+            ],
+            'vehicle' => $trip->vehicle ? [
+                'id' => $trip->vehicle->id,
+                'vehicle_number' => $trip->vehicle->vehicle_number,
+                'vehicle_name' => $trip->vehicle->vehicle_name,
+            ] : null,
+            'stops' => ($trip->route?->stops ?? collect())->map(fn (RouteStop $s) => [
+                'stop_id' => $s->id,
+                'stop_name' => $s->stop_name,
+                'sequence' => $s->sequence,
+                'students' => $trip->tripStudents->where('route_stop_id', $s->id)->values()->map(fn (TripStudent $ts) => $this->compactStudent($ts))->all(),
+            ])->values()->all(),
+        ];
+    }
+
+    private function ensureDriverOwnsRoute(Driver $driver, Route $route): Route
+    {
+        $owned = $this->drivers->findRouteForDriver($driver->id, $route->id);
+
+        if (! $owned) {
+            throw new AuthorizationException('Unauthorized.', Response::HTTP_FORBIDDEN);
+        }
+
+        return $owned;
+    }
+
+    private function studentClassName($student): ?string
+    {
+        try {
+            $session = $student->sessions()->where('status', 'active')->latest()->first();
+
+            return $session?->classSection?->schoolClass?->name
+                ?? $session?->class_section?->schoolClass?->name;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     public function tripComplete(User $user, Trip $trip): array

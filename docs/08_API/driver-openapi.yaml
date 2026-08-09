@@ -1,0 +1,428 @@
+openapi: 3.0.3
+info:
+  title: Driver App API
+  version: 1.0.0
+  description: Driver App REST API for the School ERP. Bearer token (Sanctum). Base path /api/v1.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Bearer
+  schemas:
+    Envelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data: {}
+    DriverLogin:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+        device_name: { type: string }
+        school_id: { type: integer }
+    TripStatus:
+      type: object
+      properties:
+        trip:
+          type: object
+          properties:
+            id: { type: integer }
+            status: { type: string, enum: [scheduled, in_progress, completed] }
+            started_at: { type: string, nullable: true, format: date-time }
+            completed_at: { type: string, nullable: true, format: date-time }
+    TripStudentStatus:
+      type: object
+      properties:
+        trip_student:
+          type: object
+          properties:
+            id: { type: integer }
+            student_id: { type: integer }
+            student_name: { type: string }
+            pickup_status: { type: string, enum: [pending, picked_up] }
+            drop_status: { type: string, enum: [pending, dropped_off] }
+    AttendanceRequest:
+      type: object
+      required: [student_id, action]
+      properties:
+        student_id: { type: integer }
+        action: { type: string, enum: [pickup, drop] }
+        latitude: { type: number }
+        longitude: { type: number }
+        request_id: { type: string }
+    StopRequest:
+      type: object
+      required: [route_stop_id]
+      properties:
+        route_stop_id: { type: integer }
+        latitude: { type: number }
+        longitude: { type: number }
+        request_id: { type: string }
+    Stop:
+      type: object
+      properties:
+        stop_id: { type: integer }
+        stop_name: { type: string }
+        latitude: { type: string, nullable: true }
+        longitude: { type: string, nullable: true }
+        sequence: { type: integer }
+        students_count: { type: integer }
+    Route:
+      type: object
+      properties:
+        route_id: { type: integer }
+        route_name: { type: string }
+        start_point: { type: string }
+        end_point: { type: string }
+        distance: { type: string, nullable: true }
+        stops: { type: array, items: { $ref: '#/components/schemas/Stop' } }
+paths:
+  /driver/login:
+    post:
+      summary: Driver login
+      security: []
+      tags: [Driver Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DriverLogin' }
+      responses:
+        '200':
+          description: Login success with token + driver context
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      token: { type: string }
+                      token_type: { type: string }
+                      user: { type: object }
+                      school_id: { type: integer }
+                      driver: { type: object }
+        '422': { description: Invalid credentials }
+        '403': { description: Non-driver / inactive / unresolved school }
+  /driver/logout:
+    post:
+      summary: Driver logout (revokes current token)
+      tags: [Driver Auth]
+      responses:
+        '200': { description: Logged out }
+  /driver/me:
+    get:
+      summary: Current driver profile, vehicle, route
+      tags: [Driver Profile]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      driver: { type: object }
+                      vehicle: { type: object, nullable: true }
+                      route: { type: object, nullable: true }
+  /driver/dashboard:
+    get:
+      summary: Driver dashboard summary
+      tags: [Driver Dashboard]
+      responses:
+        '200':
+          description: OK
+  /driver/routes/today:
+    get:
+      summary: Today's routes with trip state
+      tags: [Driver Route]
+      responses:
+        '200': { description: OK }
+  /driver/routes/{route}:
+    get:
+      summary: Route details with stops
+      tags: [Driver Route]
+      parameters:
+        - { in: path, name: route, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Route' }
+  /driver/routes/{route}/stops:
+    get:
+      summary: Ordered stops with lat/lng + student counts
+      tags: [Driver Route]
+      parameters:
+        - { in: path, name: route, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: OK }
+  /driver/routes/{route}/students:
+    get:
+      summary: Students per stop with class
+      tags: [Driver Route]
+      parameters:
+        - { in: path, name: route, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: OK }
+  /driver/trips/start:
+    post:
+      summary: Start a trip by trip_id
+      tags: [Trip Control]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [trip_id]
+              properties:
+                trip_id: { type: integer }
+      responses:
+        '200':
+          description: Trip started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Envelope' }
+        '422': { description: Not in scheduled status }
+        '403': { description: Not owned by driver }
+  /driver/trips/current:
+    get:
+      summary: Current (scheduled/in-progress) trip
+      tags: [Trip Control]
+      responses:
+        '200': { description: OK }
+  /driver/trips/history:
+    get:
+      summary: Paginated trip history
+      tags: [Trip Control]
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+        - { in: query, name: per_page, schema: { type: integer } }
+      responses:
+        '200': { description: OK }
+  /driver/trips/today:
+    get:
+      summary: Today's trips
+      tags: [Trip Control]
+      responses:
+        '200': { description: OK }
+  /driver/trips/{trip}/end:
+    post:
+      summary: End a trip (in_progress → completed)
+      tags: [Trip Control]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Trip completed
+        '422': { description: Not in progress }
+  /driver/trips/{trip}/start:
+    post:
+      summary: Start a trip (legacy)
+      tags: [Trip Control]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Trip started }
+        '422': { description: Not scheduled }
+  /driver/trips/{trip}/complete:
+    post:
+      summary: Complete a trip (legacy alias)
+      tags: [Trip Control]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Trip completed }
+        '422': { description: Not from in_progress }
+  /driver/trips/{trip}/attendance:
+    post:
+      summary: Mark student pickup/drop (idempotent)
+      tags: [Attendance]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AttendanceRequest' }
+      responses:
+        '200':
+          description: Marked or already-current
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TripStudentStatus' }
+        '422': { description: Not in progress / invalid state }
+        '403': { description: Not owned }
+  /driver/trips/{trip}/attendance/{trip_student}:
+    put:
+      summary: Update attendance for a known trip_student (idempotent)
+      tags: [Attendance]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+        - { in: path, name: trip_student, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AttendanceRequest' }
+      responses:
+        '200': { description: OK }
+        '422': { description: Invalid state }
+  /driver/trips/{trip}/pickup:
+    post:
+      summary: Mark student pickup (legacy)
+      tags: [Attendance]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [trip_student_id]
+              properties:
+                trip_student_id: { type: integer }
+                latitude: { type: number }
+                longitude: { type: number }
+      responses:
+        '200': { description: Picked up }
+  /driver/trips/{trip}/drop:
+    post:
+      summary: Mark student drop (legacy)
+      tags: [Attendance]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Dropped off }
+  /driver/trips/{trip}/arrive-stop:
+    post:
+      summary: Record bus arrival at a stop
+      tags: [Stop Flow]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StopRequest' }
+      responses:
+        '200': { description: Recorded }
+        '422': { description: Not in progress / stop not in route }
+  /driver/trips/{trip}/leave-stop:
+    post:
+      summary: Record bus departure from a stop
+      tags: [Stop Flow]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StopRequest' }
+      responses:
+        '200': { description: Recorded }
+        '422': { description: Not in progress / stop not in route }
+  /driver/trips/{trip}/students:
+    get:
+      summary: Pickup & drop orders of students in a trip
+      tags: [Trip Control]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: OK }
+  /driver/trips/{trip}/eta:
+    get:
+      summary: ETA to each stop
+      tags: [Trip Control]
+      parameters:
+        - { in: path, name: trip, required: true, schema: { type: integer } }
+        - { in: query, name: current_latitude, required: true, schema: { type: number } }
+        - { in: query, name: current_longitude, required: true, schema: { type: number } }
+      responses:
+        '200': { description: OK }
+  /driver/notifications:
+    get:
+      summary: Driver notifications + unread count
+      tags: [Driver Notifications]
+      responses:
+        '200': { description: OK }
+  /driver/notifications/read:
+    post:
+      summary: Mark notifications read
+      tags: [Driver Notifications]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids: { type: array, items: { type: integer } }
+                read_all: { type: boolean }
+      responses:
+        '200': { description: OK }
+  /driver/sos:
+    post:
+      summary: Send SOS / emergency alert
+      tags: [Driver Emergency]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude: { type: number }
+                longitude: { type: number }
+                message: { type: string }
+                trip_id: { type: integer }
+      responses:
+        '200': { description: SOS recorded }
+  /driver/location:
+    post:
+      summary: Submit live GPS location
+      tags: [Driver Location]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicle_id, latitude, longitude]
+              properties:
+                vehicle_id: { type: integer }
+                latitude: { type: number }
+                longitude: { type: number }
+                speed: { type: number }
+                heading: { type: number }
+                captured_at: { type: string, format: date-time }
+                trip_id: { type: integer }
+      responses:
+        '200': { description: Location stored }
+        '403': { description: Vehicle/trip not owned }
+  /driver/profile:
+    get:
+      summary: Driver profile (legacy alias of /me)
+      tags: [Driver Profile]
+      responses:
+        '200': { description: OK }

@@ -1,0 +1,190 @@
+{
+  "info": {
+    "_postman_id": "driver-api-collection",
+    "name": "Driver App API",
+    "description": "Driver App REST API. Base: {{baseUrl}}/api/v1. Auth via Bearer token from Driver Login.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://your-school-domain.com", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "schoolId", "value": "1", "type": "string" },
+    { "key": "tripId", "value": "1", "type": "string" },
+    { "key": "routeId", "value": "1", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Driver Auth",
+      "item": [
+        {
+
+          "name": "Driver Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-School-Id", "value": "{{schoolId}}", "type": "text" }],
+            "url": "{{baseUrl}}/api/v1/driver/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"driver@school.com\",\n  \"password\": \"secret\",\n  \"device_name\": \"driver-app\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "exec": [
+                "var d = pm.response.json();",
+                "if (d.success) { pm.collectionVariables.set('token', d.data.token); pm.collectionVariables.set('schoolId', String(d.data.school_id)); }"
+              ]
+            }
+          ]
+        },
+        { "name": "Driver Logout", "request": { "method": "POST", "url": "{{baseUrl}}/api/v1/driver/logout" } },
+        { "name": "Driver Me", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/me" } }
+      ]
+    },
+    {
+      "name": "Dashboard & Profile",
+      "item": [
+        { "name": "Driver Dashboard", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/dashboard" } },
+        { "name": "Driver Profile", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/profile" } }
+      ]
+    },
+    {
+      "name": "Routes",
+      "item": [
+        { "name": "Routes Today", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/routes/today" } },
+        { "name": "Route Show", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/routes/{{routeId}}" } },
+        { "name": "Route Stops", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/routes/{{routeId}}/stops" } },
+        { "name": "Route Students", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/routes/{{routeId}}/students" } }
+      ]
+    },
+    {
+      "name": "Trip Control",
+      "item": [
+        {
+          "name": "Start Trip",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/driver/trips/start",
+            "body": { "mode": "raw", "raw": "{\n  \"trip_id\": {{tripId}}\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        { "name": "Trip Current", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/trips/current" } },
+        { "name": "Trips Today", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/trips/today" } },
+        { "name": "Trip History", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/trips/history" } },
+        { "name": "End Trip", "request": { "method": "POST", "url": "{{baseUrl}}/api/v1/driver/trips/{{tripId}}/end" } },
+        { "name": "Trip Students", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/trips/{{tripId}}/students" } },
+        {
+          "name": "Trip ETA",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/trips/{{tripId}}/eta?current_latitude=28.6128&current_longitude=77.2295" }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Mark Attendance (Pickup)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/driver/trips/{{tripId}}/attendance",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": 10,\n  \"action\": \"pickup\",\n  \"latitude\": 28.6128,\n  \"longitude\": 77.2295,\n  \"request_id\": \"uuid-1234\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Attendance (Drop)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/driver/trips/{{tripId}}/attendance/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"drop\",\n  \"latitude\": 28.6200,\n  \"longitude\": 77.2400\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stop Flow",
+      "item": [
+        {
+          "name": "Arrive Stop",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/driver/trips/{{tripId}}/arrive-stop",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"route_stop_id\": 1,\n  \"latitude\": 28.6128,\n  \"longitude\": 77.2295\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Leave Stop",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/driver/trips/{{tripId}}/leave-stop",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"route_stop_id\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        { "name": "Driver Notifications", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/driver/notifications" } },
+        {
+          "name": "Mark Notifications Read",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/driver/notifications/read",
+            "body": { "mode": "raw", "raw": "{\n  \"read_all\": true\n}", "options": { "raw": { "language": "json" } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Location & Emergency",
+      "item": [
+        {
+          "name": "Update Location",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/driver/location",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 1,\n  \"latitude\": 28.6128,\n  \"longitude\": 77.2295,\n  \"speed\": 35.5,\n  \"heading\": 180,\n  \"trip_id\": {{tripId}}\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "SOS",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/driver/sos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 28.6128,\n  \"longitude\": 77.2295,\n  \"message\": \"Emergency! Need assistance.\",\n  \"trip_id\": {{tripId}}\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
