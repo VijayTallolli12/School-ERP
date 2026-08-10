@@ -1068,8 +1068,17 @@ class DriverApiService
             throw new AuthorizationException('Vehicle not assigned to this driver.', Response::HTTP_FORBIDDEN);
         }
 
-        $points = $validated['locations']
-            ?? [array_intersect_key($validated, array_flip(['lat', 'lng', 'speed', 'heading', 'accuracy', 'timestamp']))];
+        if (empty($validated['locations'])) {
+            $points = [array_intersect_key($validated, array_flip(['lat', 'lng', 'latitude', 'longitude', 'speed', 'heading', 'accuracy', 'timestamp']))];
+            if (isset($points[0]['latitude']) && ! isset($points[0]['lat'])) {
+                $points[0]['lat'] = $points[0]['latitude'];
+            }
+            if (isset($points[0]['longitude']) && ! isset($points[0]['lng'])) {
+                $points[0]['lng'] = $points[0]['longitude'];
+            }
+        } else {
+            $points = $validated['locations'];
+        }
 
         $received = count($points);
         $latest = null;

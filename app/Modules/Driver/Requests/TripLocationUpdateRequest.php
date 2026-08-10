@@ -25,9 +25,11 @@ class TripLocationUpdateRequest extends FormRequest
             'locations.*.heading' => ['nullable', 'numeric', 'between:0,360'],
             'locations.*.accuracy' => ['nullable', 'numeric', 'min:0'],
             'locations.*.timestamp' => ['nullable', 'date'],
-            // Single-point form (legacy / realtime): { lat, lng, ... }
-            'lat' => ['required_without:locations', 'numeric', 'between:-90,90'],
-            'lng' => ['required_without:locations', 'numeric', 'between:-180,180'],
+            // Single-point form (realtime): { lat, lng, ... } or { latitude, longitude, ... }
+            'lat' => ['prohibited_with:latitude', 'numeric', 'between:-90,90'],
+            'lng' => ['prohibited_with:longitude', 'numeric', 'between:-180,180'],
+            'latitude' => ['prohibited_with:locations', 'required_without:locations', 'numeric', 'between:-90,90'],
+            'longitude' => ['prohibited_with:locations', 'required_without:locations', 'numeric', 'between:-180,180'],
             'speed' => ['nullable', 'numeric', 'min:0'],
             'heading' => ['nullable', 'numeric', 'between:0,360'],
             'accuracy' => ['nullable', 'numeric', 'min:0'],
