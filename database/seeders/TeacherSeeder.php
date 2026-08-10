@@ -3,10 +3,14 @@
 namespace Database\Seeders;
 
 use App\Models\School;
+use App\Models\User;
 use App\Modules\Academics\Models\ClassSection;
 use App\Modules\Academics\Models\Subject;
 use App\Modules\Teachers\Models\Teacher;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Spatie\Permission\PermissionRegistrar;
 
 class TeacherSeeder extends Seeder
 {
@@ -16,6 +20,8 @@ class TeacherSeeder extends Seeder
 
         $subjects = Subject::query()->where('school_id', $school->id)->get();
         $classSections = ClassSection::query()->where('school_id', $school->id)->get();
+
+        app(PermissionRegistrar::class)->setPermissionsTeamId($school->id);
 
         $teachers = [
             [
@@ -60,10 +66,23 @@ class TeacherSeeder extends Seeder
         ];
 
         foreach ($teachers as $data) {
-            $teacher = Teacher::query()->firstOrCreate([
-                'school_id' => $school->id,
-                'employee_id' => $data['employee_id'],
-            ], array_merge($data, ['school_id' => $school->id]));
+            $user = User::factory()->create([
+                'uuid' => (string) Str::uuid(),
+                'name' => $data['first_name'].' '.$data['last_name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'password' => Hash::make('password'),
+                'current_school_id' => $school->id,
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]);
+            $user->assignRole('Teacher');
+            $user->schools()->syncWithoutDetaching([$school->id => ['status' => 'active', 'is_primary' => true]]);
+
+            $teacher = Teacher::query()->firstOrCreate(
+                ['school_id' => $school->id, 'employee_id' => $data['employee_id']],
+                array_merge($data, ['school_id' => $school->id, 'user_id' => $user->id, 'uuid' => (string) Str::uuid()])
+            );
 
             $teacher->subjects()->sync(
                 $subjects->take(2)
