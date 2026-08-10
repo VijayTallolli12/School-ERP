@@ -33,7 +33,7 @@ class TeacherSeeder extends Seeder
                 'experience_years' => 8,
                 'joining_date' => now()->subYears(5)->toDateString(),
                 'phone' => '9876543210',
-                'email' => 'aisha.khan@example.com',
+                'email' => 'teacher@school.com',
                 'address' => '12 Rose Lane, Demo City',
                 'status' => 'active',
             ],
@@ -66,20 +66,22 @@ class TeacherSeeder extends Seeder
         ];
 
         foreach ($teachers as $data) {
-            $user = User::factory()->create([
-                'uuid' => (string) Str::uuid(),
-                'name' => $data['first_name'].' '.$data['last_name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'],
-                'password' => Hash::make('password'),
-                'current_school_id' => $school->id,
-                'status' => 'active',
-                'email_verified_at' => now(),
-            ]);
+            $user = User::query()->updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'uuid' => (string) Str::uuid(),
+                    'name' => $data['first_name'].' '.$data['last_name'],
+                    'phone' => $data['phone'],
+                    'password' => Hash::make('password'),
+                    'current_school_id' => $school->id,
+                    'status' => 'active',
+                    'email_verified_at' => now(),
+                ]
+            );
             $user->assignRole('Teacher');
             $user->schools()->syncWithoutDetaching([$school->id => ['status' => 'active', 'is_primary' => true]]);
 
-            $teacher = Teacher::query()->firstOrCreate(
+            $teacher = Teacher::query()->updateOrCreate(
                 ['school_id' => $school->id, 'employee_id' => $data['employee_id']],
                 array_merge($data, ['school_id' => $school->id, 'user_id' => $user->id, 'uuid' => (string) Str::uuid()])
             );
@@ -90,12 +92,15 @@ class TeacherSeeder extends Seeder
                     ->mapWithKeys(fn (int $id): array => [$id => ['school_id' => $school->id]])
                     ->all()
             );
-            $teacher->classSections()->sync([
-                $classSections->first()->id => [
-                    'is_class_teacher' => true,
-                    'school_id' => $school->id,
-                ],
-            ]);
+
+            if ($classSections->isNotEmpty()) {
+                $teacher->classSections()->sync([
+                    $classSections->first()->id => [
+                        'is_class_teacher' => true,
+                        'school_id' => $school->id,
+                    ],
+                ]);
+            }
         }
     }
 }

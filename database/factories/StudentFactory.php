@@ -14,42 +14,26 @@ class StudentFactory extends Factory
 
     public function definition(): array
     {
+        static $counter = 0;
+        $counter++;
+
         return [
             'uuid' => (string) Str::uuid(),
             'school_id' => School::factory(),
 
-            'admission_no' => strtoupper(
-                $this->faker->unique()->bothify('ADM####')
-            ),
+            'admission_no' => 'ADM'.str_pad((string) $counter, 4, '0', STR_PAD_LEFT),
 
-            'admission_date' => $this->faker
-                ->dateTimeBetween('-2 years', 'now')
-                ->format('Y-m-d'),
+            'admission_date' => now()->subYears(2)->toDateString(),
 
-            'first_name' => $this->faker->firstName(),
-
+            'first_name' => 'Student',
             'middle_name' => null,
+            'last_name' => 'Demo '.$counter,
 
-            'last_name' => $this->faker->lastName(),
+            'date_of_birth' => now()->subYears(10)->toDateString(),
 
-            'date_of_birth' => $this->faker
-                ->dateTimeBetween('-17 years', '-4 years')
-                ->format('Y-m-d'),
+            'gender' => 'male',
 
-            'gender' => $this->faker
-                ->randomElement(['male', 'female']),
-
-            'blood_group' => $this->faker
-                ->optional()
-                ->randomElement([
-                    'A+',
-                    'A-',
-                    'B+',
-                    'B-',
-                    'AB+',
-                    'O+',
-                    'O-'
-                ]),
+            'blood_group' => 'O+',
 
             'nationality' => 'Indian',
 

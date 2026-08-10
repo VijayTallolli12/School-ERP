@@ -15,16 +15,19 @@ class GuardianFactory extends Factory
 {
     public function definition(): array
     {
+        static $counter = 0;
+        $counter++;
+
         return [
             'school_id' => School::factory(),
             'user_id' => User::factory(),
-            'first_name' => $this->faker->firstName(),
-            'last_name' => $this->faker->lastName(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'phone' => $this->faker->phoneNumber(),
-            'occupation' => $this->faker->jobTitle(),
-            'address' => $this->faker->address(),
-            'status' => $this->faker->randomElement(['active', 'inactive']),
+            'first_name' => 'Parent',
+            'last_name' => 'Demo '.$counter,
+            'email' => 'parent.demo.'.$counter.'@example.com',
+            'phone' => '+91 90000 '.str_pad((string) $counter, 5, '0', STR_PAD_LEFT),
+            'occupation' => 'Engineer',
+            'address' => 'Demo Address '.$counter,
+            'status' => 'active',
         ];
     }
 

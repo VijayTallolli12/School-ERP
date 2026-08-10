@@ -28,9 +28,9 @@ class AttendanceFactory extends Factory
             'class_section_id' => ClassSection::factory(),
             'academic_year_id' => AcademicYear::factory(),
             'attendance_date' => Carbon::now()->subDays(rand(0, 30)),
-            'status' => $this->faker->randomElement(['present', 'absent', 'late', 'half_day', 'excused']),
+            'status' => 'present',
             'marked_by' => User::first()?->id ?? User::factory(),
-            'remarks' => $this->faker->optional()->sentence(),
+            'remarks' => null,
         ];
     }
 

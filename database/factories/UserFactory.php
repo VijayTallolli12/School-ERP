@@ -24,12 +24,13 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        $faker = \Faker\Factory::create();
+        static $counter = 0;
+        $counter++;
 
         return [
-            'name' => $faker->name(),
-            'email' => $faker->unique()->safeEmail(),
-            'phone' => $faker->optional()->phoneNumber(),
+            'name' => 'Demo User '.$counter,
+            'email' => 'demo.user.'.$counter.'@example.com',
+            'phone' => '+91 90000 '.str_pad((string) $counter, 5, '0', STR_PAD_LEFT),
             'status' => 'active',
             'is_super_admin' => false,
             'force_password_change' => false,

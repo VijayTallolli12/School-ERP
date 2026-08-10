@@ -108,22 +108,24 @@ class GoldenSchoolSeeder extends Seeder
                 // Create partial payment for some students
                 if (rand(1, 100) > 40 && $items->isNotEmpty()) {
                     $paidAmount = rand(1, 3) * 1000;
-                    $payment = FeePayment::query()->create([
-                        'school_id' => $this->school->id,
-                        'student_id' => $student->id,
-                        'academic_year_id' => $this->academicYear->id,
-                        'receipt_number' => 'RCP-'.str_pad((string) StudentFee::count(), 6, '0', STR_PAD_LEFT),
-                        'payment_mode' => collect(['cash', 'upi', 'bank_transfer', 'cheque'])->random(),
-                        'amount' => min($paidAmount, $totalFee),
-                        'paid_on' => now()->subDays(rand(1, 30)),
-                        'collected_by' => 1,
-                    ]);
+                    $receiptNumber = 'RCP-'.$studentFee->id.'-'.$this->academicYear->id;
+                    $payment = FeePayment::query()->firstOrCreate(
+                        ['receipt_number' => $receiptNumber],
+                        [
+                            'school_id' => $this->school->id,
+                            'student_id' => $student->id,
+                            'academic_year_id' => $this->academicYear->id,
+                            'payment_mode' => collect(['cash', 'upi', 'bank_transfer', 'cheque'])->random(),
+                            'amount' => min($paidAmount, $totalFee),
+                            'paid_on' => now()->subDays(rand(1, 30)),
+                            'collected_by' => 1,
+                        ]
+                    );
 
-                    FeePaymentItem::query()->create([
-                        'fee_payment_id' => $payment->id,
-                        'student_fee_item_id' => $items->first()->id,
-                        'amount' => min($paidAmount, $totalFee),
-                    ]);
+                    FeePaymentItem::query()->firstOrCreate(
+                        ['fee_payment_id' => $payment->id, 'student_fee_item_id' => $items->first()->id],
+                        ['amount' => min($paidAmount, $totalFee)]
+                    );
                 }
             }
         }
@@ -159,20 +161,24 @@ class GoldenSchoolSeeder extends Seeder
 
         foreach ($classSections as $cs) {
             foreach ($subjects as $subject) {
-                $exam = Exam::query()->create([
-                    'school_id' => $this->school->id,
-                    'academic_year_id' => $this->academicYear->id,
-                    'class_section_id' => $cs->id,
-                    'subject_id' => $subject->id,
-                    'exam_name' => 'Mid Term Exam',
-                    'exam_type' => 'mid_term',
-                    'exam_date' => now()->subDays(rand(10, 60)),
-                    'maximum_marks' => 100,
-                    'pass_marks' => 40,
-                    'status' => 'completed',
-                    'is_published' => true,
-                    'created_by' => 1,
-                ]);
+                $exam = Exam::query()->updateOrCreate(
+                    [
+                        'school_id' => $this->school->id,
+                        'academic_year_id' => $this->academicYear->id,
+                        'class_section_id' => $cs->id,
+                        'subject_id' => $subject->id,
+                        'exam_name' => 'Mid Term Exam',
+                    ],
+                    [
+                        'exam_type' => 'mid_term',
+                        'exam_date' => now()->subDays(rand(10, 60)),
+                        'maximum_marks' => 100,
+                        'pass_marks' => 40,
+                        'status' => 'completed',
+                        'is_published' => true,
+                        'created_by' => 1,
+                    ]
+                );
 
                 $students = Student::query()->where('school_id', $this->school->id)
                     ->whereHas('sessions', fn ($q) => $q->where('class_section_id', $cs->id))
@@ -201,34 +207,38 @@ class GoldenSchoolSeeder extends Seeder
 
         foreach ($classSections as $cs) {
             foreach ($subjects as $subject) {
-                Homework::query()->create([
-                    'school_id' => $this->school->id,
-                    'academic_year_id' => $this->academicYear->id,
-                    'class_section_id' => $cs->id,
-                    'subject_id' => $subject->id,
-                    'title' => $subject->name.' Assignment',
-                    'description' => 'Complete the exercises from Chapter '.rand(1, 10).'.',
-                    'assigned_date' => now()->subDays(rand(1, 14)),
-                    'due_date' => now()->addDays(rand(1, 7)),
-                    'status' => 'active',
-                    'created_by' => 1,
-                ]);
+                Homework::query()->updateOrCreate(
+                    [
+                        'school_id' => $this->school->id,
+                        'academic_year_id' => $this->academicYear->id,
+                        'class_section_id' => $cs->id,
+                        'subject_id' => $subject->id,
+                        'title' => $subject->name.' Assignment',
+                    ],
+                    [
+                        'description' => 'Complete the exercises from Chapter '.rand(1, 10).'.',
+                        'assigned_date' => now()->subDays(rand(1, 14)),
+                        'due_date' => now()->addDays(rand(1, 7)),
+                        'status' => 'active',
+                        'created_by' => 1,
+                    ]
+                );
             }
         }
     }
 
     private function createLibrary(): void
     {
-        $cat = LibraryCategory::query()->create(['school_id' => $this->school->id, 'name' => 'Academic', 'sort_order' => 1, 'status' => 'active']);
-        $cat2 = LibraryCategory::query()->create(['school_id' => $this->school->id, 'name' => 'Reference', 'sort_order' => 2, 'status' => 'active']);
+        $cat = LibraryCategory::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Academic'], ['sort_order' => 1, 'status' => 'active']);
+        $cat2 = LibraryCategory::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Reference'], ['sort_order' => 2, 'status' => 'active']);
 
-        $author = Author::query()->create(['school_id' => $this->school->id, 'name' => 'R.K. Narayan', 'status' => 'active']);
-        $author2 = Author::query()->create(['school_id' => $this->school->id, 'name' => 'J.K. Rowling', 'status' => 'active']);
+        $author = Author::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'R.K. Narayan'], ['status' => 'active']);
+        $author2 = Author::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'J.K. Rowling'], ['status' => 'active']);
 
-        $publisher = Publisher::query()->create(['school_id' => $this->school->id, 'name' => 'Oxford Press', 'contact' => 'info@oxfordpress.com', 'status' => 'active']);
-        $publisher2 = Publisher::query()->create(['school_id' => $this->school->id, 'name' => 'Scholastic', 'contact' => 'info@scholastic.com', 'status' => 'active']);
+        $publisher = Publisher::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Oxford Press'], ['contact' => 'info@oxfordpress.com', 'status' => 'active']);
+        $publisher2 = Publisher::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Scholastic'], ['contact' => 'info@scholastic.com', 'status' => 'active']);
 
-        FineSetting::query()->create(['school_id' => $this->school->id, 'fine_per_day' => 5.00, 'max_fine' => 500.00, 'grace_period_days' => 3, 'status' => 'active']);
+        FineSetting::query()->firstOrCreate(['school_id' => $this->school->id], ['fine_per_day' => 5.00, 'max_fine' => 500.00, 'grace_period_days' => 3, 'status' => 'active']);
 
         $books = [
             ['title' => 'Mathematics for Class 5', 'isbn' => '978-0-19-123456-7', 'category_id' => $cat->id, 'author_id' => $author->id, 'publisher_id' => $publisher->id, 'quantity' => 10, 'available_copies' => 8],
@@ -241,20 +251,22 @@ class GoldenSchoolSeeder extends Seeder
         $students = Student::query()->where('school_id', $this->school->id)->get();
 
         foreach ($books as $bookData) {
-            $book = Book::query()->create(array_merge($bookData, ['school_id' => $this->school->id, 'language' => 'English', 'status' => 'active']));
+            $book = Book::query()->firstOrCreate(
+                ['school_id' => $this->school->id, 'isbn' => $bookData['isbn']],
+                array_merge($bookData, ['school_id' => $this->school->id, 'language' => 'English', 'status' => 'active'])
+            );
 
             // Create some book issues
             if ($students->isNotEmpty() && rand(1, 100) > 50) {
                 $student = $students->random();
-                BookIssue::query()->create([
-                    'school_id' => $this->school->id,
-                    'book_id' => $book->id,
-                    'issueable_type' => 'App\\Modules\\Students\\Models\\Student',
-                    'issueable_id' => $student->id,
-                    'issue_date' => now()->subDays(rand(5, 20)),
-                    'due_date' => now()->subDays(rand(0, 5)),
-                    'status' => 'issued',
-                ]);
+                BookIssue::query()->firstOrCreate(
+                    ['school_id' => $this->school->id, 'book_id' => $book->id, 'issueable_type' => 'App\\Modules\\Students\\Models\\Student', 'issueable_id' => $student->id],
+                    [
+                        'issue_date' => now()->subDays(rand(5, 20)),
+                        'due_date' => now()->subDays(rand(0, 5)),
+                        'status' => 'issued',
+                    ]
+                );
             }
         }
     }
@@ -263,133 +275,151 @@ class GoldenSchoolSeeder extends Seeder
     {
         $teacher = Teacher::query()->where('school_id', $this->school->id)->first();
 
-        $dept = PayrollDepartment::query()->create(['school_id' => $this->school->id, 'name' => 'Teaching Staff', 'sort_order' => 1, 'status' => 'active']);
+        $dept = PayrollDepartment::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Teaching Staff'], ['sort_order' => 1, 'status' => 'active']);
 
-        $designation = PayrollDesignation::query()->create([
+        $designation = PayrollDesignation::query()->firstOrCreate([
             'school_id' => $this->school->id, 'department_id' => $dept->id,
-            'name' => 'Senior Teacher', 'status' => 'active',
-        ]);
+            'name' => 'Senior Teacher',
+        ], ['status' => 'active']);
 
         // Salary components
-        SalaryComponent::query()->create(['school_id' => $this->school->id, 'name' => 'basic', 'name_display' => 'Basic Salary', 'component_type' => 'earning', 'calculation_type' => 'fixed', 'value' => 35000, 'sort_order' => 1, 'status' => 'active']);
-        SalaryComponent::query()->create(['school_id' => $this->school->id, 'name' => 'hra', 'name_display' => 'House Rent Allowance', 'component_type' => 'earning', 'calculation_type' => 'percentage', 'value' => 10, 'sort_order' => 2, 'status' => 'active']);
-        SalaryComponent::query()->create(['school_id' => $this->school->id, 'name' => 'da', 'name_display' => 'Dearness Allowance', 'component_type' => 'earning', 'calculation_type' => 'percentage', 'value' => 5, 'sort_order' => 3, 'status' => 'active']);
-        SalaryComponent::query()->create(['school_id' => $this->school->id, 'name' => 'pf', 'name_display' => 'Provident Fund', 'component_type' => 'deduction', 'calculation_type' => 'percentage', 'value' => 12, 'sort_order' => 1, 'status' => 'active']);
-        SalaryComponent::query()->create(['school_id' => $this->school->id, 'name' => 'tax', 'name_display' => 'Income Tax', 'component_type' => 'deduction', 'calculation_type' => 'fixed', 'value' => 2500, 'sort_order' => 2, 'status' => 'active']);
+        SalaryComponent::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'basic'], ['name_display' => 'Basic Salary', 'component_type' => 'earning', 'calculation_type' => 'fixed', 'value' => 35000, 'sort_order' => 1, 'status' => 'active']);
+        SalaryComponent::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'hra'], ['name_display' => 'House Rent Allowance', 'component_type' => 'earning', 'calculation_type' => 'percentage', 'value' => 10, 'sort_order' => 2, 'status' => 'active']);
+        SalaryComponent::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'da'], ['name_display' => 'Dearness Allowance', 'component_type' => 'earning', 'calculation_type' => 'percentage', 'value' => 5, 'sort_order' => 3, 'status' => 'active']);
+        SalaryComponent::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'pf'], ['name_display' => 'Provident Fund', 'component_type' => 'deduction', 'calculation_type' => 'percentage', 'value' => 12, 'sort_order' => 1, 'status' => 'active']);
+        SalaryComponent::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'tax'], ['name_display' => 'Income Tax', 'component_type' => 'deduction', 'calculation_type' => 'fixed', 'value' => 2500, 'sort_order' => 2, 'status' => 'active']);
 
-        $grade = PayGrade::query()->create(['school_id' => $this->school->id, 'name' => 'Grade A', 'min_salary' => 30000, 'max_salary' => 50000, 'status' => 'active']);
+        $grade = PayGrade::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Grade A'], ['min_salary' => 30000, 'max_salary' => 50000, 'status' => 'active']);
 
         if ($teacher) {
-            EmployeeSalaryStructure::query()->create([
-                'school_id' => $this->school->id,
-                'employee_id' => (string) $teacher->employee_id,
-                'employee_type' => 'teacher',
-                'pay_grade_id' => $grade->id,
-                'effective_from' => $this->academicYear->starts_on,
-                'total_ctc' => 420000,
-                'status' => 'active',
-            ]);
+            EmployeeSalaryStructure::query()->firstOrCreate(
+                [
+                    'school_id' => $this->school->id,
+                    'employee_id' => (string) $teacher->employee_id,
+                    'employee_type' => 'teacher',
+                ],
+                [
+                    'pay_grade_id' => $grade->id,
+                    'effective_from' => $this->academicYear->starts_on,
+                    'total_ctc' => 420000,
+                    'status' => 'active',
+                ]
+            );
         }
 
         // Create payroll run
-        $run = PayrollRun::query()->create([
-            'school_id' => $this->school->id,
-            'month' => (int) now()->subMonth()->month,
-            'year' => (int) now()->subMonth()->year,
-            'status' => 'locked',
-            'generated_by' => 1,
-            'generated_at' => now(),
-            'notes' => 'Monthly payroll run',
-        ]);
-
-        if ($teacher) {
-            $item = PayrollItem::query()->create([
+        $run = PayrollRun::query()->firstOrCreate(
+            [
                 'school_id' => $this->school->id,
-                'payroll_run_id' => $run->id,
-                'employee_type' => 'teacher',
-                'employee_id' => (string) $teacher->employee_id,
-                'gross_salary' => 38500,
-                'total_deductions' => 6700,
-                'net_salary' => 31800,
-                'status' => 'active',
-            ]);
-
-            EmployeePayslip::query()->create([
-                'school_id' => $this->school->id,
-                'payroll_run_id' => $run->id,
-                'payroll_item_id' => $item->id,
-                'payslip_number' => 'PSL-'.$run->id.'-'.$item->id,
-                'employee_type' => 'teacher',
-                'employee_id' => (string) $teacher->employee_id,
-                'employee_name' => $teacher->first_name.' '.$teacher->last_name,
-                'department_name' => $dept->name,
-                'designation_name' => $designation->name,
-                'earnings_json' => [['name' => 'Basic Salary', 'amount' => 35000], ['name' => 'HRA', 'amount' => 3500]],
-                'deductions_json' => [['name' => 'Provident Fund', 'amount' => 4200], ['name' => 'Income Tax', 'amount' => 2500]],
-                'gross_salary' => 38500,
-                'total_deductions' => 6700,
-                'net_salary' => 31800,
+                'month' => (int) now()->subMonth()->month,
+                'year' => (int) now()->subMonth()->year,
+            ],
+            [
+                'status' => 'locked',
                 'generated_by' => 1,
                 'generated_at' => now(),
-            ]);
+                'notes' => 'Monthly payroll run',
+            ]
+        );
+
+        if ($teacher) {
+            $item = PayrollItem::query()->firstOrCreate(
+                [
+                    'school_id' => $this->school->id,
+                    'payroll_run_id' => $run->id,
+                    'employee_type' => 'teacher',
+                    'employee_id' => (string) $teacher->employee_id,
+                ],
+                [
+                    'gross_salary' => 38500,
+                    'total_deductions' => 6700,
+                    'net_salary' => 31800,
+                    'status' => 'active',
+                ]
+            );
+
+            EmployeePayslip::query()->firstOrCreate(
+                [
+                    'payroll_run_id' => $run->id,
+                    'payroll_item_id' => $item->id,
+                ],
+                [
+                    'school_id' => $this->school->id,
+                    'payslip_number' => 'PSL-'.$run->id.'-'.$item->id,
+                    'employee_type' => 'teacher',
+                    'employee_id' => (string) $teacher->employee_id,
+                    'employee_name' => $teacher->first_name.' '.$teacher->last_name,
+                    'department_name' => $dept->name,
+                    'designation_name' => $designation->name,
+                    'earnings_json' => [['name' => 'Basic Salary', 'amount' => 35000], ['name' => 'HRA', 'amount' => 3500]],
+                    'deductions_json' => [['name' => 'Provident Fund', 'amount' => 4200], ['name' => 'Income Tax', 'amount' => 2500]],
+                    'gross_salary' => 38500,
+                    'total_deductions' => 6700,
+                    'net_salary' => 31800,
+                    'generated_by' => 1,
+                    'generated_at' => now(),
+                ]
+            );
         }
     }
 
     private function createLeaveTypes(): void
     {
-        LeaveType::query()->create(['school_id' => $this->school->id, 'name' => 'Sick Leave', 'is_active' => true, 'created_by' => 1]);
-        LeaveType::query()->create(['school_id' => $this->school->id, 'name' => 'Casual Leave', 'is_active' => true, 'created_by' => 1]);
-        LeaveType::query()->create(['school_id' => $this->school->id, 'name' => 'Annual Leave', 'is_active' => true, 'created_by' => 1]);
-        LeaveType::query()->create(['school_id' => $this->school->id, 'name' => 'Emergency Leave', 'is_active' => true, 'created_by' => 1]);
+        LeaveType::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Sick Leave'], ['is_active' => true, 'created_by' => 1]);
+        LeaveType::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Casual Leave'], ['is_active' => true, 'created_by' => 1]);
+        LeaveType::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Annual Leave'], ['is_active' => true, 'created_by' => 1]);
+        LeaveType::query()->firstOrCreate(['school_id' => $this->school->id, 'name' => 'Emergency Leave'], ['is_active' => true, 'created_by' => 1]);
     }
 
     private function createAcademicCalendar(): void
     {
-        AcademicCalendar::query()->create([
-            'school_id' => $this->school->id,
-            'academic_year_id' => $this->academicYear->id,
-            'title' => 'Independence Day Celebration',
-            'event_type' => 'holiday',
-            'start_date' => now()->addMonths(2),
-            'description' => 'School will remain closed for Independence Day.',
-            'audience' => 'all',
-            'is_published' => true,
-            'created_by' => 1,
-        ]);
-        AcademicCalendar::query()->create([
-            'school_id' => $this->school->id,
-            'academic_year_id' => $this->academicYear->id,
-            'title' => 'Parent-Teacher Meeting',
-            'event_type' => 'meeting',
-            'start_date' => now()->addMonth(),
-            'description' => 'PTM for all classes.',
-            'audience' => 'parents',
-            'is_published' => true,
-            'created_by' => 1,
-        ]);
+        AcademicCalendar::query()->firstOrCreate(
+            ['school_id' => $this->school->id, 'academic_year_id' => $this->academicYear->id, 'title' => 'Independence Day Celebration'],
+            [
+                'event_type' => 'holiday',
+                'start_date' => now()->addMonths(2),
+                'description' => 'School will remain closed for Independence Day.',
+                'audience' => 'all',
+                'is_published' => true,
+                'created_by' => 1,
+            ]
+        );
+        AcademicCalendar::query()->firstOrCreate(
+            ['school_id' => $this->school->id, 'academic_year_id' => $this->academicYear->id, 'title' => 'Parent-Teacher Meeting'],
+            [
+                'event_type' => 'meeting',
+                'start_date' => now()->addMonth(),
+                'description' => 'PTM for all classes.',
+                'audience' => 'parents',
+                'is_published' => true,
+                'created_by' => 1,
+            ]
+        );
     }
 
     private function createNotifications(): void
     {
         $users = User::query()->whereIn('email', [
-            'superadmin@example.com',
-            'admin@example.com',
-            'john.doe@example.com',
-            'jane.smith@example.com',
+            'superadmin@school.com',
+            'admin@school.com',
+            'teacher@school.com',
+            'parent@school.com',
+            'driver@school.com',
         ])->get();
 
-        $notification = Notification::query()->create([
-            'school_id' => $this->school->id,
-            'title' => 'Welcome to Demo Public School',
-            'message' => 'Your account has been created successfully. Please login to access the portal.',
-            'type' => 'announcement',
-            'priority' => 'high',
-            'status' => 'sent',
-            'target_type' => 'all',
-            'channel' => 'in_app',
-            'sent_at' => now(),
-            'created_by' => 1,
-        ]);
+        $notification = Notification::query()->firstOrCreate(
+            ['school_id' => $this->school->id, 'title' => 'Welcome to Demo Public School'],
+            [
+                'message' => 'Your account has been created successfully. Please login to access the portal.',
+                'type' => 'announcement',
+                'priority' => 'high',
+                'status' => 'sent',
+                'target_type' => 'all',
+                'channel' => 'in_app',
+                'sent_at' => now(),
+                'created_by' => 1,
+            ]
+        );
 
         foreach ($users as $user) {
             $notification->users()->attach($user->id, [

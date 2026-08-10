@@ -5,11 +5,10 @@ namespace Database\Seeders\Transport;
 use App\Models\School;
 use App\Modules\Students\Models\Student;
 use App\Modules\Transport\Models\Route;
-use App\Modules\Transport\Models\RouteStop;
 use App\Modules\Transport\Models\TransportAssignment;
 use Illuminate\Database\Seeder;
 
-class StudentRouteSeeder extends Seeder
+class StudentTransportSeeder extends Seeder
 {
     public function run(): void
     {
@@ -23,6 +22,10 @@ class StudentRouteSeeder extends Seeder
             ->with('stops')
             ->get();
 
+        if ($routes->isEmpty()) {
+            return;
+        }
+
         $students = Student::query()
             ->where('school_id', $school->id)
             ->where('status', 'active')
@@ -33,15 +36,14 @@ class StudentRouteSeeder extends Seeder
         foreach ($students as $index => $student) {
             $route = $routes[$index % $routes->count()];
             $stops = $route->stops->sortBy('sequence')->values();
+
             if ($stops->isEmpty()) {
                 continue;
             }
 
-            // Assign students to the early-middle stops so the route has load;
-            // the last stop is reserved as the school-side endpoint.
-            $stop = $stops[min($index, $stops->count() - 2)];
+            $stop = $stops[min($index % $stops->count(), $stops->count() - 1)];
 
-            TransportAssignment::query()->firstOrCreate(
+            TransportAssignment::query()->updateOrCreate(
                 ['school_id' => $school->id, 'student_id' => $student->id],
                 [
                     'route_id' => $route->id,

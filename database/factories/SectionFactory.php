@@ -13,7 +13,10 @@ class SectionFactory extends Factory
 
     public function definition(): array
     {
-        $letter = fake()->unique()->randomElement(['A', 'B', 'C', 'D']);
+        static $counter = 0;
+        $counter++;
+
+        $letter = ['A', 'B', 'C', 'D'][($counter - 1) % 4];
 
         return [
             'school_id' => School::factory(),

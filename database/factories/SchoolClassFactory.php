@@ -13,13 +13,14 @@ class SchoolClassFactory extends Factory
 
     public function definition(): array
     {
-        $number = fake()->unique()->numberBetween(1, 12);
+        static $counter = 0;
+        $counter++;
 
         return [
             'school_id' => School::factory(),
-            'name' => 'Class '.$number,
-            'code' => 'CLS'.$number,
-            'sort_order' => $number,
+            'name' => 'Class '.$counter,
+            'code' => 'CLS'.$counter,
+            'sort_order' => $counter,
             'status' => 'active',
         ];
     }

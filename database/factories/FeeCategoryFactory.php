@@ -13,12 +13,15 @@ class FeeCategoryFactory extends Factory
 
     public function definition(): array
     {
+        static $counter = 0;
+        $counter++;
+
         return [
             'school_id' => School::factory(),
-            'code' => fake()->unique()->bothify('cat_????'),
-            'name' => fake()->words(2, true),
+            'code' => 'cat_'.str_pad((string) $counter, 4, '0', STR_PAD_LEFT),
+            'name' => 'Fee Category '.$counter,
             'description' => null,
-            'sort_order' => fake()->numberBetween(0, 50),
+            'sort_order' => $counter,
         ];
     }
 }

@@ -13,20 +13,23 @@ class SchoolFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->company().' School';
+        static $counter = 0;
+        $counter++;
+
+        $name = 'Demo School '.$counter;
 
         return [
             'uuid' => (string) Str::uuid(),
-            'code' => strtoupper(fake()->unique()->bothify('SCH###')),
+            'code' => 'SCH'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
             'name' => $name,
-            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(100, 999),
-            'email' => fake()->safeEmail(),
-            'phone' => fake()->phoneNumber(),
-            'address' => fake()->address(),
-            'city' => fake()->city(),
-            'state' => fake()->state(),
+            'slug' => Str::slug($name),
+            'email' => 'school.'.$counter.'@example.com',
+            'phone' => '+91 90000 '.str_pad((string) $counter, 5, '0', STR_PAD_LEFT),
+            'address' => 'Main Campus Road, Demo City',
+            'city' => 'Demo City',
+            'state' => 'Karnataka',
             'country' => 'India',
-            'postal_code' => fake()->postcode(),
+            'postal_code' => '580001',
             'timezone' => 'Asia/Kolkata',
             'currency' => 'INR',
             'date_format' => 'd-m-Y',

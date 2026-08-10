@@ -15,8 +15,9 @@ class AdminUserSeeder extends Seeder
     {
         $school = School::query()->where('code', 'DEMO')->firstOrFail();
 
-        $superAdmin = User::query()->firstOrCreate(
-            ['email' => 'superadmin@example.com'],
+        // Super Admin
+        $superAdmin = User::query()->updateOrCreate(
+            ['email' => 'superadmin@school.com'],
             [
                 'uuid' => (string) Str::uuid(),
                 'name' => 'Super Admin',
@@ -41,8 +42,9 @@ class AdminUserSeeder extends Seeder
         app(PermissionRegistrar::class)->setPermissionsTeamId($school->id);
         $superAdmin->assignRole('Super Admin');
 
-        $schoolAdmin = User::query()->firstOrCreate(
-            ['email' => 'admin@example.com'],
+        // School Admin
+        $schoolAdmin = User::query()->updateOrCreate(
+            ['email' => 'admin@school.com'],
             [
                 'uuid' => (string) Str::uuid(),
                 'name' => 'School Admin',

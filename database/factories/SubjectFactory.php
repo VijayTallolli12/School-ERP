@@ -13,14 +13,18 @@ class SubjectFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->unique()->randomElement(['English', 'Mathematics', 'Science', 'Social Studies', 'Computer Science', 'Hindi']);
+        static $counter = 0;
+        $counter++;
+
+        $names = ['English', 'Mathematics', 'Science', 'Social Studies', 'Computer Science', 'Hindi'];
+        $name = $names[($counter - 1) % count($names)];
 
         return [
             'school_id' => School::factory(),
             'name' => $name,
-            'code' => strtoupper(fake()->unique()->bothify('SUB###')),
+            'code' => 'SUB'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
             'type' => 'core',
-            'credit_hours' => fake()->numberBetween(3, 6),
+            'credit_hours' => 4,
             'status' => 'active',
         ];
     }

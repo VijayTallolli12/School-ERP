@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Parents\Models\Guardian;
 use App\Modules\Students\Models\Student;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -14,79 +15,83 @@ class ParentSeeder extends Seeder
 {
     public function run(): void
     {
-        School::query()->each(function (School $school) {
+        $school = School::query()->where('code', 'DEMO')->firstOrFail();
 
-            $parents = [
+        app(PermissionRegistrar::class)->setPermissionsTeamId($school->id);
+
+        $parents = [
+            [
+                'first_name' => 'Rajesh',
+                'last_name' => 'Verma',
+                'email' => 'parent@school.com',
+                'phone' => '+91 98765 43210',
+                'occupation' => 'Engineer',
+                'address' => '123 Main St, Demo City',
+                'status' => 'active',
+                'student_admission_no' => 'ADM0001',
+            ],
+            [
+                'first_name' => 'Nilesh',
+                'last_name' => 'Patel',
+                'email' => 'nilesh.patel@example.com',
+                'phone' => '+91 98765 43211',
+                'occupation' => 'Doctor',
+                'address' => '456 Oak Ave, Demo City',
+                'status' => 'active',
+                'student_admission_no' => 'ADM0002',
+            ],
+        ];
+
+        foreach ($parents as $parentData) {
+            $guardianEmail = $parentData['email'];
+
+            $guardian = Guardian::query()->updateOrCreate(
+                ['school_id' => $school->id, 'email' => $guardianEmail],
                 [
-                    'first_name' => 'John',
-                    'last_name' => 'Doe',
-                    'email' => 'john.doe@example.com',
-                    'phone' => '+1234567890',
-                    'occupation' => 'Engineer',
-                    'address' => '123 Main St, City, State',
-                    'status' => 'active',
-                ],
+                    'uuid' => (string) Str::uuid(),
+                    'school_id' => $school->id,
+                    'first_name' => $parentData['first_name'],
+                    'last_name' => $parentData['last_name'],
+                    'email' => $guardianEmail,
+                    'phone' => $parentData['phone'],
+                    'occupation' => $parentData['occupation'],
+                    'address' => $parentData['address'],
+                    'status' => $parentData['status'],
+                ]
+            );
+
+            $user = User::query()->updateOrCreate(
+                ['email' => $guardianEmail],
                 [
-                    'first_name' => 'Jane',
-                    'last_name' => 'Smith',
-                    'email' => 'jane.smith@example.com',
-                    'phone' => '+1234567891',
-                    'occupation' => 'Teacher',
-                    'address' => '456 Oak Ave, City, State',
+                    'uuid' => (string) Str::uuid(),
+                    'name' => $parentData['first_name'].' '.$parentData['last_name'],
+                    'phone' => $parentData['phone'],
+                    'password' => Hash::make('password'),
+                    'current_school_id' => $school->id,
                     'status' => 'active',
-                ],
-            ];
+                    'email_verified_at' => now(),
+                ]
+            );
+            $user->assignRole('Parent');
+            $user->schools()->syncWithoutDetaching([$school->id => ['status' => 'active', 'is_primary' => true]]);
 
-            foreach ($parents as $parentData) {
-
-                if (Guardian::where('email', $parentData['email'])->exists()) {
-                    continue;
-                }
-
-                $parentData['school_id'] = $school->id;
-
-                // FIX: Generate UUID
-                $parentData['uuid'] = (string) Str::uuid();
-
-                // Create user if not exists
-                $user = User::where('email', $parentData['email'])->first();
-
-                if (!$user) {
-                    $user = User::factory()->create([
-                        'name' => $parentData['first_name'].' '.$parentData['last_name'],
-                        'email' => $parentData['email'],
-                        'current_school_id' => $school->id,
-                    ]);
-                }
-
-                // Assign Parent role with team context
-                app(PermissionRegistrar::class)->setPermissionsTeamId($school->id);
-                if (!$user->hasRole('Parent')) {
-                    $user->assignRole('Parent');
-                }
-
-                $parentData['user_id'] = $user->id;
-
-                $parent = Guardian::create($parentData);
-
-                // Attach students safely
-                $students = Student::query()
-                    ->where('school_id', $school->id)
-                    ->inRandomOrder()
-                    ->take(rand(1,2))
-                    ->get();
-
-                foreach ($students as $index => $student) {
-
-                    $parent->students()->attach(
-                        $student->id,
-                        [
-                            'relationship' => $index === 0 ? 'father' : 'mother',
-                            'is_primary' => $index === 0,
-                        ]
-                    );
-                }
+            if (!$guardian->user_id) {
+                $guardian->update(['user_id' => $user->id]);
             }
-        });
+
+            $student = Student::query()
+                ->where('school_id', $school->id)
+                ->where('admission_no', $parentData['student_admission_no'])
+                ->first();
+
+            if ($student) {
+                $guardian->students()->syncWithoutDetaching([
+                    $student->id => [
+                        'relationship' => 'father',
+                        'is_primary' => true,
+                    ],
+                ]);
+            }
+        }
     }
 }

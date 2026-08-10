@@ -16,6 +16,7 @@ class TripSeeder extends Seeder
     {
         $school = School::query()->where('code', 'DEMO')->firstOrFail();
         $context = app(SchoolContext::class);
+        $context->set($school->id);
 
         $today = $context->startOfToday()->toDateString();
         $yesterday = $context->now()->subDay()->toDateString();
@@ -27,6 +28,7 @@ class TripSeeder extends Seeder
             ->where('school_id', $school->id)
             ->where('status', 'active')
             ->whereNotNull('driver_id')
+            ->whereNotNull('vehicle_id')
             ->orderBy('id')
             ->get();
 
@@ -96,16 +98,18 @@ class TripSeeder extends Seeder
                 'dropped_off_count' => $isPickup ? 0 : $trip->total_students,
             ]);
 
-            $trip->tripStudents->each(function (TripStudent $tripStudent) use ($isPickup, $pickupStart, $dropStart): void {
+            $offset = 0;
+            $trip->tripStudents->each(function (TripStudent $tripStudent) use ($isPickup, $pickupStart, $dropStart, &$offset): void {
+                $offset += 5;
                 if ($isPickup) {
                     $tripStudent->update([
                         'pickup_status' => 'picked_up',
-                        'picked_up_at' => $pickupStart->copy()->addMinutes(rand(5, 30)),
+                        'picked_up_at' => $pickupStart->copy()->addMinutes($offset),
                     ]);
                 } else {
                     $tripStudent->update([
                         'drop_status' => 'dropped_off',
-                        'dropped_off_at' => $dropStart->copy()->addMinutes(rand(5, 30)),
+                        'dropped_off_at' => $dropStart->copy()->addMinutes($offset),
                     ]);
                 }
             });
