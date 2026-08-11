@@ -373,7 +373,8 @@ class StudentLifecyclePromotionTest extends TestCase
     {
         [$school] = $this->actingAdmin();
 
-        $parent = User::query()->where('email', 'john.doe@example.com')->firstOrFail();
+        // parent@school.com is created by ParentSeeder and has no promotion permissions.
+        $parent = User::query()->where('email', 'parent@school.com')->firstOrFail();
 
         $this->actingAs($parent)->withSession(['school_id' => $school->id]);
 

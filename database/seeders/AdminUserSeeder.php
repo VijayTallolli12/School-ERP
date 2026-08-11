@@ -16,8 +16,12 @@ class AdminUserSeeder extends Seeder
         $school = School::query()->where('code', 'DEMO')->firstOrFail();
 
         // Super Admin
+        // NOTE: keep @example.com emails — they are the documented, tested contract
+        // (docs/development/TEST_USERS.md, docs/audits/RBAC/PERMISSION_MATRIX.md and
+        // every feature test). Changing this email creates a duplicate admin user on
+        // existing databases because updateOrCreate keys on the email column.
         $superAdmin = User::query()->updateOrCreate(
-            ['email' => 'superadmin@school.com'],
+            ['email' => 'superadmin@example.com'],
             [
                 'uuid' => (string) Str::uuid(),
                 'name' => 'Super Admin',
@@ -44,7 +48,7 @@ class AdminUserSeeder extends Seeder
 
         // School Admin
         $schoolAdmin = User::query()->updateOrCreate(
-            ['email' => 'admin@school.com'],
+            ['email' => 'admin@example.com'],
             [
                 'uuid' => (string) Str::uuid(),
                 'name' => 'School Admin',

@@ -1,7 +1,7 @@
 {
   "name": "school-erp-mobile",
   "version": "1.0.0",
-  "main": "expo/AppEntry.ts",
+  "main": "expo/AppEntry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -15,11 +15,13 @@
     "react": "18.2.0",
     "react-native": "0.74.0",
     "@react-navigation/native": "^6.1.0",
+    "@react-navigation/native-stack": "^6.9.0",
     "@react-navigation/stack": "^6.3.0",
     "@react-navigation/drawer": "^6.6.0",
     "react-native-screens": "~3.29.0",
     "react-native-safe-area-context": "4.9.0",
     "react-native-gesture-handler": "~2.16.0",
+    "react-native-reanimated": "~3.10.1",
     "react-native-vector-icons": "^10.1.0",
     "@react-native-async-storage/async-storage": "~1.19.0",
     "axios": "^1.6.0"

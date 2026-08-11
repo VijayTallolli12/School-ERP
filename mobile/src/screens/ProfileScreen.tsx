@@ -6,55 +6,122 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useBranding } from '../branding/BrandingContext';
+import { useAuth } from '../auth/AuthContext';
+import { ApiError } from '../api/client';
 
 const ProfileScreen: React.FC = () => {
   const { branding, theme } = useBranding();
+  const { user, roles, schoolId, student, children, parentUuid, primaryRole, refreshProfile, signOut } =
+    useAuth();
+
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setError(null);
+    try {
+      await refreshProfile();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not refresh profile.');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}> 
-      <View style={[styles.header, { backgroundColor: theme.primary }]}> 
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
+      <View style={[styles.header, { backgroundColor: theme.primary }]}>
         <Text style={[styles.headerTitle, { color: '#ffffff' }]}>Profile</Text>
       </View>
 
-      <View style={styles.avatarSection}>
-        <View style={[styles.avatar, { backgroundColor: theme.primary + '20' }]}> 
-          {branding.schoolLogo ? (
-            <Image source={{ uri: branding.schoolLogo }} style={styles.avatarImage} />
-          ) : (
-            <Text style={[styles.avatarText, { color: theme.primary }]}>
-              {branding.schoolName.charAt(0).toUpperCase()}
-            </Text>
-          )}
+      {error ? (
+        <View style={[styles.errorBox, { backgroundColor: theme.danger + '14', borderColor: theme.danger + '44' }]}>
+          <Text style={[styles.errorText, { color: theme.danger }]}>{error}</Text>
         </View>
+      ) : null}
+
+      <View style={styles.avatarSection}>
+        {user?.avatar_url ? (
+          <Image source={{ uri: user.avatar_url }} style={styles.avatarImage} />
+        ) : (
+          <View style={[styles.avatar, { backgroundColor: theme.primary + '20' }]}>
+            <Text style={[styles.avatarText, { color: theme.primary }]}>
+              {(user?.name ?? branding.schoolName).charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
         <Text style={[styles.profileName, { color: theme.text }]}>
-          Profile Name
+          {user?.name ?? '—'}
         </Text>
         <Text style={[styles.profileRole, { color: theme.textSecondary }]}>
-          Role
+          {primaryRole ?? (roles.length > 0 ? roles.join(', ') : '—')}
+        </Text>
+        <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>
+          {user?.email ?? ''}
         </Text>
       </View>
 
-      <View style={[styles.infoCard, { backgroundColor: theme.backgroundCard }]}> 
+      <View style={[styles.infoCard, { backgroundColor: theme.backgroundCard }]}>
         <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>School</Text>
         <Text style={[styles.infoValue, { color: theme.text }]}>{branding.schoolName}</Text>
-
-        <Text style={[styles.infoLabel, { color: theme.textSecondary, marginTop: 12 }]}>Address</Text>
-        <Text style={[styles.infoValue, { color: theme.text }]}>
-          {branding.schoolAddress || 'Not set'}
-        </Text>
+        <Text style={[styles.infoLabel, { color: theme.textSecondary, marginTop: 12 }]}>School ID</Text>
+        <Text style={[styles.infoValue, { color: theme.text }]}>{schoolId ?? '—'}</Text>
 
         <Text style={[styles.infoLabel, { color: theme.textSecondary, marginTop: 12 }]}>Phone</Text>
-        <Text style={[styles.infoValue, { color: theme.text }]}>
-          {branding.schoolPhone || 'Not set'}
-        </Text>
-
-        <Text style={[styles.infoLabel, { color: theme.textSecondary, marginTop: 12 }]}>Website</Text>
-        <Text style={[styles.infoValue, { color: theme.text }]}>
-          {branding.schoolWebsite || 'Not set'}
-        </Text>
+        <Text style={[styles.infoValue, { color: theme.text }]}>{user?.phone || 'Not set'}</Text>
       </View>
+
+      {primaryRole === 'Student' && student ? (
+        <View style={[styles.infoCard, { backgroundColor: theme.backgroundCard }]}>
+          <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Admission No</Text>
+          <Text style={[styles.infoValue, { color: theme.text }]}>{student.admission_no}</Text>
+          <Text style={[styles.infoLabel, { color: theme.textSecondary, marginTop: 12 }]}>Class</Text>
+          <Text style={[styles.infoValue, { color: theme.text }]}>
+            Class {student.class} - {student.section} · Roll {student.roll_number}
+          </Text>
+          <Text style={[styles.infoLabel, { color: theme.textSecondary, marginTop: 12 }]}>Academic Year</Text>
+          <Text style={[styles.infoValue, { color: theme.text }]}>{student.academic_year}</Text>
+        </View>
+      ) : null}
+
+      {primaryRole === 'Parent' ? (
+        <View style={[styles.infoCard, { backgroundColor: theme.backgroundCard }]}>
+          <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Linked Children</Text>
+          {children.length === 0 ? (
+            <Text style={[styles.infoValue, { color: theme.text }]}>No children linked.</Text>
+          ) : (
+            children.map((child) => (
+              <View key={child.uuid} style={{ marginTop: 8 }}>
+                <Text style={[styles.infoValue, { color: theme.text }]}>{child.name}</Text>
+                <Text style={[styles.infoValue, { color: theme.textSecondary }]}>
+                  Class {child.class} - {child.section} · Roll {child.roll_number}
+                </Text>
+              </View>
+            ))
+          )}
+          <Text style={[styles.infoLabel, { color: theme.textSecondary, marginTop: 12 }]}>Parent ID</Text>
+          <Text style={[styles.infoValue, { color: theme.text }]}>{parentUuid ?? '—'}</Text>
+        </View>
+      ) : null}
+
+      {refreshing ? (
+        <ActivityIndicator style={{ marginVertical: 12 }} color={theme.primary} />
+      ) : null}
+
+      <TouchableOpacity
+        style={[styles.signOutButton, { borderColor: theme.danger + '66' }]}
+        onPress={signOut}
+      >
+        <Text style={[styles.signOutText, { color: theme.danger }]}>Sign Out</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -100,8 +167,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
+  profileEmail: {
+    fontSize: 13,
+    marginTop: 2,
+  },
   infoCard: {
     margin: 24,
+    marginTop: 0,
     padding: 16,
     borderRadius: 12,
   },
@@ -113,6 +185,28 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 14,
     marginTop: 2,
+  },
+  errorBox: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginHorizontal: 24,
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 13,
+  },
+  signOutButton: {
+    margin: 24,
+    marginTop: 0,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  signOutText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image, Dimensions } from 'react-native';
 import { useBranding } from '../branding/BrandingContext';
 
 const { width } = Dimensions.get('window');

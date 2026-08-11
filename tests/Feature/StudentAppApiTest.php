@@ -133,6 +133,8 @@ class StudentAppApiTest extends TestCase
 
     public function test_student_login_fails_for_non_student(): void
     {
+        // admin@example.com is seeded by AdminUserSeeder and has no student linkage,
+        // so the student login must reject it with a 404 (not a 422 credentials error).
         $response = $this->postJson(route('api.v1.student.login'), [
             'email' => 'admin@example.com',
             'password' => 'password',

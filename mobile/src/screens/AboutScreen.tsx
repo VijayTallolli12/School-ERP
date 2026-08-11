@@ -6,6 +6,7 @@ import {
   ScrollView,
   Linking,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { useBranding } from '../branding/BrandingContext';
 

@@ -8,23 +8,59 @@ import {
   Image,
   Dimensions,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useBranding } from '../branding/BrandingContext';
+import { useAuth } from '../auth/AuthContext';
+import { ApiError } from '../api/client';
 
 const { width } = Dimensions.get('window');
 
 const LoginScreen: React.FC = () => {
   const { branding, theme } = useBranding();
+  const { signIn } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogin = async () => {
+    if (submitting) {
+      return;
+    }
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+    if (!password) {
+      setError('Please enter your password.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await signIn(trimmedEmail, password);
+      // Navigation switches to the dashboard automatically once
+      // the auth context moves to 'authenticated'.
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Sign in failed. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.header, { backgroundColor: theme.primary }]}> 
+      <View style={[styles.header, { backgroundColor: theme.primary }]}>
         {branding.schoolLogo ? (
           <Image source={{ uri: branding.schoolLogo }} style={styles.logo} />
         ) : (
-          <View style={[styles.logoPlaceholder, { backgroundColor: theme.primaryLight }]}> 
+          <View style={[styles.logoPlaceholder, { backgroundColor: theme.primaryLight }]}>
             <Text style={[styles.logoText, { color: theme.primary }]}>
               {branding.schoolName.charAt(0).toUpperCase()}
             </Text>
@@ -38,11 +74,17 @@ const LoginScreen: React.FC = () => {
         </Text>
       </View>
 
-      <View style={[styles.formCard, { backgroundColor: theme.backgroundCard }]}> 
+      <View style={[styles.formCard, { backgroundColor: theme.backgroundCard }]}>
         <Text style={[styles.title, { color: theme.text }]}>Welcome Back</Text>
         <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
           Sign in to continue
         </Text>
+
+        {error ? (
+          <View style={[styles.errorBox, { backgroundColor: theme.danger + '14', borderColor: theme.danger + '44' }]}>
+            <Text style={[styles.errorText, { color: theme.danger }]}>{error}</Text>
+          </View>
+        ) : null}
 
         <TextInput
           style={[styles.input, { borderColor: theme.primary + '33', color: theme.text }]}
@@ -52,6 +94,8 @@ const LoginScreen: React.FC = () => {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
+          editable={!submitting}
         />
 
         <TextInput
@@ -61,12 +105,20 @@ const LoginScreen: React.FC = () => {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          editable={!submitting}
+          onSubmitEditing={handleLogin}
         />
 
         <TouchableOpacity
           style={[styles.loginButton, { backgroundColor: theme.primary }]}
+          onPress={handleLogin}
+          disabled={submitting}
         >
-          <Text style={styles.loginButtonText}>Sign In</Text>
+          {submitting ? (
+            <ActivityIndicator color="#ffffff" />
+          ) : (
+            <Text style={styles.loginButtonText}>Sign In</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -129,6 +181,15 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     marginBottom: 24,
+  },
+  errorBox: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 13,
   },
   input: {
     height: 48,

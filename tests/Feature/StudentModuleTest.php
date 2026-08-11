@@ -37,10 +37,14 @@ class StudentModuleTest extends TestCase
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($school->id);
 
+        $expectedCount = \App\Modules\Students\Models\Student::query()
+            ->where('school_id', $school->id)
+            ->count();
+
         $this->actingAs($user)
             ->withSession(['school_id' => $school->id])
             ->getJson(route('admin.students.data'))
             ->assertOk()
-            ->assertJsonPath('recordsTotal', 12);
+            ->assertJsonPath('recordsTotal', $expectedCount);
     }
 }

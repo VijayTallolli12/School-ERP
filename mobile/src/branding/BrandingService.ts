@@ -2,9 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BrandingData, sanitizeBranding } from './theme';
 import { DEFAULT_BRANDING } from './fallback';
+import { API_BASE_URL } from '../config/api';
 
 const BRANDING_CACHE_KEY = '@school_erp_branding';
-const BRANDING_API_URL = 'http://localhost:8000/api/v1/branding';
+const BRANDING_API_URL = `${API_BASE_URL}/branding`;
 const CACHE_TTL_MS = 30 * 60 * 1000;
 
 interface BrandingResponse {
