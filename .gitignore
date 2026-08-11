@@ -32,3 +32,14 @@ node_modules/
 /playwright/.auth/
 /e2e
 
+# Deployment/database exports - NEVER commit
+*.sql
+school_erp_hostinger.sql
+school_erp_hostinger_Insert.sql
+
+# Generated reports / debug artifacts
+bundle-analysis.html
+payroll_test_results.json
+route_output.txt
+routes.json
+routes.txt
