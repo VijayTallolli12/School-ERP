@@ -31,6 +31,8 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 /e2e
+docs/development/e2e/auth.json
+docs/development/e2e/screenshots/
 
 # Deployment/database exports - NEVER commit
 *.sql
@@ -43,3 +45,6 @@ payroll_test_results.json
 route_output.txt
 routes.json
 routes.txt
+
+# Freebuff desktop client local state (not part of the project)
+.freebuff/

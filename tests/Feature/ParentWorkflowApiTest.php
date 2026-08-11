@@ -332,6 +332,67 @@ class ParentWorkflowApiTest extends TestCase
             ->assertSee('Parent Announcement');
     }
 
+    // ─── Circulars ───────────────────────────────────────────────────────
+
+    private function createAnnouncement(string $title, string $targetType): Notification
+    {
+        return Notification::query()->create([
+            'school_id' => $this->school->id,
+            'title' => $title,
+            'message' => "Announcement message for {$title}.",
+            'type' => 'announcement',
+            'priority' => 'normal',
+            'status' => 'sent',
+            'target_type' => $targetType,
+            'channel' => 'in_app',
+            'sent_at' => now(),
+            'created_by' => $this->guardianUser->id,
+        ]);
+    }
+
+    public function test_guardian_sees_circulars_targeted_to_parents_students_and_all(): void
+    {
+        $this->createAnnouncement('Parent Only Announcement', 'parents');
+        $this->createAnnouncement('Student Announcement', 'students');
+        $this->createAnnouncement('School Wide Announcement', 'all');
+        $this->createAnnouncement('Teacher Only Announcement', 'teachers');
+
+        $token = $this->parentToken();
+
+        $response = $this->withToken($token)
+            ->getJson(route('api.v1.parents.circulars', ['uuid' => $this->guardian->uuid]))
+            ->assertOk();
+
+        $titles = collect($response->json('data'))->pluck('title')->all();
+
+        $this->assertContains('Parent Only Announcement', $titles);
+        $this->assertContains('Student Announcement', $titles);
+        $this->assertContains('School Wide Announcement', $titles);
+        $this->assertNotContains('Teacher Only Announcement', $titles);
+    }
+
+    public function test_guardian_can_open_and_mark_student_targeted_circular_read(): void
+    {
+        $notification = $this->createAnnouncement('Student Announcement', 'students');
+        $token = $this->parentToken();
+
+        $this->withToken($token)
+            ->getJson(route('api.v1.parents.circulars.show', [
+                'uuid' => $this->guardian->uuid,
+                'id' => $notification->id,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.title', 'Student Announcement');
+
+        $this->withToken($token)
+            ->postJson(route('api.v1.parents.circulars.read', [
+                'uuid' => $this->guardian->uuid,
+                'id' => $notification->id,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.is_read', true);
+    }
+
     // ─── Transport ───────────────────────────────────────────────────────
 
     public function test_guardian_can_view_child_transport_with_assignment(): void

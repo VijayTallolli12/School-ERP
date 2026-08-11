@@ -402,7 +402,7 @@ class ParentApiController extends ApiBaseController
         $perPage = request()->integer('per_page', 15);
 
         $paginator = Notification::query()
-            ->where('target_type', 'parents')
+            ->whereIn('target_type', ['parents', 'students', 'all'])
             ->where('type', 'announcement')
             ->where('status', 'sent')
             ->with('creator:id,name')
@@ -432,7 +432,7 @@ class ParentApiController extends ApiBaseController
         }
 
         $notification = Notification::query()
-            ->where('target_type', 'parents')
+            ->whereIn('target_type', ['parents', 'students', 'all'])
             ->where('type', 'announcement')
             ->where('id', $id)
             ->with('creator:id,name')
@@ -461,7 +461,7 @@ class ParentApiController extends ApiBaseController
         }
 
         $notification = Notification::query()
-            ->where('target_type', 'parents')
+            ->whereIn('target_type', ['parents', 'students', 'all'])
             ->where('type', 'announcement')
             ->where('id', $id)
             ->first();

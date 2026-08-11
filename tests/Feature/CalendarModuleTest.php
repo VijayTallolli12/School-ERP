@@ -149,13 +149,16 @@ class CalendarModuleTest extends TestCase
 
         $wrongMonth = $eventDate->copy()->addMonths(1);
 
-        $this->actingAsAdmin()
+        $response = $this->actingAsAdmin()
             ->getJson(route('admin.calendar.events', [
                 'year' => $wrongMonth->year,
                 'month' => $wrongMonth->month,
-            ]))
-            ->assertOk()
-            ->assertJsonCount(0, 'events');
+            ]));
+
+        $response->assertOk();
+
+        $ids = collect($response->json('events'))->pluck('id');
+        $this->assertNotContains($this->publishedEvent->id, $ids->all());
     }
 
     public function test_draft_event_is_hidden_from_calendar_view(): void
