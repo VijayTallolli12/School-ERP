@@ -78,11 +78,26 @@ class CalendarController extends Controller
         ]);
     }
 
-    public function show(AcademicCalendar $event): View
+    public function show(AcademicCalendar $event): JsonResponse
     {
         $this->authorize('view', $event);
 
-        return view('modules.calendar.show', compact('event'));
+        // The list view's edit modal loads event data via GET /calendar/{id}
+        // and expects JSON (see index.blade.php → .edit-event handler).
+        return response()->json([
+            'success' => true,
+            'event' => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'event_type' => $event->event_type,
+                'academic_year_id' => $event->academic_year_id,
+                'audience' => $event->audience,
+                'start_date' => $event->start_date?->format('Y-m-d'),
+                'end_date' => $event->end_date?->format('Y-m-d'),
+                'location' => $event->location,
+                'description' => $event->description,
+            ],
+        ]);
     }
 
     public function edit(AcademicCalendar $event): View
@@ -146,8 +161,23 @@ class CalendarController extends Controller
 
         $events = AcademicCalendar::query()
             ->where('is_published', true)
-            ->where('start_date', '<=', $end)
-            ->where('end_date', '>=', $start)
+            ->where(function ($query) use ($start, $end): void {
+                // Multi-day events (end_date set): any overlap with the month
+                // window counts.
+                $query->where(function ($q) use ($start, $end): void {
+                    $q->whereNotNull('end_date')
+                        ->where('start_date', '<=', $end)
+                        ->where('end_date', '>=', $start);
+                })
+                // Single-day events are stored with a null end_date; they must
+                // fall inside the month itself (end_date = null would otherwise
+                // match every later month and vanish entirely).
+                ->orWhere(function ($q) use ($start, $end): void {
+                    $q->whereNull('end_date')
+                        ->where('start_date', '>=', $start)
+                        ->where('start_date', '<=', $end);
+                });
+            })
             ->get()
             ->map(fn (AcademicCalendar $event) => [
                 'id' => $event->id,

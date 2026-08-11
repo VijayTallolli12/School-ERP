@@ -213,6 +213,14 @@ export interface ParentDashboard {
     total_marks: number;
     obtained_marks: number;
   };
+  upcoming_exams: Array<{
+    id: number;
+    exam_name: string;
+    exam_type: string;
+    exam_date: string | null;
+    subject: string | null;
+    class_section: string | null;
+  }>;
   homework_summary: Record<string, unknown>;
   notifications: unknown[];
 }

@@ -351,6 +351,21 @@ const ParentView: React.FC<{ data: ParentDashboard }> = ({ data }) => {
         <StatCard label="Fees Pending" value={formatCurrency(data.fees_summary.pending)} theme={theme} />
         <StatCard label="Avg Score" value={`${data.exam_results_summary.average}%`} theme={theme} />
       </View>
+
+      {data.upcoming_exams.length > 0 ? (
+        <View>
+          <SectionTitle title="Upcoming Exams" theme={theme} />
+          {data.upcoming_exams.map((exam) => (
+            <View key={exam.id} style={[styles.card, { backgroundColor: theme.backgroundCard }]}>
+              <Text style={[styles.cardTitle, { color: theme.text }]}>{exam.exam_name}</Text>
+              <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
+                {exam.subject ?? 'All subjects'} · {exam.exam_date ?? 'Date TBA'}
+                {exam.class_section ? ` · ${exam.class_section}` : ''}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 };

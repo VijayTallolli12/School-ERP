@@ -273,6 +273,7 @@ class MobileApiContractTest extends TestCase
                     'attendance_summary' => ['present', 'absent', 'total', 'percentage'],
                     'fees_summary' => ['total', 'paid', 'pending'],
                     'exam_results_summary' => ['average', 'subjects', 'total_marks', 'obtained_marks'],
+                    'upcoming_exams',
                 ],
             ])
             ->assertJsonPath('data.students.0.uuid', $this->student->uuid);

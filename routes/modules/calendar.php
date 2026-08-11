@@ -8,8 +8,8 @@ Route::prefix('calendar')->name('calendar.')->middleware('permission:academic_ca
     Route::get('/data', [CalendarController::class, 'data'])->name('data');
     Route::get('/events', [CalendarController::class, 'calendarEvents'])->name('events');
     Route::post('/', [CalendarController::class, 'store'])->middleware('permission:academic_calendar.create')->name('store');
-    Route::get('/{id}', [CalendarController::class, 'show'])->name('show');
-    Route::put('/{id}', [CalendarController::class, 'update'])->middleware('permission:academic_calendar.update')->name('update');
-    Route::delete('/{id}', [CalendarController::class, 'destroy'])->middleware('permission:academic_calendar.delete')->name('destroy');
-    Route::patch('/{id}/toggle-publish', [CalendarController::class, 'togglePublish'])->middleware('permission:academic_calendar.publish')->name('toggle-publish');
+    Route::get('/{event}', [CalendarController::class, 'show'])->name('show');
+    Route::put('/{event}', [CalendarController::class, 'update'])->middleware('permission:academic_calendar.update')->name('update');
+    Route::delete('/{event}', [CalendarController::class, 'destroy'])->middleware('permission:academic_calendar.delete')->name('destroy');
+    Route::patch('/{event}/toggle-publish', [CalendarController::class, 'togglePublish'])->middleware('permission:academic_calendar.publish')->name('toggle-publish');
 });

@@ -482,8 +482,23 @@ class StudentAppApiTest extends TestCase
     {
         $token = $this->getToken();
 
+        $notification = \App\Modules\Notifications\Models\Notification::query()->create([
+            'school_id' => $this->school->id,
+            'title' => 'Test Announcement',
+            'message' => 'Test message for the student.',
+            'type' => 'announcement',
+            'status' => 'sent',
+            'target_type' => 'students',
+            'channel' => 'in_app',
+            'created_by' => $this->studentUser->id,
+        ]);
+        $notification->users()->attach($this->studentUser->id, [
+            'is_read' => false,
+            'delivery_status' => 'delivered',
+        ]);
+
         $response = $this->withToken($token)
-            ->postJson(route('api.v1.student.notifications.read'));
+            ->postJson(route('api.v1.student.notifications.read', ['id' => $notification->id]));
 
         $response->assertOk();
     }

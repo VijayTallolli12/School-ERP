@@ -60,6 +60,7 @@ class TimetableService
         }
 
         $created = 0;
+        $restored = 0;
         $skipped = 0;
         $errors = [];
 
@@ -89,19 +90,38 @@ class TimetableService
                 continue;
             }
 
-            $this->timetable->create([
-                ...$slotData,
-                'created_by' => auth()->id(),
-                'updated_by' => auth()->id(),
-            ]);
-            $created++;
+            $existingTrashed = TimetableSlot::withTrashed()
+                ->where('teacher_id', $slotData['teacher_id'])
+                ->where('class_section_id', $slotData['class_section_id'])
+                ->where('subject_id', $slotData['subject_id'])
+                ->where('day_of_week', $slotData['day_of_week'])
+                ->where('period_label', $slotData['period_label'])
+                ->where('academic_year_id', $slotData['academic_year_id'])
+                ->first();
+
+            if ($existingTrashed && $existingTrashed->trashed()) {
+                $existingTrashed->restore();
+                $existingTrashed->update([
+                    ...$slotData,
+                    'updated_by' => auth()->id(),
+                ]);
+                $restored++;
+            } else {
+                $this->timetable->create([
+                    ...$slotData,
+                    'created_by' => auth()->id(),
+                    'updated_by' => auth()->id(),
+                ]);
+                $created++;
+            }
         }
 
         return [
             'created' => $created,
+            'restored' => $restored,
             'skipped' => $skipped,
             'errors' => $errors,
-            'message' => "Duplicated {$created} slot(s). Skipped {$skipped} due to conflicts.",
+            'message' => "Duplicated {$created} slot(s), restored {$restored} slot(s). Skipped {$skipped} due to conflicts.",
         ];
     }
 

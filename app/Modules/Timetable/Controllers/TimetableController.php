@@ -238,7 +238,7 @@ class TimetableController extends Controller
         $result = $this->service->duplicateDay($data);
 
         return response()->json([
-            'success' => $result['created'] > 0,
+            'success' => ($result['created'] + $result['restored']) > 0,
             'message' => $result['message'],
             'data' => $result,
         ]);

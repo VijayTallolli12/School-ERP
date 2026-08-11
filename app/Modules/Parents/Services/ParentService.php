@@ -7,6 +7,7 @@ use App\Models\AcademicYear;
 use App\Models\User;
 use App\Modules\Academics\Models\ClassSubject;
 use App\Modules\Attendance\Models\Attendance;
+use App\Modules\Exams\Models\Exam;
 use App\Modules\Exams\Models\ExamResult;
 use App\Modules\Fees\Models\StudentFee;
 use App\Modules\Homework\Models\Homework;
@@ -129,6 +130,7 @@ class ParentService
             'attendance_summary' => $this->getAttendanceSummary($students),
             'fees_summary' => $this->getFeesSummary($students),
             'exam_results_summary' => $this->getExamResultsSummary($students),
+            'upcoming_exams' => $this->getUpcomingExams($students),
             'homework_summary' => $this->getHomeworkSummary($students),
             'notifications' => $parent->notifications()
                 ->where('notifications.target_type', 'parents')
@@ -337,6 +339,51 @@ class ParentService
             'overdue' => $overdue,
             'recent' => $homework->take(3),
         ];
+    }
+
+    /**
+     * Upcoming scheduled exams for the given students' active class sections.
+     *
+     * Mirrors the canonical Student App dashboard shape (mobile/src/api/types.ts
+     * StudentDashboard.upcoming_exams) so Student and Parent apps receive the
+     * same exam schedule from the ERP.
+     */
+    private function getUpcomingExams($students): array
+    {
+        $studentIds = $students->pluck('id')->toArray();
+
+        if (empty($studentIds)) {
+            return [];
+        }
+
+        $classSectionIds = StudentSession::query()
+            ->whereIn('student_id', $studentIds)
+            ->where('status', 'active')
+            ->pluck('class_section_id')
+            ->unique()
+            ->toArray();
+
+        if (empty($classSectionIds)) {
+            return [];
+        }
+
+        return Exam::query()
+            ->whereIn('class_section_id', $classSectionIds)
+            ->where('exam_date', '>=', now()->today())
+            ->where('status', 'scheduled')
+            ->with(['subject:id,name,code', 'classSection.schoolClass', 'classSection.section'])
+            ->orderBy('exam_date')
+            ->get()
+            ->map(fn (Exam $e) => [
+                'id' => $e->id,
+                'exam_name' => $e->exam_name,
+                'exam_type' => $e->exam_type,
+                'exam_date' => $e->exam_date?->format('Y-m-d'),
+                'subject' => $e->subject?->name,
+                'class_section' => trim(($e->classSection?->schoolClass?->name ?? '').' '.($e->classSection?->section?->name ?? '')),
+            ])
+            ->values()
+            ->all();
     }
 
     private function activeAcademicYear(): ?AcademicYear

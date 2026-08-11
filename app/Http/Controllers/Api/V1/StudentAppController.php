@@ -633,7 +633,10 @@ class StudentAppController extends ApiBaseController
 
         $academicYear = $this->currentAcademicYear();
 
+        // class_section_id is globally unique, so the tenant scope is redundant
+        // here and would drop legacy slots whose school_id was not persisted.
         $slots = TimetableSlot::query()
+            ->withoutGlobalScope('school')
             ->where('class_section_id', $session->class_section_id)
             ->when($academicYear, fn ($q) => $q->where('academic_year_id', $academicYear->id))
             ->with(['subject:id,name,code', 'teacher.user:id,name'])
@@ -679,6 +682,7 @@ class StudentAppController extends ApiBaseController
         $results = ExamResult::query()
             ->where('student_id', $student->id)
             ->when($academicYearId, fn ($q) => $q->whereHas('exam', fn ($eq) => $eq->where('academic_year_id', $academicYearId)))
+            ->whereHas('exam', fn ($eq) => $eq->where('is_published', true))
             ->with(['exam.subject', 'exam.classSection.schoolClass', 'exam.classSection.section'])
             ->orderByDesc('id')
             ->get()
@@ -704,6 +708,7 @@ class StudentAppController extends ApiBaseController
         $results = ExamResult::query()
             ->where('student_id', $student->id)
             ->when($academicYearId, fn ($q) => $q->whereHas('exam', fn ($eq) => $eq->where('academic_year_id', $academicYearId)))
+            ->whereHas('exam', fn ($eq) => $eq->where('is_published', true))
             ->with(['exam.subject', 'exam.classSection.schoolClass', 'exam.classSection.section'])
             ->orderByDesc('id')
             ->get()
@@ -1001,26 +1006,61 @@ class StudentAppController extends ApiBaseController
             return $this->success(['schedules' => []], 'No active session found.');
         }
 
-        $schedules = ExamSchedule::query()
-            ->whereHas('exam', fn ($q) => $q->where('class_section_id', $session->class_section_id))
-            ->with(['exam', 'subject:id,name,code'])
+        $academicYear = $this->currentAcademicYear();
+
+        $scheduledExams = Exam::query()
+            ->where('class_section_id', $session->class_section_id)
+            ->where('status', 'scheduled')
+            ->when($academicYear, fn ($q) => $q->where('academic_year_id', $academicYear->id))
+            ->with('subject:id,name,code')
+            ->orderBy('exam_date')
+            ->get();
+
+        $schedules = collect();
+
+        // Optional per-subject schedule rows carry start/end time + room.
+        $scheduleRows = ExamSchedule::query()
+            ->whereIn('exam_id', $scheduledExams->pluck('id'))
+            ->with('subject:id,name,code')
             ->orderBy('exam_date')
             ->orderBy('start_time')
             ->get()
-            ->map(fn ($s) => [
-                'id' => $s->id,
-                'exam_name' => $s->exam?->exam_name,
-                'subject_name' => $s->subject?->name,
-                'exam_date' => $s->exam_date?->format('Y-m-d'),
-                'start_time' => $s->start_time ? \Carbon\Carbon::parse($s->start_time)->format('H:i') : null,
-                'end_time' => $s->end_time ? \Carbon\Carbon::parse($s->end_time)->format('H:i') : null,
-                'room' => $s->room,
-                'maximum_marks' => $s->maximum_marks,
-                'pass_marks' => $s->pass_marks,
-            ]);
+            ->groupBy('exam_id');
+
+        foreach ($scheduledExams as $exam) {
+            $rows = $scheduleRows->get($exam->id);
+
+            if ($rows && $rows->count() > 0) {
+                foreach ($rows as $s) {
+                    $schedules->push([
+                        'id' => $s->id,
+                        'exam_name' => $exam->exam_name,
+                        'subject_name' => $s->subject?->name,
+                        'exam_date' => $s->exam_date?->format('Y-m-d'),
+                        'start_time' => $s->start_time ? \Carbon\Carbon::parse($s->start_time)->format('H:i') : null,
+                        'end_time' => $s->end_time ? \Carbon\Carbon::parse($s->end_time)->format('H:i') : null,
+                        'room' => $s->room,
+                        'maximum_marks' => $s->maximum_marks,
+                        'pass_marks' => $s->pass_marks,
+                    ]);
+                }
+            } else {
+                $schedules->push([
+                    'id' => $exam->id,
+                    'exam_name' => $exam->exam_name,
+                    'subject_name' => $exam->subject?->name,
+                    'exam_date' => $exam->exam_date?->format('Y-m-d'),
+                    'start_time' => null,
+                    'end_time' => null,
+                    'room' => null,
+                    'maximum_marks' => $exam->maximum_marks,
+                    'pass_marks' => $exam->pass_marks,
+                ]);
+            }
+        }
 
         return $this->success([
-            'schedules' => $schedules,
+            'schedules' => $schedules->values(),
         ], 'Exam schedule retrieved.');
     }
 
@@ -1398,7 +1438,7 @@ class StudentAppController extends ApiBaseController
         $user = request()->user();
 
         $paginator = Notification::query()
-            ->where('target_type', 'students')
+            ->whereIn('target_type', ['students', 'all'])
             ->where('type', 'announcement')
             ->where('status', 'sent')
             ->with('creator:id,name')
@@ -1415,7 +1455,7 @@ class StudentAppController extends ApiBaseController
     public function showCircular(int $id): JsonResponse
     {
         $notification = Notification::query()
-            ->where('target_type', 'students')
+            ->whereIn('target_type', ['students', 'all'])
             ->where('type', 'announcement')
             ->where('id', $id)
             ->with('creator:id,name')
@@ -1436,7 +1476,7 @@ class StudentAppController extends ApiBaseController
         $user = request()->user();
 
         $notification = Notification::query()
-            ->where('target_type', 'students')
+            ->whereIn('target_type', ['students', 'all'])
             ->where('type', 'announcement')
             ->where('id', $id)
             ->first();
