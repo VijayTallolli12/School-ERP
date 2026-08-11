@@ -1,0 +1,62 @@
+{
+  "_charts-B8EWEgfi.js": {
+    "file": "assets/charts-B8EWEgfi.js",
+    "name": "charts"
+  },
+  "_datatables-BcxvfBmp.js": {
+    "file": "assets/datatables-BcxvfBmp.js",
+    "name": "datatables",
+    "isDynamicEntry": true
+  },
+  "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.ttf": {
+    "file": "assets/tabler-icons-DSK2_1ka.ttf",
+    "src": "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.ttf"
+  },
+  "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff": {
+    "file": "assets/tabler-icons-KWc1JFMo.woff",
+    "src": "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff"
+  },
+  "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff2": {
+    "file": "assets/tabler-icons-CKaxJfX3.woff2",
+    "src": "node_modules/@tabler/icons-webfont/dist/fonts/tabler-icons.woff2"
+  },
+  "node_modules/chart.js/auto/auto.js": {
+    "file": "assets/auto-CVP-Nxbp.js",
+    "name": "auto",
+    "src": "node_modules/chart.js/auto/auto.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_charts-B8EWEgfi.js"
+    ]
+  },
+  "node_modules/sweetalert2/dist/sweetalert2.esm.all.js": {
+    "file": "assets/alerts-B_30QS3d.js",
+    "name": "alerts",
+    "src": "node_modules/sweetalert2/dist/sweetalert2.esm.all.js",
+    "isDynamicEntry": true
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-BUswHhnS.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-BTQvQeVK.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_datatables-BcxvfBmp.js"
+    ],
+    "dynamicImports": [
+      "_datatables-BcxvfBmp.js",
+      "_datatables-BcxvfBmp.js",
+      "node_modules/chart.js/auto/auto.js",
+      "node_modules/sweetalert2/dist/sweetalert2.esm.all.js"
+    ]
+  }
+}
