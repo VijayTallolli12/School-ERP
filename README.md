@@ -82,7 +82,7 @@ The complete documentation set is available in [docs](docs/README.md).
 
 ## Contribution Guide
 
-1. Review the developer guide in [docs/Developer/DEVELOPER_GUIDE.md](docs/Developer/DEVELOPER_GUIDE.md).
+1. Review the developer guide in [docs/development/Guides/Developer/DEVELOPER_GUIDE.md](docs/development/Guides/Developer/DEVELOPER_GUIDE.md).
 2. Make changes in a feature branch.
 3. Add or update relevant tests.
 4. Update the documentation if behavior changes.
