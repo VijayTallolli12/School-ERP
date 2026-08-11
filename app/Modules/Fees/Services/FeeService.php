@@ -33,7 +33,20 @@ class FeeService
                 $q->where('school_id', $this->schoolContext->id())->where('status', 'active');
             })
             ->withSum(['paymentItems as paid_sum' => fn ($q) => $q->whereHas('feePayment', fn ($p) => $p->completed())], 'amount')
-            ->havingRaw('COALESCE(paid_sum, 0) < student_fee_items.amount');
+            ->whereRaw(
+                'COALESCE((
+                    SELECT SUM(fpi.amount)
+                    FROM fee_payment_items fpi
+                    WHERE fpi.student_fee_item_id = student_fee_items.id
+                    AND EXISTS (
+                        SELECT 1
+                        FROM fee_payments fp
+                        WHERE fp.id = fpi.fee_payment_id
+                        AND fp.status = "completed"
+                        AND fp.deleted_at IS NULL
+                    )
+                ), 0) < student_fee_items.amount'
+            );
     }
 
     public function createFeeCategory(array $data): FeeCategory

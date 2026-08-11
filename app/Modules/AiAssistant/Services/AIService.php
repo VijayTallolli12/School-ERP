@@ -5,6 +5,7 @@ namespace App\Modules\AiAssistant\Services;
 use App\Modules\AiAgents\Registry\AgentRegistry;
 use App\Modules\AiAssistant\Handlers\AttendanceQueryHandler;
 use App\Modules\AiAssistant\Handlers\FeeQueryHandler;
+use App\Modules\AiAssistant\Handlers\HomeworkQueryHandler;
 use App\Modules\AiAssistant\Handlers\LibraryQueryHandler;
 use App\Modules\AiAssistant\Handlers\PayrollQueryHandler;
 use App\Modules\AiAssistant\Handlers\SchoolSummaryHandler;
@@ -44,6 +45,11 @@ class AIService
             'label' => 'Payroll Agent',
             'params' => [],
         ],
+        'homework' => [
+            'agent' => 'homework',
+            'label' => 'Homework Agent',
+            'params' => [],
+        ],
     ];
 
     private const MONTH_NAMES = [
@@ -66,6 +72,7 @@ class AIService
         TransportQueryHandler $transportHandler,
         LibraryQueryHandler $libraryHandler,
         PayrollQueryHandler $payrollHandler,
+        HomeworkQueryHandler $homeworkHandler,
         private readonly ?ExamService $examService = null,
         private readonly ?HomeworkService $homeworkService = null,
         private readonly ?NotificationService $notificationService = null,
@@ -80,6 +87,7 @@ class AIService
             'LibraryQueryHandler' => $libraryHandler,
             'PayrollQueryHandler' => $payrollHandler,
             'SchoolSummaryHandler' => $schoolSummaryHandler,
+            'HomeworkQueryHandler' => $homeworkHandler,
         ];
     }
 

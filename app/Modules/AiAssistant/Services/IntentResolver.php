@@ -105,6 +105,36 @@ class IntentResolver
             'handler' => 'PayrollQueryHandler',
             'method' => 'generatedThisMonth',
         ],
+        'leave.pending' => [
+            'keywords' => ['pending leave', 'leave pending', 'leave requests', 'show leave requests', 'leave applications'],
+            'handler' => 'LeaveQueryHandler',
+            'method' => 'pendingLeave',
+        ],
+        'exam.upcoming' => [
+            'keywords' => ['upcoming exams', 'exam schedule', 'exams coming up', 'when is exam', 'exam dates'],
+            'handler' => 'ExamQueryHandler',
+            'method' => 'upcomingExams',
+        ],
+        'transport.routes' => [
+            'keywords' => ['bus routes', 'show routes', 'transport routes', 'bus route list', 'route list'],
+            'handler' => 'TransportQueryHandler',
+            'method' => 'routeList',
+        ],
+        'homework.pending' => [
+            'keywords' => ['pending homework', 'homework pending', 'show pending homework', 'what homework is pending', 'incomplete homework', 'homework not done'],
+            'handler' => 'HomeworkQueryHandler',
+            'method' => 'pendingHomework',
+        ],
+        'homework.due' => [
+            'keywords' => ['homework due today', 'homework due this week', 'due homework', 'what homework is due', 'homework deadline', 'homework due'],
+            'handler' => 'HomeworkQueryHandler',
+            'method' => 'homeworkDue',
+        ],
+        'homework.list' => [
+            'keywords' => ['list homework', 'all homework', 'show homework', 'homework assignments', 'homework list', 'show all homework'],
+            'handler' => 'HomeworkQueryHandler',
+            'method' => 'listHomework',
+        ],
     ];
 
     public function resolve(string $question): ?array

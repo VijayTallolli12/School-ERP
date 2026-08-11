@@ -217,6 +217,20 @@ return [
     'homework' => [
         'description' => 'Homework assignments, attachments, due dates',
         'intents' => [
+            'homework.pending' => [
+                'description' => 'Get pending homework assignments.',
+                'action' => 'query',
+            ],
+            'homework.due' => [
+                'description' => 'Get homework due today or this week.',
+                'action' => 'query',
+                'param_fields' => ['date'],
+            ],
+            'homework.list' => [
+                'description' => 'List all homework assignments.',
+                'action' => 'query',
+                'param_fields' => ['class_section_id', 'subject_id'],
+            ],
             'homework.create' => [
                 'description' => 'Create a new homework assignment.',
                 'action' => 'action',
@@ -226,6 +240,9 @@ return [
         'clarification' => [
             'prompt' => 'What would you like to do with homework?',
             'options' => [
+                'Pending Homework' => 'homework.pending',
+                'Due Today' => 'homework.due',
+                'List Homework' => 'homework.list',
                 'Create Assignment' => 'homework.create',
             ],
         ],

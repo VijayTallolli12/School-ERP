@@ -150,6 +150,22 @@ class AgentRouter
             'method' => 'create',
             'params' => ['class_section_id', 'subject_id', 'title', 'due_date'],
         ],
+        'homework.pending' => [
+            'type' => 'handler',
+            'handler' => 'HomeworkQueryHandler',
+            'method' => 'pendingHomework',
+        ],
+        'homework.due' => [
+            'type' => 'handler',
+            'handler' => 'HomeworkQueryHandler',
+            'method' => 'homeworkDue',
+            'param_method' => true,
+        ],
+        'homework.list' => [
+            'type' => 'handler',
+            'handler' => 'HomeworkQueryHandler',
+            'method' => 'listHomework',
+        ],
         'transport.assign' => [
             'type' => 'service',
             'service' => 'transport',
