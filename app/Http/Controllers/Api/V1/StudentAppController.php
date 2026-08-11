@@ -896,12 +896,70 @@ class StudentAppController extends ApiBaseController
         return $this->success($bellData, 'Notifications retrieved.');
     }
 
-    public function notificationsRead(Request $request): JsonResponse
+    public function notificationsReadAll(Request $request): JsonResponse
     {
         $userId = request()->user()->id;
         $this->notificationService->markAllRead($userId);
 
         return $this->success(message: 'All notifications marked as read.');
+    }
+
+    public function notificationsUnread(Request $request): JsonResponse
+    {
+        $userId = request()->user()->id;
+        $bellData = $this->notificationService->bellData($userId);
+
+        return $this->success([
+            'unread_count' => $bellData['unread_count'],
+        ], 'Unread count retrieved.');
+    }
+
+    public function notificationShow(Request $request, int $id): JsonResponse
+    {
+        $userId = $request->user()->id;
+
+        $notification = Notification::query()
+            ->where('status', 'sent')
+            ->whereHas('users', fn ($q) => $q->where('notification_user.user_id', $userId))
+            ->with(['users' => fn ($q) => $q->where('notification_user.user_id', $userId)])
+            ->find($id);
+
+        if (! $notification) {
+            return $this->error('Notification not found.', Response::HTTP_NOT_FOUND);
+        }
+
+        $pivot = $notification->users->first()?->pivot;
+
+        return $this->success([
+            'id' => $notification->id,
+            'title' => $notification->title,
+            'message' => $notification->message,
+            'type' => $notification->type,
+            'type_label' => $notification->type_label,
+            'priority' => $notification->priority,
+            'is_read' => (bool) ($pivot?->is_read ?? false),
+            'sent_at' => $notification->sent_at?->toISOString(),
+            'read_at' => $pivot?->read_at,
+            'created_at' => $notification->created_at?->toISOString(),
+        ], 'Notification detail retrieved.');
+    }
+
+    public function notificationRead(Request $request, int $id): JsonResponse
+    {
+        $userId = $request->user()->id;
+
+        $notification = Notification::query()
+            ->where('status', 'sent')
+            ->whereHas('users', fn ($q) => $q->where('notification_user.user_id', $userId))
+            ->find($id);
+
+        if (! $notification) {
+            return $this->error('Notification not found.', Response::HTTP_NOT_FOUND);
+        }
+
+        $this->notificationService->markRead($notification, $userId);
+
+        return $this->success(message: 'Notification marked as read.');
     }
 
     // ────────────────────────────────────────────────────────────────────────────

@@ -83,6 +83,7 @@ class NotificationService
                 'priority' => $notification->priority,
                 'is_read' => (bool) ($pivot?->is_read ?? false),
                 'sent_at' => $notification->sent_at?->diffForHumans(),
+                'sent_at_iso' => $notification->sent_at?->toISOString(),
                 'read_at' => $pivot?->read_at,
             ];
         });

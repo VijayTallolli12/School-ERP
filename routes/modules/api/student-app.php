@@ -68,7 +68,10 @@ Route::prefix('student')->middleware('student.linked')->name('student.')->group(
 
     // Notifications
     Route::get('notifications', [StudentAppController::class, 'notificationsIndex'])->name('notifications.index');
-    Route::post('notifications/read', [StudentAppController::class, 'notificationsRead'])->name('notifications.read');
+    Route::get('notifications/unread', [StudentAppController::class, 'notificationsUnread'])->name('notifications.unread');
+    Route::get('notifications/{id}', [StudentAppController::class, 'notificationShow'])->name('notifications.show');
+    Route::post('notifications/{id}/read', [StudentAppController::class, 'notificationRead'])->name('notifications.read');
+    Route::post('notifications/read-all', [StudentAppController::class, 'notificationsReadAll'])->name('notifications.read-all');
 
     // Circulars / Announcements
     Route::get('circulars', [StudentAppController::class, 'circulars'])->name('circulars');
