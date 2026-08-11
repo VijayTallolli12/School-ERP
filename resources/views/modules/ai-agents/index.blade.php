@@ -115,7 +115,7 @@
 {{-- Recent Executions --}}
 @php
     $recentExecs = \App\Modules\AiAgents\Models\AgentExecution::query()
-        ->with('user')
+        ->with('executor')
         ->latest('started_at')
         ->take(5)
         ->get();
@@ -128,7 +128,7 @@
             <div class="aiw-recent-item">
                 <span class="ri-dot" style="background:{{ $exe->status === 'completed' ? '#16a34a' : ($exe->status === 'failed' ? '#ef4444' : '#f59e0b') }}"></span>
                 <span class="ri-name">{{ ucwords(str_replace('_', ' ', $exe->agent_name)) }}</span>
-                <span class="ri-meta">{{ $exe->user?->name ?? 'System' }}</span>
+                <span class="ri-meta">{{ $exe->executor?->name ?? 'System' }}</span>
                 <span class="ri-meta">{{ $exe->records_processed ?? 0 }} records</span>
                 <span class="ri-meta">{{ $exe->started_at?->diffForHumans() ?? '—' }}</span>
                 <span class="aiw-agent-badge" style="background:{{ $exe->status === 'completed' ? 'rgba(22,163,74,.1)' : 'rgba(239,68,68,.1)' }};color:{{ $exe->status === 'completed' ? '#16a34a' : '#ef4444' }};">
