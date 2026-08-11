@@ -61,6 +61,7 @@ class DatabaseSeeder extends Seeder
             FeeCategorySeeder::class,
             TeacherSeeder::class,
             StudentSeeder::class,
+            NotificationSeeder::class,
             ParentSeeder::class,
             DriverSeeder::class,
             VehicleSeeder::class,
