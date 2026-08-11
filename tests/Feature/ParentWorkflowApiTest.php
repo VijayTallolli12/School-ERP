@@ -336,7 +336,7 @@ class ParentWorkflowApiTest extends TestCase
 
     private function createAnnouncement(string $title, string $targetType): Notification
     {
-        return Notification::query()->create([
+        $notification = Notification::query()->create([
             'school_id' => $this->school->id,
             'title' => $title,
             'message' => "Announcement message for {$title}.",
@@ -348,9 +348,22 @@ class ParentWorkflowApiTest extends TestCase
             'sent_at' => now(),
             'created_by' => $this->guardianUser->id,
         ]);
+
+        // Attach guardian user for target types that parents should receive
+        if (in_array($targetType, ['parents', 'all'])) {
+            $notification->users()->syncWithoutDetaching([
+                $this->guardianUser->id => [
+                    'is_read' => false,
+                    'read_at' => null,
+                    'delivery_status' => 'delivered',
+                ],
+            ]);
+        }
+
+        return $notification;
     }
 
-    public function test_guardian_sees_circulars_targeted_to_parents_students_and_all(): void
+    public function test_guardian_sees_circulars_targeted_to_parents_and_all(): void
     {
         $this->createAnnouncement('Parent Only Announcement', 'parents');
         $this->createAnnouncement('Student Announcement', 'students');
@@ -366,14 +379,14 @@ class ParentWorkflowApiTest extends TestCase
         $titles = collect($response->json('data'))->pluck('title')->all();
 
         $this->assertContains('Parent Only Announcement', $titles);
-        $this->assertContains('Student Announcement', $titles);
+        $this->assertNotContains('Student Announcement', $titles);
         $this->assertContains('School Wide Announcement', $titles);
         $this->assertNotContains('Teacher Only Announcement', $titles);
     }
 
-    public function test_guardian_can_open_and_mark_student_targeted_circular_read(): void
+    public function test_guardian_can_open_and_mark_circular_read(): void
     {
-        $notification = $this->createAnnouncement('Student Announcement', 'students');
+        $notification = $this->createAnnouncement('Parent Announcement', 'parents');
         $token = $this->parentToken();
 
         $this->withToken($token)
@@ -382,7 +395,7 @@ class ParentWorkflowApiTest extends TestCase
                 'id' => $notification->id,
             ]))
             ->assertOk()
-            ->assertJsonPath('data.title', 'Student Announcement');
+            ->assertJsonPath('data.title', 'Parent Announcement');
 
         $this->withToken($token)
             ->postJson(route('api.v1.parents.circulars.read', [

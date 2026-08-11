@@ -237,7 +237,10 @@ class ParentApiController extends ApiBaseController
             return $this->success(['timetable' => []], 'No active session.');
         }
 
+        // class_section_id is globally unique, so the tenant scope is redundant
+        // here and would drop legacy slots whose school_id was not persisted.
         $slots = TimetableSlot::query()
+            ->withoutGlobalScope('school')
             ->where('class_section_id', $currentSession->class_section_id)
             ->where('academic_year_id', $currentSession->academic_year_id)
             ->with(['subject:id,name,code', 'teacher.user:id,name'])
@@ -402,6 +405,7 @@ class ParentApiController extends ApiBaseController
         $perPage = request()->integer('per_page', 15);
 
         $paginator = Notification::query()
+            ->whereHas('users', fn ($q) => $q->where('notification_user.user_id', $parent->user_id))
             ->whereIn('target_type', ['parents', 'students', 'all'])
             ->where('type', 'announcement')
             ->where('status', 'sent')
@@ -432,6 +436,7 @@ class ParentApiController extends ApiBaseController
         }
 
         $notification = Notification::query()
+            ->whereHas('users', fn ($q) => $q->where('notification_user.user_id', $parent->user_id))
             ->whereIn('target_type', ['parents', 'students', 'all'])
             ->where('type', 'announcement')
             ->where('id', $id)
@@ -461,6 +466,7 @@ class ParentApiController extends ApiBaseController
         }
 
         $notification = Notification::query()
+            ->whereHas('users', fn ($q) => $q->where('notification_user.user_id', $parent->user_id))
             ->whereIn('target_type', ['parents', 'students', 'all'])
             ->where('type', 'announcement')
             ->where('id', $id)
