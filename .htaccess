@@ -1,0 +1,6 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Route Laravel application requests through public/
+    RewriteRule ^(?!public/)(.*)$ public/$1 [L]
+</IfModule>
