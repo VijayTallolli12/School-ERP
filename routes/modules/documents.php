@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('documents')->name('documents.')->middleware('permission:student_documents.view')->group(function () {
     Route::get('/', [DocumentController::class, 'index'])->name('index');
     Route::get('/data', [DocumentController::class, 'data'])->name('data');
+    Route::get('/students/search', [DocumentController::class, 'searchStudents'])->name('students.search');
     Route::post('/', [DocumentController::class, 'store'])->middleware('permission:student_documents.create')->name('store');
     Route::get('/{id}', [DocumentController::class, 'show'])->name('show');
     Route::post('/{id}', [DocumentController::class, 'update'])->middleware('permission:student_documents.update')->name('update');

@@ -20,7 +20,7 @@ class HomeworkQueryHandler
 
         $homework = Homework::query()
             ->where('school_id', $schoolId)
-            ->where('status', 'published')
+            ->where('status', 'active')
             ->where('due_date', '>=', Carbon::today())
             ->with(['classSection.schoolClass', 'classSection.section', 'subject'])
             ->orderBy('due_date')
@@ -43,6 +43,114 @@ class HomeworkQueryHandler
         return implode("\n", $lines);
     }
 
+    public function pending(array $parameters): array
+    {
+        $schoolId = $this->schoolContext->id();
+
+        $query = Homework::query()
+            ->where('school_id', $schoolId)
+            ->where('status', 'active')
+            ->where('due_date', '>=', Carbon::today())
+            ->with(['classSection.schoolClass', 'classSection.section', 'subject'])
+            ->orderBy('due_date');
+
+        if (!empty($parameters['class_section_id'])) {
+            $query->where('class_section_id', $parameters['class_section_id']);
+        } elseif (!empty($parameters['class_section_ids'])) {
+            $query->whereIn('class_section_id', (array) $parameters['class_section_ids']);
+        }
+
+        $limit = max(1, min((int) ($parameters['limit'] ?? 50), 50));
+
+        $homework = $query->limit($limit)->get();
+
+        return [
+            'count' => $homework->count(),
+            'records' => $this->present($homework),
+            'summary' => null,
+        ];
+    }
+
+    public function due(array $parameters): array
+    {
+        $schoolId = $this->schoolContext->id();
+        $targetDate = !empty($parameters['date'])
+            ? Carbon::parse($parameters['date'])
+            : Carbon::today();
+
+        $query = Homework::query()
+            ->where('school_id', $schoolId)
+            ->where('status', 'active')
+            ->whereDate('due_date', $targetDate->toDateString())
+            ->with(['classSection.schoolClass', 'classSection.section', 'subject'])
+            ->orderBy('due_date');
+
+        if (!empty($parameters['class_section_id'])) {
+            $query->where('class_section_id', $parameters['class_section_id']);
+        } elseif (!empty($parameters['class_section_ids'])) {
+            $query->whereIn('class_section_id', (array) $parameters['class_section_ids']);
+        }
+
+        $limit = max(1, min((int) ($parameters['limit'] ?? 50), 50));
+
+        $homework = $query->limit($limit)->get();
+
+        return [
+            'count' => $homework->count(),
+            'records' => $this->present($homework),
+            'summary' => ['date' => $targetDate->toDateString()],
+        ];
+    }
+
+    public function list(array $parameters): array
+    {
+        $schoolId = $this->schoolContext->id();
+
+        $query = Homework::query()
+            ->where('school_id', $schoolId)
+            ->where('status', 'active')
+            ->with(['classSection.schoolClass', 'classSection.section', 'subject'])
+            ->orderBy('due_date');
+
+        if (!empty($parameters['class_section_id'])) {
+            $query->where('class_section_id', $parameters['class_section_id']);
+        } elseif (!empty($parameters['class_section_ids'])) {
+            $query->whereIn('class_section_id', (array) $parameters['class_section_ids']);
+        }
+
+        if (!empty($parameters['subject_id'])) {
+            $query->where('subject_id', $parameters['subject_id']);
+        }
+
+        $limit = max(1, min((int) ($parameters['limit'] ?? 50), 50));
+
+        $homework = $query->limit($limit)->get();
+
+        return [
+            'count' => $homework->count(),
+            'records' => $this->present($homework),
+            'summary' => null,
+        ];
+    }
+
+    private function present($homework): array
+    {
+        return $homework->map(function ($hw) {
+            $className = $hw->classSection
+                ? trim(($hw->classSection->schoolClass->name ?? '') . ' - ' . ($hw->classSection->section->name ?? ''))
+                : 'N/A';
+
+            return [
+                'id' => $hw->id,
+                'title' => $hw->title,
+                'subject' => $hw->subject?->name,
+                'class' => $className,
+                'due_date' => $hw->due_date?->toDateString(),
+                'status' => $hw->status,
+            ];
+        })->all();
+    }
+
     public function homeworkDue(?string $date = null): string
     {
         $schoolId = $this->schoolContext->id();
@@ -51,7 +159,7 @@ class HomeworkQueryHandler
 
         $homework = Homework::query()
             ->where('school_id', $schoolId)
-            ->where('status', 'published')
+            ->where('status', 'active')
             ->whereBetween('due_date', [$targetDate, $endOfDay])
             ->with(['classSection.schoolClass', 'classSection.section', 'subject'])
             ->orderBy('due_date')
@@ -80,7 +188,7 @@ class HomeworkQueryHandler
 
         $query = Homework::query()
             ->where('school_id', $schoolId)
-            ->where('status', 'published')
+            ->where('status', 'active')
             ->with(['classSection.schoolClass', 'classSection.section', 'subject'])
             ->orderBy('due_date');
 

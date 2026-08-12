@@ -72,6 +72,8 @@ class RoleDataScoper
             'Accountant' => 'Accountants can only ask about fees, students, attendance, and school summaries.',
             'Staff' => 'Staff members can only ask about attendance and school summaries.',
             'Receptionist' => 'Receptionists can only ask about student records.',
+            'HR' => 'HR can only ask about teachers, leave, attendance, students, and school summaries.',
+            'Payroll Manager' => 'Payroll Managers can only ask about payroll, teachers, and school summaries.',
         ];
 
         return $messages[$role] ?? "You are not authorized to perform this action.";

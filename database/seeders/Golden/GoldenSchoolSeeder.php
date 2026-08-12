@@ -42,7 +42,7 @@ use Illuminate\Database\Seeder;
 /**
  * Enriches the shared base dataset (created by the core seeders) with
  * production-quality audit data: exams, homework, library, payroll,
- * leave types, academic calendar, notifications and fee structures.
+ * leave types, event calendar, notifications and fee structures.
  */
 class GoldenSchoolSeeder extends Seeder
 {

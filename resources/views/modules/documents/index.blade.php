@@ -89,6 +89,16 @@
                             <select class="form-select" name="student_id" id="docStudentId" required>
                                 <option value="">Select Student</option>
                             </select>
+                            <div class="form-text">Search by student name, admission no, or class.</div>
+                            <div id="docStudentInfo" class="d-none mt-2 p-2 rounded" style="background:#f1f5f9;border:1px solid var(--erp-border-color);">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="ti ti-user-check text-primary"></i>
+                                    <div>
+                                        <div id="docStudentInfoName" class="fw-semibold small"></div>
+                                        <div id="docStudentInfoClass" class="text-secondary small"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label required">Document Type</label>
@@ -208,27 +218,58 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', async () => { (async () => { const DataTable = await window.lazyDT();
-            // Load students and populate filter & select
-            const loadStudents = (selectId, selectedId = null) => {
-                fetch('{{ route('admin.students.data') }}')
-                    .then(res => res.json())
-                    .then(data => {
-                        const select = document.getElementById(selectId);
-                        select.innerHTML = '<option value="">All Students</option>';
-                        (data.data || []).forEach(s => {
-                            const opt = document.createElement('option');
-                            opt.value = s.id;
-                            opt.textContent = s.full_name + ' (' + (s.admission_no || '') + ')';
-                            if (selectedId && s.id == selectedId) opt.selected = true;
-                            select.appendChild(opt);
-                        });
-                    });
+            // Initialize Select2 for students (AJAX)
+            const initStudentSelect = (selectId, isModal = false) => {
+                $('#' + selectId).select2({
+                    width: '100%',
+                    placeholder: isModal ? 'Search student by name, admission no, or class...' : 'All Students',
+                    allowClear: !isModal,
+                    dropdownParent: isModal ? $('#documentModal') : null,
+                    minimumInputLength: 0,
+                    ajax: {
+                        url: '{{ route('admin.documents.students.search') }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: (params) => ({ q: params.term }),
+                        processResults: (data) => ({ results: data.results })
+                    },
+                    templateResult: (data) => {
+                        if (!data.id) return data.text;
+                        const $el = $('<div class="d-flex justify-content-between align-items-center gap-2 py-1">' +
+                            '<span>' + $('<div>').text(data.student_name || data.text).html() + '</span>' +
+                            '<span class="badge bg-primary-subtle text-primary text-nowrap small">' + $('<div>').text(data.class_name || '').html() + '</span>' +
+                            '</div>');
+                        return $el;
+                    },
+                    templateSelection: (data) => {
+                        if (!data.id) return data.text;
+                        return data.student_name || data.text;
+                    }
+                });
             };
+
+            // Show the selected student's current class below the dropdown.
+            const showStudentInfo = (data) => {
+                const info = document.getElementById('docStudentInfo');
+                if (!info || !data) return;
+                document.getElementById('docStudentInfoName').textContent = data.student_name || data.text || '';
+                const admission = data.admission_no ? 'ADM: ' + data.admission_no : '';
+                const cls = data.class_name ? 'Class: ' + data.class_name : '';
+                document.getElementById('docStudentInfoClass').textContent = [admission, cls].filter(Boolean).join(' · ');
+                info.classList.remove('d-none');
+            };
+            const hideStudentInfo = () => {
+                const info = document.getElementById('docStudentInfo');
+                if (info) info.classList.add('d-none');
+            };
+
+            $('#docStudentId').on('select2:select', (e) => showStudentInfo(e.params.data));
+            $('#docStudentId').on('select2:clear', hideStudentInfo);
 
             const filterStudent = document.getElementById('filterStudent');
             const docStudentId = document.getElementById('docStudentId');
-            loadStudents('filterStudent');
-            loadStudents('docStudentId');
+            initStudentSelect('filterStudent', false);
+            initStudentSelect('docStudentId', true);
 
             // DataTable
             const table = $('#documentsTable').DataTable({
@@ -274,7 +315,8 @@
                 document.getElementById('documentModalTitle').textContent = 'Upload Document';
                 document.getElementById('documentSubmit').textContent = 'Upload';
                 document.getElementById('docFile').required = true;
-                loadStudents('docStudentId');
+                $('#docStudentId').val(null).trigger('change');
+                hideStudentInfo();
             });
 
             // Edit button (via event delegation)
@@ -290,7 +332,20 @@
                         document.getElementById('documentModalTitle').textContent = 'Edit Document';
                         document.getElementById('documentSubmit').textContent = 'Update';
                         document.getElementById('docFile').required = false;
-                        loadStudents('docStudentId', doc.student_id);
+                        
+                        if (doc.student_id && doc.student_option_label) {
+                            const option = new Option(doc.student_option_label, doc.student_id, true, true);
+                            $('#docStudentId').append(option).trigger('change');
+                            showStudentInfo({
+                                student_name: doc.student_name,
+                                admission_no: doc.admission_no,
+                                class_name: doc.student_class,
+                            });
+                        } else {
+                            $('#docStudentId').val(null).trigger('change');
+                            hideStudentInfo();
+                        }
+                        
                         document.getElementById('docDocumentType').value = doc.document_type;
                         document.getElementById('docTitle').value = doc.title;
                         document.getElementById('docIssueDate').value = doc.issue_date || '';

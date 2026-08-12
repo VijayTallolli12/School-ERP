@@ -1138,7 +1138,7 @@ class StudentAppController extends ApiBaseController
             'month' => $month,
             'year' => $year,
             'events' => $events,
-        ], 'Academic calendar retrieved.');
+        ], 'Event calendar retrieved.');
     }
 
     // ────────────────────────────────────────────────────────────────────────────

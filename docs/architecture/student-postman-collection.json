@@ -284,7 +284,7 @@
 			"name": "8. Calendar",
 			"item": [
 				{
-					"name": "Academic Calendar",
+					"name": "Event Calendar",
 					"request": {
 						"method": "GET",
 						"header": [{ "key": "Accept", "value": "application/json" }],

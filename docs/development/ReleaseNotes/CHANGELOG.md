@@ -29,5 +29,5 @@ Revision date: 2026-07-08
 
 ## 5. AI and Business Workflows
 
-- Added AI intent routing and executive-copilot planning services
+- Added AI intent routing and executive-gemini planning services
 - Added module workflows for attendance, exams, fees, library, transport, payroll, and notifications

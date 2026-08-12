@@ -6,13 +6,13 @@ use App\Models\User;
 use App\Modules\Dashboard\Contracts\RoleDashboardBuilderInterface;
 use App\Modules\Dashboard\Services\Builders\AccountantDashboardBuilder;
 use App\Modules\Dashboard\Services\Builders\AdminDashboardBuilder;
+use App\Modules\Dashboard\Services\Builders\DriverDashboardBuilder;
 use App\Modules\Dashboard\Services\Builders\HRDashboardBuilder;
 use App\Modules\Dashboard\Services\Builders\LibrarianDashboardBuilder;
-use App\Modules\Dashboard\Services\Builders\ParentDashboardBuilder;
+use App\Modules\Dashboard\Services\Builders\PayrollManagerDashboardBuilder;
 use App\Modules\Dashboard\Services\Builders\PrincipalDashboardBuilder;
 use App\Modules\Dashboard\Services\Builders\ReceptionistDashboardBuilder;
 use App\Modules\Dashboard\Services\Builders\StaffDashboardBuilder;
-use App\Modules\Dashboard\Services\Builders\StudentDashboardBuilder;
 use App\Modules\Dashboard\Services\Builders\TeacherDashboardBuilder;
 use Illuminate\Contracts\Auth\Authenticatable;
 
@@ -26,10 +26,10 @@ class DashboardFactory
         'Teacher' => TeacherDashboardBuilder::class,
         'Accountant' => AccountantDashboardBuilder::class,
         'Librarian' => LibrarianDashboardBuilder::class,
+        'Payroll Manager' => PayrollManagerDashboardBuilder::class,
         'Receptionist' => ReceptionistDashboardBuilder::class,
+        'Driver' => DriverDashboardBuilder::class,
         'Staff' => StaffDashboardBuilder::class,
-        'Parent' => ParentDashboardBuilder::class,
-        'Student' => StudentDashboardBuilder::class,
     ];
 
     public function make(Authenticatable|User $user): RoleDashboardBuilderInterface

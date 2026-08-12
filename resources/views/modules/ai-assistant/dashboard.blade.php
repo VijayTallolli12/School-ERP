@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'AI Executive Copilot')
-@section('page-title', 'AI Executive Copilot')
+@section('title', 'AI Executive Gemini')
+@section('page-title', 'AI Executive Gemini')
 
 @section('content')
 <div class="exec-dashboard">
@@ -11,7 +11,7 @@
             <div class="exec-hero-left">
                 <div class="exec-hero-badge">
                     <i class="ti ti-sparkles"></i>
-                    AI Executive Copilot
+                    AI Executive Gemini
                 </div>
                 <h1 class="exec-hero-greeting" id="heroGreeting">Good Morning</h1>
                 <p class="exec-hero-subtitle">Your AI-powered school operations center</p>
@@ -124,8 +124,40 @@
         </div>
     </div>
 
+    {{-- Conversation History --}}
+    <div class="exec-section" id="conversationSection" style="display: none;">
+        <div class="exec-section-header">
+            <h2 class="exec-section-title">
+                <i class="ti ti-message"></i>
+                Conversation
+            </h2>
+            <button type="button" class="exec-clear-btn" id="clearChat">
+                <i class="ti ti-trash"></i>
+                Clear
+            </button>
+        </div>
+        <div class="exec-conversation" id="conversation">
+            {{-- Chat messages will be inserted here --}}
+        </div>
+
+        {{-- Typing Indicator --}}
+        <div class="exec-typing" id="typingIndicator" style="display: none;">
+            <div class="exec-typing-avatar">
+                <i class="ti ti-sparkles"></i>
+            </div>
+            <div class="exec-typing-content">
+                <div class="exec-typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span class="exec-typing-label">Analyzing your request...</span>
+            </div>
+        </div>
+    </div>
+
     {{-- Chat Input --}}
-    <div class="exec-section">
+    <div class="exec-section exec-chat-sticky">
         <div class="exec-chat-input-wrapper">
             <div class="exec-chat-input" id="chatInputContainer">
                 <div class="exec-chat-input-inner">
@@ -147,38 +179,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    {{-- Conversation History --}}
-    <div class="exec-section" id="conversationSection" style="display: none;">
-        <div class="exec-section-header">
-            <h2 class="exec-section-title">
-                <i class="ti ti-message"></i>
-                Conversation
-            </h2>
-            <button type="button" class="exec-clear-btn" id="clearChat">
-                <i class="ti ti-trash"></i>
-                Clear
-            </button>
-        </div>
-        <div class="exec-conversation" id="conversation">
-            {{-- Chat messages will be inserted here --}}
-        </div>
-    </div>
-
-    {{-- Typing Indicator --}}
-    <div class="exec-typing" id="typingIndicator" style="display: none;">
-        <div class="exec-typing-avatar">
-            <i class="ti ti-sparkles"></i>
-        </div>
-        <div class="exec-typing-content">
-            <div class="exec-typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <span class="exec-typing-label">Analyzing your request...</span>
         </div>
     </div>
 </div>
@@ -537,6 +537,15 @@
 }
 
 /* --- Chat Input --- */
+.exec-chat-sticky {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+    background: var(--erp-bg, #f8fafc);
+    padding: 1rem 0;
+    margin-top: 1.5rem;
+}
+
 .exec-chat-input-wrapper {
     max-width: 800px;
     margin: 0 auto;
@@ -969,24 +978,68 @@ $(document).ready(function() {
 
     // Load dashboard data
     function loadDashboardData() {
-        // Simulate loading KPI data
-        setTimeout(function() {
-            updateKPIs();
-            updateHealthScore(96);
-            snapshotTime.text('Updated: ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-        }, 500);
+        // Load real KPI data from the school summary query.
+        $.ajax({
+            url: '{{ route("admin.ai.ask") }}',
+            method: 'POST',
+            data: {
+                question: 'Give me an executive summary of the school.',
+                confirmed: 1,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(res) {
+                const summary = res.result && res.result.summary;
+                if (summary) {
+                    updateKPIs(summary);
+                    const score = computeHealthScore(summary);
+                    updateHealthScore(score.score, score.status);
+                }
+                snapshotTime.text('Updated: ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+            },
+            error: function() {
+                snapshotTime.text('Updated: ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+            }
+        });
+    }
+
+    // Compute a health score from real summary data (0-100).
+    function computeHealthScore(summary) {
+        const attendance = summary.attendance || {};
+        const fees = summary.fees || {};
+        const homework = summary.homework || {};
+
+        const attPct = attendance.percentage != null ? attendance.percentage : 0;
+        const feeRate = fees.collection_rate != null ? fees.collection_rate : 0;
+        const overdue = (homework.overdue || 0);
+
+        let score = Math.round((attPct * 0.5) + (feeRate * 0.3));
+        score -= Math.min(20, overdue * 2);
+        score = Math.max(0, Math.min(100, score));
+
+        let status = 'Excellent';
+        if (score < 60) status = 'Critical';
+        else if (score < 75) status = 'Warning';
+        else if (score < 90) status = 'Good';
+
+        return { score, status };
     }
 
     // Update KPIs
-    function updateKPIs() {
+    function updateKPIs(summary) {
+        const attendance = summary.attendance || {};
+        const fees = summary.fees || {};
+        const transport = summary.transport || {};
+        const homework = summary.homework || {};
+        const exams = summary.exams || {};
+        const leave = summary.leave || {};
+
         const kpis = [
-            { icon: 'ti ti-users', label: 'Attendance', value: '432', sub: '96% present', color: '#22c55e', bg: 'rgba(34,197,94,.08)' },
-            { icon: 'ti ti-chalkboard', label: 'Teachers', value: '28', sub: 'All active', color: '#8b5cf6', bg: 'rgba(139,92,246,.08)' },
-            { icon: 'ti ti-cash', label: 'Fee Collection', value: '₹2.4L', sub: '78% collected', color: '#2563eb', bg: 'rgba(37,99,235,.08)' },
-            { icon: 'ti ti-bus', label: 'Transport', value: '12', sub: 'Routes active', color: '#f59e0b', bg: 'rgba(245,158,11,.08)' },
-            { icon: 'ti ti-notebook', label: 'Homework', value: '45', sub: 'Pending review', color: '#06b6d4', bg: 'rgba(6,182,212,.08)' },
-            { icon: 'ti ti-file-text', label: 'Exams', value: '3', sub: 'Upcoming', color: '#ec4899', bg: 'rgba(236,72,153,.08)' },
-            { icon: 'ti ti-alert-triangle', label: 'Alerts', value: '2', sub: 'Requires attention', color: '#ef4444', bg: 'rgba(239,68,68,.08)' }
+            { icon: 'ti ti-users', label: 'Attendance', value: attendance.present || '0', sub: (attendance.percentage || 0) + '% present', color: '#22c55e', bg: 'rgba(34,197,94,.08)' },
+            { icon: 'ti ti-cash', label: 'Fee Pending', value: '₹' + formatNumber(Math.round(fees.total_pending || 0)), sub: (fees.collection_rate || 0) + '% collected', color: '#2563eb', bg: 'rgba(37,99,235,.08)' },
+            { icon: 'ti ti-bus', label: 'Transport', value: transport.total_routes || '0', sub: 'Routes active', color: '#f59e0b', bg: 'rgba(245,158,11,.08)' },
+            { icon: 'ti ti-notebook', label: 'Homework', value: homework.overdue || '0', sub: 'Overdue', color: '#06b6d4', bg: 'rgba(6,182,212,.08)' },
+            { icon: 'ti ti-file-text', label: 'Exams', value: exams.published || '0', sub: 'Published', color: '#ec4899', bg: 'rgba(236,72,153,.08)' },
+            { icon: 'ti ti-calendar-exclamation', label: 'Leave Pending', value: leave.pending_requests || '0', sub: 'Pending requests', color: '#ef4444', bg: 'rgba(239,68,68,.08)' }
         ];
 
         let html = '';
@@ -1005,7 +1058,7 @@ $(document).ready(function() {
     }
 
     // Update health score
-    function updateHealthScore(score) {
+    function updateHealthScore(score, status) {
         const circumference = 339.292;
         const offset = circumference - (score / 100) * circumference;
 
@@ -1013,13 +1066,13 @@ $(document).ready(function() {
         healthValue.text(score);
 
         let color = '#22c55e';
-        let status = 'Excellent';
-        if (score < 60) { color = '#ef4444'; status = 'Critical'; }
-        else if (score < 75) { color = '#f59e0b'; status = 'Warning'; }
-        else if (score < 90) { color = '#2563eb'; status = 'Good'; }
+        let label = status || 'Excellent';
+        if (score < 60) { color = '#ef4444'; label = status || 'Critical'; }
+        else if (score < 75) { color = '#f59e0b'; label = status || 'Warning'; }
+        else if (score < 90) { color = '#2563eb'; label = status || 'Good'; }
 
         healthRing.css('stroke', color);
-        healthStatus.text(status);
+        healthStatus.text(label);
         healthStatus.css('color', color);
     }
 
@@ -1165,37 +1218,33 @@ $(document).ready(function() {
         let cards = '';
 
         // Summary card for school summary
-        if (data.intent === 'school.summary' && data.summary_data) {
-            cards += '<div class="exec-response-card">' +
-                '<div class="exec-response-card-header">' +
-                    '<i class="ti ti-chart-bar"></i> Key Metrics' +
-                '</div>' +
-                '<div class="exec-response-kpi-grid">' +
-                    '<div class="exec-response-kpi">' +
-                        '<div class="exec-response-kpi-value">' + (data.summary_data.attendance?.present_today || '--') + '</div>' +
-                        '<div class="exec-response-kpi-label">Students Present</div>' +
-                    '</div>' +
-                    '<div class="exec-response-kpi">' +
-                        '<div class="exec-response-kpi-value">₹' + formatNumber(data.summary_data.fees?.collected_today || 0) + '</div>' +
-                        '<div class="exec-response-kpi-label">Fees Collected</div>' +
-                    '</div>' +
-                '</div>' +
-            '</div>';
-        }
+        if (data.intent === 'school.summary') {
+            const summary = (data.result && data.result.summary) || data.summary_data;
+            const attendance = summary ? (summary.attendance || {}) : {};
+            const fees = summary ? (summary.fees || {}) : {};
+            const transport = summary ? (summary.transport || {}) : {};
 
-        // Confidence indicator
-        if (data.confidence) {
-            const confPct = Math.round(data.confidence * 100);
-            const confLevel = confPct >= 85 ? 'high' : confPct >= 70 ? 'medium' : 'low';
-            cards += '<div class="exec-response-card">' +
-                '<div class="exec-response-card-header">' +
-                    '<i class="ti ti-shield-check"></i> Confidence' +
-                '</div>' +
-                '<div class="exec-confidence">' +
-                    '<div class="exec-conf-bar"><div class="exec-conf-fill ' + confLevel + '" style="width:' + confPct + '%;"></div></div>' +
-                    '<span>' + confPct + '%</span>' +
-                '</div>' +
-            '</div>';
+            if (summary) {
+                cards += '<div class="exec-response-card">' +
+                    '<div class="exec-response-card-header">' +
+                        '<i class="ti ti-chart-bar"></i> Key Metrics' +
+                    '</div>' +
+                    '<div class="exec-response-kpi-grid">' +
+                        '<div class="exec-response-kpi">' +
+                            '<div class="exec-response-kpi-value">' + (attendance.present || '--') + '</div>' +
+                            '<div class="exec-response-kpi-label">Students Present</div>' +
+                        '</div>' +
+                        '<div class="exec-response-kpi">' +
+                            '<div class="exec-response-kpi-value">₹' + formatNumber(fees.total_pending || 0) + '</div>' +
+                            '<div class="exec-response-kpi-label">Fees Pending</div>' +
+                        '</div>' +
+                        '<div class="exec-response-kpi">' +
+                            '<div class="exec-response-kpi-value">' + (transport.total_routes || '--') + '</div>' +
+                            '<div class="exec-response-kpi-label">Transport Routes</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
         }
 
         return cards;

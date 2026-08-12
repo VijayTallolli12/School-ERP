@@ -59,7 +59,7 @@ Send and review notifications for relevant groups.
 
 ## AI
 
-Use the Ask ERP or Executive Copilot features for operational summaries and guided workflows.
+Use the Ask ERP or Executive Gemini features for operational summaries and guided workflows.
 
 ## Profile and Settings
 

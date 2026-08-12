@@ -309,122 +309,9 @@
                 <li class="nav-item">
                     <a href="{{ route('admin.ai.dashboard') }}" class="nav-link @if(request()->routeIs('admin.ai.dashboard')) active @endif">
                         <i class="nav-icon ti ti-sparkles"></i>
-                        <p>Executive Copilot</p>
+                        <p>Executive Gemini</p>
                     </a>
                 </li>
-
-            @elseif(auth()->user()->hasRole('Parent'))
-
-                {{-- ========== PARENT PORTAL ========== --}}
-                <li class="nav-header">
-                    <span class="nav-header-label">Parent Portal</span>
-                </li>
-
-                @can('dashboard.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.parent-portal.dashboard') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.dashboard')) active @endif">
-                            <i class="nav-icon ti ti-gauge"></i>
-                            <p>Dashboard</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('attendance.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.parent-portal.attendance') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.attendance')) active @endif">
-                            <i class="nav-icon ti ti-calendar-check"></i>
-                            <p>Attendance</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('fees.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.parent-portal.fees') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.fees')) active @endif">
-                            <i class="nav-icon ti ti-receipt"></i>
-                            <p>Fees</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('exams.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.parent-portal.exam-results') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.exam-results')) active @endif">
-                            <i class="nav-icon ti ti-chart-arrows-vertical"></i>
-                            <p>Exam Results</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('timetable.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.parent-portal.timetable') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.timetable')) active @endif">
-                            <i class="nav-icon ti ti-table"></i>
-                            <p>Timetable</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('homework.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.parent-portal.homework') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.homework')) active @endif">
-                            <i class="nav-icon ti ti-books"></i>
-                            <p>Homework</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('notifications.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.parent-portal.notifications') }}" class="nav-link @if(request()->routeIs('admin.parent-portal.notifications')) active @endif">
-                            <i class="nav-icon ti ti-bell"></i>
-                            <p>Notifications</p>
-                        </a>
-                    </li>
-                @endcan
-
-            @elseif(auth()->user()->hasRole('Student'))
-
-                {{-- ========== STUDENT ========== --}}
-                <li class="nav-header">
-                    <span class="nav-header-label">Student</span>
-                </li>
-
-                @can('dashboard.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
-                            <i class="nav-icon ti ti-gauge"></i>
-                            <p>Dashboard</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('attendance.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.attendance.index') }}" class="nav-link @if(request()->routeIs('admin.attendance.*')) active @endif">
-                            <i class="nav-icon ti ti-calendar-check"></i>
-                            <p>Attendance</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('timetable.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.timetable.index') }}" class="nav-link @if(request()->routeIs('admin.timetable.*')) active @endif">
-                            <i class="nav-icon ti ti-table"></i>
-                            <p>Timetable</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('exams.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.exams.index') }}" class="nav-link @if(request()->routeIs('admin.exams.*')) active @endif">
-                            <i class="nav-icon ti ti-chart-arrows-vertical"></i>
-                            <p>Exams</p>
-                        </a>
-                    </li>
-                @endcan
 
             @elseif(auth()->user()->hasRole('Accountant'))
 
@@ -613,6 +500,83 @@
                     </li>
                 @endcan
 
+            @elseif(auth()->user()->hasRole('Payroll Manager'))
+
+                {{-- ========== PAYROLL MANAGER ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Payroll</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('payroll.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.payroll.index') }}" class="nav-link @if(request()->routeIs('admin.payroll.*')) active @endif">
+                            <i class="nav-icon ti ti-cash"></i>
+                            <p>Payroll</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('reports.view')
+                    <li class="nav-item">
+                        <a href="{{ route('reports.fees.index') }}" class="nav-link @if(request()->routeIs('reports.*')) active @endif">
+                            <i class="nav-icon ti ti-chart-bar"></i>
+                            <p>Reports</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link @if(request()->routeIs('admin.notifications.*')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
+            @elseif(auth()->user()->hasRole('Driver'))
+
+                {{-- ========== DRIVER ========== --}}
+                <li class="nav-header">
+                    <span class="nav-header-label">Transport</span>
+                </li>
+
+                @can('dashboard.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif">
+                            <i class="nav-icon ti ti-gauge"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('transport.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.transport.index') }}" class="nav-link @if(request()->routeIs('admin.transport.*')) active @endif">
+                            <i class="nav-icon ti ti-bus"></i>
+                            <p>Transportation</p>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('notifications.view')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link @if(request()->routeIs('admin.notifications.*')) active @endif">
+                            <i class="nav-icon ti ti-bell"></i>
+                            <p>Notifications</p>
+                        </a>
+                    </li>
+                @endcan
+
             @else
 
                 {{-- ========== OPERATIONS ========== --}}
@@ -660,7 +624,7 @@
                     <li class="nav-item">
                         <a href="{{ route('admin.calendar.index') }}" class="nav-link @if(request()->routeIs('admin.calendar.*')) active @endif">
                             <i class="nav-icon ti ti-calendar-event"></i>
-                            <p>Academic Calendar</p>
+                            <p>Event Calendar</p>
                         </a>
                     </li>
                 @endcan
@@ -812,7 +776,7 @@
                     <li class="nav-item">
                         <a href="{{ route('admin.ai.dashboard') }}" class="nav-link @if(request()->routeIs('admin.ai.dashboard')) active @endif">
                             <i class="nav-icon ti ti-sparkles"></i>
-                            <p>Executive Copilot</p>
+                            <p>Executive Gemini</p>
                         </a>
                     </li>
 

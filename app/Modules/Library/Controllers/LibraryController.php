@@ -85,7 +85,7 @@ class LibraryController extends Controller
             ->where(function ($query) use ($q): void {
                 $query->where('first_name', 'like', "%{$q}%")
                     ->orWhere('last_name', 'like', "%{$q}%")
-                    ->orWhere('employee_code', 'like', "%{$q}%");
+                    ->orWhere('employee_id', 'like', "%{$q}%");
             })
             ->orderBy('first_name')
             ->limit($limit)
@@ -94,7 +94,7 @@ class LibraryController extends Controller
         return response()->json([
             'results' => $teachers->map(fn (Teacher $t) => [
                 'id' => $t->id,
-                'text' => sprintf('%s (%s)', $t->full_name, $t->employee_code ?? 'N/A'),
+                'text' => sprintf('%s (%s)', $t->full_name, $t->employee_id ?? 'N/A'),
             ]),
         ]);
     }

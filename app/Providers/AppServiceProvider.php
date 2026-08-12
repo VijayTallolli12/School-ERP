@@ -108,9 +108,6 @@ use App\Modules\Leave\Repositories\LeaveRequestRepository;
 use App\Modules\Leave\Repositories\LeaveRequestRepositoryInterface;
 use App\Modules\Leave\Repositories\LeaveTypeRepository;
 use App\Modules\Leave\Repositories\LeaveTypeRepositoryInterface;
-use App\Modules\AiAssistant\Services\AIIntentService;
-use App\Modules\AiAssistant\Services\AgentRouter;
-use App\Modules\AiAssistant\Services\AIResponseFormatter;
 use App\Modules\HR\Models\Employee;
 use App\Modules\HR\Models\EmployeeDocument;
 use App\Modules\HR\Policies\EmployeePolicy;
@@ -145,9 +142,11 @@ use App\Modules\Dashboard\Services\DashboardService;
 use App\Modules\Dashboard\Services\SidebarBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Cache\RateLimiting\Limit;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -199,6 +198,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // AI endpoint rate limiting: per authenticated user (fallback: IP).
+        // Guards against accidental flooding, automated abuse, and API cost spikes.
+        RateLimiter::for('ai', function (mixed $job): Limit {
+            $key = auth()->id() ? 'ai:' . auth()->id() : 'ai:' . request()->ip();
+            $maxAttempts = (int) config('ai.rate_limit_per_minute', 20);
+
+            return Limit::perMinute($maxAttempts)->by($key)
+                ->response(function (mixed $request, array $headers): \Symfony\Component\HttpFoundation\Response {
+                    return response()->json([
+                        'success' => false,
+                        'answer' => 'You are sending too many requests. Please wait a moment and try again.',
+                    ], 429, $headers);
+                });
+        });
         if (app()->environment('production')) {
             URL::forceScheme('https');
         }

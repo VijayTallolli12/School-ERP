@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', 'Academic Calendar')
-@section('page-title', 'Academic Calendar')
+@section('title', 'Event Calendar')
+@section('page-title', 'Event Calendar')
 
 @section('breadcrumbs')
     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-    <li class="breadcrumb-item active">Academic Calendar</li>
+    <li class="breadcrumb-item active">Event Calendar</li>
 @endsection
 
 @section('content')

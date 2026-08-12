@@ -42,25 +42,19 @@ class LoginController extends Controller
         // so we need to set the team ID manually for hasRole() to work.
         SetSchoolContext::applySchoolContext($user, $request);
 
-        if ($user->hasRole('Parent')) {
-            return redirect()->intended(route('admin.parent-portal.dashboard'));
-        }
+        // The School ERP web application is an internal staff application.
+        // Parents and Students use the mobile app / portal experiences and
+        // must NOT be able to log into the administrative web ERP.
+        foreach (config('access.external_roles', ['Parent', 'Student']) as $externalRole) {
+            if ($user->hasRole($externalRole)) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
 
-        if ($user->hasRole('Teacher')) {
-            return redirect()->intended(route('admin.dashboard'));
-        }
-
-        if ($user->hasRole('Principal')) {
-            return redirect()->intended(route('admin.dashboard'));
-        }
-
-        if ($user->hasRole('Staff')) {
-            return redirect()->intended(route('admin.dashboard'));
-        }
-
-        // Fallback for users with roles not explicitly mapped above
-        if ($user->hasRole('School Admin')) {
-            return redirect()->intended(route('admin.dashboard'));
+                return redirect()->route('login')->withErrors([
+                    'email' => 'This portal is for school staff only. Parents and students use the mobile app.',
+                ]);
+            }
         }
 
         return redirect()->intended(route('admin.dashboard'));

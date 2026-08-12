@@ -100,7 +100,7 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
         if ($this->can('academic_calendar.view')) {
             $widgets[] = $this->widget(
                 'upcoming_events',
-                'Academic Calendar',
+                'Event Calendar',
                 'list',
                 $calendarCollector->upcomingEvents($this->schoolId),
                 'calendar-alt',

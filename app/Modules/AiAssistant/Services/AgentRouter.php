@@ -2,6 +2,14 @@
 
 namespace App\Modules\AiAssistant\Services;
 
+/**
+ * Routes action intents (destructive operations) to their executor.
+ *
+ * Query tools are resolved through the ErpToolRegistry; this router only
+ * maps actions that require confirmation (payroll.generate, attendance.notify,
+ * fee.send_reminders, exam.publish, notification.send, homework.create,
+ * transport.assign).
+ */
 class AgentRouter
 {
     private const DESTRUCTIVE_INTENTS = [
@@ -10,110 +18,11 @@ class AgentRouter
         'fee.send_reminders',
         'exam.publish',
         'notification.send',
+        'homework.create',
+        'transport.assign',
     ];
 
     private const ROUTES = [
-        'student.total' => [
-            'type' => 'handler',
-            'handler' => 'StudentQueryHandler',
-            'method' => 'totalStudents',
-        ],
-        'student.admitted_this_month' => [
-            'type' => 'handler',
-            'handler' => 'StudentQueryHandler',
-            'method' => 'admittedThisMonth',
-        ],
-        'student.by_class' => [
-            'type' => 'handler',
-            'handler' => 'StudentQueryHandler',
-            'method' => 'studentsByClass',
-        ],
-        'attendance.absent_today' => [
-            'type' => 'handler',
-            'handler' => 'AttendanceQueryHandler',
-            'method' => 'absentToday',
-        ],
-        'attendance.monthly_percentage' => [
-            'type' => 'handler',
-            'handler' => 'AttendanceQueryHandler',
-            'method' => 'monthlyPercentage',
-        ],
-        'attendance.below_75' => [
-            'type' => 'handler',
-            'handler' => 'AttendanceQueryHandler',
-            'method' => 'studentsBelow75',
-        ],
-        'fee.outstanding' => [
-            'type' => 'handler',
-            'handler' => 'FeeQueryHandler',
-            'method' => 'totalOutstanding',
-        ],
-        'fee.pending_above' => [
-            'type' => 'handler',
-            'handler' => 'FeeQueryHandler',
-            'method' => 'studentsWithPendingAbove',
-            'param_method' => true,
-        ],
-        'fee.today_collection' => [
-            'type' => 'handler',
-            'handler' => 'FeeQueryHandler',
-            'method' => 'todayCollection',
-        ],
-        'fee.top_defaulters' => [
-            'type' => 'handler',
-            'handler' => 'FeeQueryHandler',
-            'method' => 'topDefaulters',
-        ],
-        'transport.route_occupancy' => [
-            'type' => 'handler',
-            'handler' => 'TransportQueryHandler',
-            'method' => 'routeOccupancy',
-        ],
-        'transport.students_on_route' => [
-            'type' => 'handler',
-            'handler' => 'TransportQueryHandler',
-            'method' => 'studentsOnRoute',
-        ],
-        'transport.vehicle_assignments' => [
-            'type' => 'handler',
-            'handler' => 'TransportQueryHandler',
-            'method' => 'vehicleAssignments',
-        ],
-        'library.books_issued' => [
-            'type' => 'handler',
-            'handler' => 'LibraryQueryHandler',
-            'method' => 'booksIssued',
-        ],
-        'library.overdue_books' => [
-            'type' => 'handler',
-            'handler' => 'LibraryQueryHandler',
-            'method' => 'overdueBooks',
-        ],
-        'library.fine_collection' => [
-            'type' => 'handler',
-            'handler' => 'LibraryQueryHandler',
-            'method' => 'fineCollection',
-        ],
-        'payroll.latest_run' => [
-            'type' => 'handler',
-            'handler' => 'PayrollQueryHandler',
-            'method' => 'latestRun',
-        ],
-        'payroll.locked_runs' => [
-            'type' => 'handler',
-            'handler' => 'PayrollQueryHandler',
-            'method' => 'lockedRuns',
-        ],
-        'payroll.highest_salary' => [
-            'type' => 'handler',
-            'handler' => 'PayrollQueryHandler',
-            'method' => 'highestSalaryEmployees',
-        ],
-        'payroll.generated_this_month' => [
-            'type' => 'handler',
-            'handler' => 'PayrollQueryHandler',
-            'method' => 'generatedThisMonth',
-        ],
         'payroll.generate' => [
             'type' => 'agent',
             'agent' => 'payroll',
@@ -150,32 +59,11 @@ class AgentRouter
             'method' => 'create',
             'params' => ['class_section_id', 'subject_id', 'title', 'due_date'],
         ],
-        'homework.pending' => [
-            'type' => 'handler',
-            'handler' => 'HomeworkQueryHandler',
-            'method' => 'pendingHomework',
-        ],
-        'homework.due' => [
-            'type' => 'handler',
-            'handler' => 'HomeworkQueryHandler',
-            'method' => 'homeworkDue',
-            'param_method' => true,
-        ],
-        'homework.list' => [
-            'type' => 'handler',
-            'handler' => 'HomeworkQueryHandler',
-            'method' => 'listHomework',
-        ],
         'transport.assign' => [
             'type' => 'service',
             'service' => 'transport',
-            'method' => 'assignStudents',
+            'method' => 'createAssignment',
             'params' => ['route_id', 'student_ids'],
-        ],
-        'school.summary' => [
-            'type' => 'handler',
-            'handler' => 'SchoolSummaryHandler',
-            'method' => 'getExecutiveSummary',
         ],
     ];
 

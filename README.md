@@ -14,7 +14,7 @@ School ERP is a modular Laravel-based school management platform for multi-schoo
 - Attendance, homework, exams, fees, payroll, and library workflows
 - Transport and document management
 - Role-based dashboards and sidebar navigation
-- AI assistant and executive-copilot style workflows
+- AI assistant and executive-gemini style workflows
 - Reporting and notifications
 
 ## Architecture Overview

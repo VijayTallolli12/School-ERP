@@ -35,12 +35,13 @@ class HRDashboardBuilder extends BaseDashboardBuilder
         $widgets = [];
 
         $employeesByDept = Employee::query()
-            ->selectRaw('department, COUNT(*) as count')
-            ->groupBy('department')
+            ->selectRaw('payroll_departments.name as department_name, COUNT(employees.id) as count')
+            ->leftJoin('payroll_departments', 'employees.department_id', '=', 'payroll_departments.id')
+            ->groupBy('payroll_departments.name')
             ->orderByDesc('count')
             ->limit(10)
             ->get()
-            ->map(fn ($e) => ['label' => $e->department ?? 'Unassigned', 'value' => $e->count])
+            ->map(fn ($e) => ['label' => $e->department_name ?? 'Unassigned', 'value' => $e->count])
             ->toArray();
 
         $widgets[] = $this->widget(

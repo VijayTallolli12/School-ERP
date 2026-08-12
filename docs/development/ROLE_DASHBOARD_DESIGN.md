@@ -163,7 +163,7 @@ Each dashboard answers three questions specific to the role:
 |--------|---------|
 | Today's Attendance | Donut (Present/Absent/Leave for students + teachers) |
 | Pending Approvals | Leave requests, document verifications |
-| Academic Calendar | Today's events and upcoming deadlines |
+| Event Calendar | Today's events and upcoming deadlines |
 | School Overview | Total classes, sections, active teachers, students per class |
 | Low Attendance Alert | Classes with < 70% attendance today |
 
@@ -173,7 +173,7 @@ Each dashboard answers three questions specific to the role:
 - View Reports
 - Check Exam Schedule
 - Review Homework Status
-- Academic Calendar
+- Event Calendar
 - View Student Analytics
 
 ### Alerts

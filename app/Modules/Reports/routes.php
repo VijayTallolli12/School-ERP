@@ -3,7 +3,9 @@
 use Illuminate\Support\Facades\Route;
 
 // Reports Module Routes
-Route::middleware(['auth:sanctum', 'verified', 'school', 'permission:reports.view'])->group(function () {
+// Staff-gated: reports are an internal ERP feature. Parent and Student users
+// (external mobile-app roles) must never reach /reports/*.
+Route::middleware(['auth:sanctum', 'verified', 'school', 'staff', 'permission:reports.view'])->group(function () {
     Route::prefix('reports')->name('reports.')->group(function () {
         // Student Reports
         Route::get('students', [\App\Modules\Reports\Controllers\StudentReportController::class, 'index'])->name('students.index');

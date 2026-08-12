@@ -46,34 +46,65 @@
 
                 {{-- ============ TRANSFER TAB ============ --}}
                 <div class="tab-pane fade" id="transferPane" role="tabpanel">
-                    <div class="d-flex mb-3">
+                    <div class="d-flex mb-3 align-items-center">
                         <h3 class="card-title mb-0"><i class="ti ti-logout text-primary me-2"></i>Transfer Student</h3>
+                        <div class="ms-auto">
+                            <button type="button" class="btn btn-primary btn-sm" id="toggleTransferFormBtn">
+                                <i class="ti ti-plus me-1"></i> Add Transfer Student
+                            </button>
+                        </div>
                     </div>
-                    <div class="row">
-                        <div class="col-xl-6 col-lg-8">
-                            <div class="card card-flat mb-0">
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label class="form-label required">Student</label>
-                                        <select class="form-select lifecycle-student-select" name="student_id" required></select>
+
+                    <!-- Table View -->
+                    <div id="transferListView">
+                        <table class="table table-striped table-bordered w-100" id="transferListTable">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Student</th>
+                                <th>Admission No</th>
+                                <th>From Class</th>
+                                <th>Destination School</th>
+                                <th>Transferred On</th>
+                                <th width="80">Actions</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+
+                    <!-- Form View -->
+                    <div id="transferFormView" style="display: none;">
+                        <div class="d-flex mb-3">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="backToTransferListBtn">
+                                <i class="ti ti-arrow-left me-1"></i> Back to List
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="col-xl-6 col-lg-8">
+                                <div class="card card-flat mb-0">
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label required">Student</label>
+                                            <select class="form-select lifecycle-student-select" name="student_id" required></select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Transferred On</label>
+                                            <input class="form-control" type="date" name="transferred_on" value="{{ now()->toDateString() }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Destination School</label>
+                                            <input class="form-control" name="destination_school" maxlength="255">
+                                        </div>
+                                        <div class="mb-0">
+                                            <label class="form-label">Reason</label>
+                                            <textarea class="form-control" name="reason" rows="3" maxlength="2000"></textarea>
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Transferred On</label>
-                                        <input class="form-control" type="date" name="transferred_on" value="{{ now()->toDateString() }}">
+                                    <div class="card-footer d-flex gap-2">
+                                        <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.transfer') }}">
+                                            <i class="ti ti-logout me-1"></i> Transfer Student
+                                        </button>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Destination School</label>
-                                        <input class="form-control" name="destination_school" maxlength="255">
-                                    </div>
-                                    <div class="mb-0">
-                                        <label class="form-label">Reason</label>
-                                        <textarea class="form-control" name="reason" rows="3" maxlength="2000"></textarea>
-                                    </div>
-                                </div>
-                                <div class="card-footer d-flex gap-2">
-                                    <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.transfer') }}">
-                                        <i class="ti ti-logout me-1"></i> Transfer Student
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -219,9 +250,43 @@
 
             $('#filterType').on('change', () => table.ajax.reload());
 
+            const transferTable = $('#transferListTable').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                order: [[0, 'desc']],
+                ajax: {
+                    url: '{{ route('admin.lifecycle.data') }}',
+                    data: (d) => {
+                        d.transfer_type = 'transfer';
+                    }
+                },
+                columns: [
+                    {data: 'id', name: 'id'},
+                    {data: 'student_name', name: 'student_name', orderable: false},
+                    {data: 'admission_no', name: 'admission_no', orderable: false},
+                    {data: 'from_class', name: 'from_class', orderable: false, searchable: false},
+                    {data: 'destination_school', name: 'destination_school'},
+                    {data: 'transferred_on', name: 'transferred_on'},
+                    {data: 'actions', name: 'actions', orderable: false, searchable: false},
+                ]
+            });
+
+            $('#toggleTransferFormBtn').on('click', function() {
+                $('#transferListView, #toggleTransferFormBtn').hide();
+                $('#transferFormView').fadeIn();
+            });
+
+            $('#backToTransferListBtn').on('click', function() {
+                $('#transferFormView').hide();
+                $('#transferListView, #toggleTransferFormBtn').fadeIn();
+                transferTable.ajax.reload(null, false);
+            });
+
             $('.lifecycle-student-select').each(function () {
                 $(this).select2({
                     placeholder: 'Search student...',
+                    width: '100%',
                     dropdownParent: $(this).closest('.card-flat'),
                     minimumInputLength: 1,
                     ajax: {
@@ -256,7 +321,12 @@
                         if (res.success) {
                             App.toast('success', res.message);
                             if ($('#lifecycleTable').length) table.ajax.reload(null, false);
+                            if (typeof transferTable !== 'undefined') transferTable.ajax.reload(null, false);
                             panel.find('select, input, textarea').not('[type="hidden"]').val('').trigger('change');
+                            // If we are in the transfer form view, go back to list
+                            if (panel.closest('#transferFormView').length) {
+                                $('#backToTransferListBtn').click();
+                            }
                         } else {
                             App.toast('error', res.message || 'Action failed.');
                         }

@@ -11,7 +11,7 @@ use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 /**
- * Academic Calendar fixes:
+ * Event Calendar fixes:
  *
  * 1. Edit flow — the list view's Edit button loads the event via
  *    GET /admin/calendar/{id} and expects a JSON payload with an `event`

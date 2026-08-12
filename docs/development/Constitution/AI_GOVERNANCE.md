@@ -192,9 +192,9 @@ Governance-relevant configuration is stored in:
 
 | Path | Purpose |
 |------|---------|
-| `config/ai.php` | Role permissions, data scoping rules |
-| `config/ai/modules.php` | Module definitions and intents |
-| `config/services.php` | Gemini API configuration |
+| `config/ai.php` | AI provider, role permissions, data scoping rules |
+| `app/Modules/AiAssistant/Erp/ErpToolRegistry.php` | Single source of truth for the ERP tool catalog |
+| `config/services.php` | Gemini/OpenAI API configuration |
 
 ## 11. Policy Review
 

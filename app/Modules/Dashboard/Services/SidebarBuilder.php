@@ -20,14 +20,6 @@ class SidebarBuilder
             return $this->buildForHR($user);
         }
 
-        if ($user->hasRole('Parent')) {
-            return $this->buildForParent($user);
-        }
-
-        if ($user->hasRole('Student')) {
-            return $this->buildForStudent($user);
-        }
-
         if ($user->hasRole('Accountant')) {
             return $this->buildForAccountant($user);
         }
@@ -82,7 +74,7 @@ class SidebarBuilder
             'header' => 'AI Workspace',
             'items' => [
                 ['label' => 'Ask ERP', 'route' => '#askErpModal', 'icon' => 'message', 'modal' => true],
-                $this->item('Executive Copilot', 'admin.ai.dashboard', 'sparkles', null, $user),
+                $this->item('Executive Gemini', 'admin.ai.dashboard', 'sparkles', null, $user),
                 $this->item('AI Agents', 'admin.agents.index', 'robot', null, $user),
                 $this->item('Execution History', 'admin.agents.history', 'clock', null, $user),
             ],
@@ -140,39 +132,6 @@ class SidebarBuilder
                     $this->item('Calendar', 'admin.calendar.index', 'calendar-event', 'academic_calendar.view', $user),
                     ['label' => 'Ask ERP', 'route' => '#askErpModal', 'icon' => 'message', 'modal' => true],
                 ]),
-            ],
-        ];
-    }
-
-    public function buildForParent(User $user): array
-    {
-        return [
-            [
-                'header' => 'Parent Portal',
-                'items' => [
-                    ['label' => 'Dashboard', 'route' => 'parent-portal.dashboard', 'icon' => 'gauge', 'permission' => 'dashboard.view'],
-                    ['label' => 'Attendance', 'route' => 'parent-portal.attendance', 'icon' => 'calendar-check', 'permission' => 'attendance.view'],
-                    ['label' => 'Fees', 'route' => 'parent-portal.fees', 'icon' => 'receipt', 'permission' => 'fees.view'],
-                    ['label' => 'Exam Results', 'route' => 'parent-portal.exam-results', 'icon' => 'chart-arrows-vertical', 'permission' => 'exams.view'],
-                    ['label' => 'Timetable', 'route' => 'parent-portal.timetable', 'icon' => 'table', 'permission' => 'timetable.view'],
-                    ['label' => 'Homework', 'route' => 'parent-portal.homework', 'icon' => 'books', 'permission' => 'homework.view'],
-                    ['label' => 'Notifications', 'route' => 'parent-portal.notifications', 'icon' => 'bell', 'permission' => 'notifications.view'],
-                ],
-            ],
-        ];
-    }
-
-    public function buildForStudent(User $user): array
-    {
-        return [
-            [
-                'header' => 'Student',
-                'items' => [
-                    ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'icon' => 'gauge', 'permission' => 'dashboard.view'],
-                    ['label' => 'Attendance', 'route' => 'admin.attendance.index', 'icon' => 'calendar-check', 'permission' => 'attendance.view'],
-                    ['label' => 'Timetable', 'route' => 'admin.timetable.index', 'icon' => 'table', 'permission' => 'timetable.view'],
-                    ['label' => 'Exams', 'route' => 'admin.exams.index', 'icon' => 'chart-arrows-vertical', 'permission' => 'exams.view'],
-                ],
             ],
         ];
     }
@@ -273,7 +232,7 @@ class SidebarBuilder
                     $this->item('Leave Approvals', 'admin.leave-requests.index', 'list-check', 'leave_management.view', $user),
                     $this->item('Notifications', 'admin.notifications.index', 'bell', 'notifications.view', $user),
                     ['label' => 'Ask ERP', 'route' => '#askErpModal', 'icon' => 'message', 'modal' => true],
-                    $this->item('Executive Copilot', 'admin.ai.dashboard', 'sparkles', null, $user),
+                    $this->item('Executive Gemini', 'admin.ai.dashboard', 'sparkles', null, $user),
                 ]),
             ],
         ];
@@ -285,7 +244,7 @@ class SidebarBuilder
             $this->item('Dashboard', 'admin.dashboard', 'gauge', 'dashboard.view', $user),
             $this->item('Attendance', 'admin.attendance.index', 'calendar-check', 'attendance.view', $user),
             $this->item('Timetable', 'admin.timetable.index', 'table', 'timetable.view', $user),
-            $this->item('Academic Calendar', 'admin.calendar.index', 'calendar-event', 'academic_calendar.view', $user),
+            $this->item('Event Calendar', 'admin.calendar.index', 'calendar-event', 'academic_calendar.view', $user),
             $this->item('Student Documents', 'admin.documents.index', 'file-text', 'student_documents.view', $user),
             $this->item('Transportation', 'admin.transport.index', 'bus', 'transport.view', $user),
         ]);

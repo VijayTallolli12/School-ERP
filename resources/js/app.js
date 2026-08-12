@@ -261,6 +261,7 @@ window.App = {
                     processResults(data) {
                         return {
                             results: (data.results || data.data || []).map(item => ({
+                                ...item,
                                 id: item.id,
                                 text: item.text,
                             })),

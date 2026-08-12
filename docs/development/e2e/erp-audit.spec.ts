@@ -129,7 +129,7 @@ const SIDEBAR_PAGES: { label: string; url: string; category: string }[] = [
   { label: 'Timetable', url: '/admin/timetable', category: 'Modules' },
   { label: 'Attendance', url: '/admin/attendance', category: 'Modules' },
   { label: 'Student Documents', url: '/admin/documents', category: 'Modules' },
-  { label: 'Academic Calendar', url: '/admin/calendar', category: 'Modules' },
+  { label: 'Event Calendar', url: '/admin/calendar', category: 'Modules' },
   { label: 'Users', url: '/admin/users', category: 'Modules' },
   { label: 'Transport', url: '/admin/transport', category: 'Modules' },
   { label: 'Transport Reports', url: '/admin/transport/reports', category: 'Modules' },

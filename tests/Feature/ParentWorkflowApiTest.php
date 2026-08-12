@@ -306,8 +306,11 @@ class ParentWorkflowApiTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_web_portal_notifications_read_from_generic_notifications_table(): void
+    public function test_parent_role_blocked_from_admin_web_portal(): void
     {
+        // Product decision: the School ERP web application is internal staff
+        // only. Parents use the mobile app / portal API and MUST NOT access
+        // the administrative web ERP (dashboard, modules, or any admin URL).
         $admin = User::query()->where('email', 'admin@example.com')->firstOrFail();
 
         $notification = Notification::query()->create([
@@ -327,9 +330,8 @@ class ParentWorkflowApiTest extends TestCase
 
         $this->actingAs($this->guardianUser)
             ->withSession(['school_id' => $this->school->id])
-            ->get(route('admin.parent-portal.notifications'))
-            ->assertOk()
-            ->assertSee('Parent Announcement');
+            ->get(route('admin.dashboard'))
+            ->assertForbidden();
     }
 
     // ─── Circulars ───────────────────────────────────────────────────────

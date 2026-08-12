@@ -41,7 +41,7 @@
 │                                      │
 │  ► AI WORKSPACE                      │
 │    ○ Ask ERP                         │
-│    ○ Executive Copilot               │
+│    ○ Executive Gemini                │
 │    ○ AI Agents                       │
 │    ○ Execution History               │
 │                                      │
@@ -70,7 +70,7 @@
 │    ○ Parents                         │
 │    ○ Classes & Sections              │
 │    ○ Subjects                        │
-│    ○ Academic Calendar               │
+│    ○ Event Calendar                  │
 │                                      │
 │  ► OPERATIONS                        │
 │    ○ Attendance                      │
@@ -107,7 +107,7 @@
 │                                      │
 │  ► AI WORKSPACE                      │
 │    ○ Ask ERP                         │
-│    ○ Executive Copilot               │
+│    ○ Executive Gemini                │
 │    ○ AI Agents                       │
 │    ○ Execution History               │
 │                                      │
@@ -133,7 +133,7 @@
 │    ○ Teachers                        │
 │    ○ Classes & Sections              │
 │    ○ Subjects                        │
-│    ○ Academic Calendar               │
+│    ○ Event Calendar                  │
 │                                      │
 │  ► OPERATIONS                        │
 │    ○ Attendance (Student)            │
@@ -159,7 +159,7 @@
 │                                      │
 │  ► AI WORKSPACE                      │
 │    ○ Ask ERP                         │
-│    ○ Executive Copilot               │
+│    ○ Executive Gemini                │
 │                                      │
 │  ─────────────────────────────────── │
 │  🔍 Quick Search                     │

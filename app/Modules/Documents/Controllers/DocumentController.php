@@ -9,6 +9,7 @@ use App\Modules\Documents\Repositories\DocumentRepositoryInterface;
 use App\Modules\Documents\Requests\StoreDocumentRequest;
 use App\Modules\Documents\Requests\UpdateDocumentRequest;
 use App\Modules\Documents\Services\DocumentService;
+use App\Modules\Students\Models\Student;
 use App\Modules\Students\Models\StudentDocument;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -60,6 +61,49 @@ class DocumentController extends Controller
             ->make(true);
     }
 
+    public function searchStudents(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', StudentDocument::class);
+
+        $q = trim((string) $request->get('q', ''));
+        $limit = min((int) $request->get('limit', 20), 50);
+
+        $students = Student::query()
+            ->with(['sessions' => function ($query): void {
+                $query->where('status', 'active')
+                    ->with(['classSection.schoolClass', 'classSection.section'])
+                    ->latest();
+            }])
+            ->when($q !== '', function ($query) use ($q): void {
+                $query->where(function ($inner) use ($q): void {
+                    $inner->where('first_name', 'like', "%{$q}%")
+                        ->orWhere('middle_name', 'like', "%{$q}%")
+                        ->orWhere('last_name', 'like', "%{$q}%")
+                        ->orWhere('admission_no', 'like', "%{$q}%")
+                        ->orWhereHas('sessions.classSection.schoolClass', fn ($classQuery) => $classQuery->where('name', 'like', "%{$q}%"))
+                        ->orWhereHas('sessions.classSection.section', fn ($sectionQuery) => $sectionQuery->where('name', 'like', "%{$q}%"));
+                });
+            })
+            ->orderBy('first_name')
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'results' => $students->map(function (Student $student): array {
+                $className = $this->studentCurrentClass($student);
+                $admissionNo = $student->admission_no ?: 'No admission no';
+
+                return [
+                    'id' => $student->id,
+                    'text' => sprintf('%s (%s) - %s', $student->full_name, $admissionNo, $className),
+                    'student_name' => $student->full_name,
+                    'admission_no' => $student->admission_no,
+                    'class_name' => $className,
+                ];
+            }),
+        ]);
+    }
+
     public function create(): View
     {
         $this->authorize('create', StudentDocument::class);
@@ -94,12 +138,24 @@ class DocumentController extends Controller
         $document->load(['student', 'uploader']);
 
         if (request()->expectsJson()) {
+            $document->loadMissing(['student.sessions.classSection.schoolClass', 'student.sessions.classSection.section']);
+
             return response()->json([
                 'success' => true,
                 'document' => [
                     'id' => $document->id,
                     'student_id' => $document->student_id,
                     'student_name' => $document->student?->full_name,
+                    'admission_no' => $document->student?->admission_no,
+                    'student_option_label' => $document->student
+                        ? sprintf(
+                            '%s (%s) - %s',
+                            $document->student->full_name,
+                            $document->student->admission_no ?: 'No admission no',
+                            $this->studentCurrentClass($document->student),
+                        )
+                        : null,
+                    'student_class' => $document->student ? $this->studentCurrentClass($document->student) : '-',
                     'document_type' => $document->document_type,
                     'document_type_label' => $document->document_type_label,
                     'title' => $document->title,
@@ -185,5 +241,17 @@ class DocumentController extends Controller
         }
 
         return Storage::disk('public')->download($document->file_path, $document->file_name);
+    }
+
+    private function studentCurrentClass(Student $student): string
+    {
+        $session = $student->sessions->firstWhere('status', 'active') ?? $student->sessions->first();
+        $classSection = $session?->classSection;
+
+        if (! $classSection) {
+            return 'No active class';
+        }
+
+        return trim(($classSection->schoolClass?->name ?? 'Class') . ' - ' . ($classSection->section?->name ?? 'Section'));
     }
 }

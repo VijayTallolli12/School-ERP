@@ -10,7 +10,7 @@ const SCREENSHOT_DIR = path.join(__dirname, 'screenshots', 'ai-copilot');
 const REPORT_PATH = path.join(__dirname, '..', 'AI_PLAYWRIGHT_VALIDATION_REPORT.md');
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:8000';
 
-test.describe('AI Copilot Validation - Phase AI-1.2', () => {
+test.describe('AI Gemini Validation - Phase AI-1.2', () => {
   const results: Array<{
     query: string;
     intent: string;
@@ -277,7 +277,7 @@ test.describe('AI Copilot Validation - Phase AI-1.2', () => {
     const businessAccuracy = intentAccuracy;
 
     const report = `# AI Playwright Validation Report
-# Phase AI-1.2 – AI Copilot Playwright Validation
+# Phase AI-1.2 – AI Gemini Playwright Validation
 Generated: ${new Date().toISOString()}
 
 ---

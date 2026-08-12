@@ -46,7 +46,7 @@ Route::prefix('student')->middleware('student.linked')->name('student.')->group(
     Route::get('results', [StudentAppController::class, 'results'])->name('results');
     Route::get('report-card', [StudentAppController::class, 'reportCard'])->name('report-card');
 
-    // Academic Calendar
+    // Event Calendar
     Route::get('calendar', [StudentAppController::class, 'calendar'])->name('calendar');
 
     // Documents

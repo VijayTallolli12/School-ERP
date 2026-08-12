@@ -16,6 +16,9 @@
                     <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#booksPane" type="button"><i class="ti ti-book me-1"></i>Books</button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#issuesPane" type="button"><i class="ti ti-arrow-up-down me-1"></i>Issue / Return</button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#categoriesPane" type="button"><i class="ti ti-tags me-1"></i>Categories</button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -23,9 +26,6 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#publishersPane" type="button"><i class="ti ti-building me-1"></i>Publishers</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#issuesPane" type="button"><i class="ti ti-arrow-up-down me-1"></i>Issue / Return</button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#fineSettingsPane" type="button"><i class="ti ti-coin me-1"></i>Fine Settings</button>
@@ -44,6 +44,19 @@
                     </div>
                     <table class="table table-striped table-bordered w-100" id="booksTable">
                         <thead><tr><th>ID</th><th>ISBN</th><th>Title</th><th>Category</th><th>Author</th><th>Publisher</th><th>Language</th><th>Qty</th><th>Available</th><th>Status</th><th width="120">Actions</th></tr></thead>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="issuesPane">
+                    <div class="d-flex mb-3">
+                        @can('library.create')
+                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#issueModal">
+                                <i class="ti ti-plus me-1"></i> Issue Book
+                            </button>
+                        @endcan
+                    </div>
+                    <table class="table table-striped table-bordered w-100" id="issuesTable">
+                        <thead><tr><th>ID</th><th>Book</th><th>Borrower</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Fine</th><th>Overdue</th><th>Status</th><th width="130">Actions</th></tr></thead>
                     </table>
                 </div>
 
@@ -83,19 +96,6 @@
                     </div>
                     <table class="table table-striped table-bordered w-100" id="publishersTable">
                         <thead><tr><th>ID</th><th>Name</th><th>Contact</th><th>Books</th><th>Status</th><th width="120">Actions</th></tr></thead>
-                    </table>
-                </div>
-
-                <div class="tab-pane fade" id="issuesPane">
-                    <div class="d-flex mb-3">
-                        @can('library.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#issueModal">
-                                <i class="ti ti-plus me-1"></i> Issue Book
-                            </button>
-                        @endcan
-                    </div>
-                    <table class="table table-striped table-bordered w-100" id="issuesTable">
-                        <thead><tr><th>ID</th><th>Book</th><th>Borrower</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Fine</th><th>Overdue</th><th>Status</th><th width="130">Actions</th></tr></thead>
                     </table>
                 </div>
 
@@ -196,11 +196,9 @@
                     <div class="col-md-6"><label class="form-label required">Book</label><select class="form-select searchable-select" name="book_id" required data-placeholder="Search book..."><option value="">Select</option>@foreach($books as $b)<option value="{{ $b->id }}" data-available="{{ $b->available_copies }}">{{ $b->title }} @if($b->isbn)({{ $b->isbn }})@endif (Available: {{ $b->available_copies }})</option>@endforeach</select></div>
                     <div class="col-md-6"><label class="form-label required">Borrower Type</label><select class="form-select" name="issueable_type" id="borrowerType" required><option value="">Select</option><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
                     <div class="col-md-12"><label class="form-label required">Borrower</label>
-                        <select class="form-select searchable-select" name="issueable_id" id="borrowerSelect" required data-placeholder="Search borrower..." disabled>
-                            <option value=""></option>
-                        </select>
-                        <div id="studentSearchWrap" style="display:none"><select class="form-select searchable-select" data-ajax-url="{{ route('admin.library.search.students') }}" data-placeholder="Search student..." id="studentSearch"></select></div>
-                        <div id="teacherSearchWrap" style="display:none"><select class="form-select searchable-select" data-ajax-url="{{ route('admin.library.search.teachers') }}" data-placeholder="Search teacher..." id="teacherSearch"></select></div>
+                        <input type="hidden" name="issueable_id" id="borrowerSelect" required>
+                        <div id="studentSearchWrap" style="display:none"><select class="form-select searchable-select borrower-search" data-ajax-url="{{ route('admin.library.search.students') }}" data-placeholder="Search student..." id="studentSearch"><option value=""></option></select></div>
+                        <div id="teacherSearchWrap" style="display:none"><select class="form-select searchable-select borrower-search" data-ajax-url="{{ route('admin.library.search.teachers') }}" data-placeholder="Search teacher..." id="teacherSearch"><option value=""></option></select></div>
                     </div>
                     <div class="col-md-6"><label class="form-label">Issue Date</label><input class="form-control" type="date" name="issue_date" id="issueDate"></div>
                     <div class="col-md-6"><label class="form-label">Due Date</label><input class="form-control" type="date" name="due_date" id="dueDate"></div>
@@ -295,7 +293,7 @@
                     const due = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
                     $('#issueDate').val(today);
                     $('#dueDate').val(due);
-                    $('#borrowerSelect').val('').trigger('change').prop('disabled', true);
+                    resetBorrowerFields();
                     $('#borrowerType').val('');
                 }
                 bootstrap.Modal.getOrCreateInstance(document.querySelector(modalId)).show();
@@ -347,52 +345,40 @@
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('returnModal')).show();
             });
 
-            $('#borrowerType').on('change', function () {
-                const type = $(this).val();
-                $('#borrowerSelect').val('').trigger('change');
-                if (type === 'student') {
-                    const $el = $('#studentSearch');
-                    if (!$el.hasClass('searchable-select-initialized')) {
-                        $el.addClass('searchable-select-initialized');
-                        App.initSelect2($el, {ajax: true});
-                    }
-                    const student = $el.val();
-                    if (student) {
-                        $('#borrowerSelect').append(new Option($el.find('option:selected').text(), student, true, true)).val(student).trigger('change');
-                    }
-                    $('#studentSearchWrap').show();
-                    $('#teacherSearchWrap').hide();
-                } else if (type === 'teacher') {
-                    const $el = $('#teacherSearch');
-                    if (!$el.hasClass('searchable-select-initialized')) {
-                        $el.addClass('searchable-select-initialized');
-                        App.initSelect2($el, {ajax: true});
-                    }
-                    const teacher = $el.val();
-                    if (teacher) {
-                        $('#borrowerSelect').append(new Option($el.find('option:selected').text(), teacher, true, true)).val(teacher).trigger('change');
-                    }
-                    $('#studentSearchWrap').hide();
-                    $('#teacherSearchWrap').show();
-                } else {
-                    $('#studentSearchWrap').hide();
-                    $('#teacherSearchWrap').hide();
-                    $('#borrowerSelect').prop('disabled', true);
+            function resetBorrowerFields() {
+                $('#borrowerSelect').val('');
+                $('.borrower-search').each(function () {
+                    const $select = $(this);
+                    $select.val(null).trigger('change');
+                });
+                $('#studentSearchWrap, #teacherSearchWrap').hide();
+            }
+
+            function showBorrowerSelector(type) {
+                const selectors = {
+                    student: {active: '#studentSearchWrap', inactive: '#teacherSearchWrap'},
+                    teacher: {active: '#teacherSearchWrap', inactive: '#studentSearchWrap'},
+                };
+
+                resetBorrowerFields();
+
+                if (!selectors[type]) {
+                    return;
                 }
+
+                $(selectors[type].inactive).hide();
+                $(selectors[type].active).show();
+                App.initSearchableSelects($(selectors[type].active));
+            }
+
+            $('#borrowerType').on('change', function () {
+                showBorrowerSelector($(this).val());
             });
 
             $(document).on('change', '#studentSearch, #teacherSearch', function () {
                 const val = $(this).val();
-                const text = $(this).find('option:selected').text();
                 const $bs = $('#borrowerSelect');
-                if (val) {
-                    if (!$bs.find('option[value="'+val+'"]').length) {
-                        $bs.append(new Option(text, val, true, true));
-                    }
-                    $bs.val(val).trigger('change').prop('disabled', false);
-                } else {
-                    $bs.val('').trigger('change').prop('disabled', true);
-                }
+                $bs.val(val || '');
             });
         })(); });
     </script>

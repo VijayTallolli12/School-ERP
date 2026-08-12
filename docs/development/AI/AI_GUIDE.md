@@ -1,33 +1,49 @@
 # AI Guide
 
-Version: 1.0.0
+Version: 2.0.0
 
-Revision date: 2026-07-08
+Revision date: 2026-08-12
 
 ## 1. Architecture
 
-The AI subsystem is implemented through AIService, AIIntentService, PromptBuilder, PlannerService, OrchestratorService, role-aware handlers, and the AI agent registry.
+The AI subsystem is implemented through AIService, QueryPlanner,
+ErpToolRegistry, ErpQueryExecutor, role-aware handlers, and the AI agent
+registry. Ask ERP and the Executive Gemini share this single intelligence
+layer.
 
 ## 2. Intent Routing
 
-User requests are passed through the intent service, which resolves the action intent and returns a route plan for execution.
+User questions are passed through QueryPlanner, which converts natural
+language into a structured tool request (`{tool, parameters, confidence}`).
+A deterministic keyword/date/synonym fallback keeps the assistant working even
+when the LLM provider is unavailable.
 
-## 3. Prompt Builder
+## 3. Tool Registry
 
-PromptBuilder constructs prompts and context for supported intents and workflows.
+ErpToolRegistry is the single source of truth for every ERP operation the AI
+may use (e.g. `exam.search`, `fee.pending`, `attendance.summary`,
+`transport.status`, `school.summary`). The AI only selects allowed tools; the
+backend validates and executes them.
 
-## 4. Executive Copilot
+## 4. Executive Gemini
 
-Executive or multi-step intents can be routed through the planner/orchestrator pipeline for coordinated execution.
+The Executive Gemini dashboard uses the same `/admin/ai/ask` pipeline. The
+`school.summary` tool aggregates attendance, fees, transport, homework, exams,
+leave, notifications and library data from real ERP queries.
 
 ## 5. Role Awareness and Security
 
-The AI layer checks user role and authorization before executing actions. Sensitive requests are logged and may require confirmation.
+The AI layer checks user role and authorization before executing actions.
+All queries are scoped to the active school tenant. Sensitive requests are
+logged and require confirmation.
 
 ## 6. Safety and Audit
 
-AI query logs and agent execution records are stored to support audit and troubleshooting.
+AiQueryLog and agent execution records store user, school, question, intent,
+structured parameters, result count and status. Never log API keys or tokens.
 
-## 7. Token Optimization and Caching
+## 7. Provider Configuration
 
-The current implementation includes intent routing and logs, but caching and token optimization details should be reviewed against the live code paths before production tuning.
+Set `AI_PROVIDER=gemini` or `AI_PROVIDER=openai` in `.env`. Credentials are
+read from `GEMINI_API_KEY` / `OPENAI_API_KEY` and only ever used from the
+backend.

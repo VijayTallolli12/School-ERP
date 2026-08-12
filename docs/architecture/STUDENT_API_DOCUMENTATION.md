@@ -443,7 +443,7 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 ### C1. `GET /student/calendar?month=9&year=2026&type=holiday`
 
 ```json
-{ "success": true, "message": "Academic calendar retrieved.", "data": {
+{ "success": true, "message": "Event calendar retrieved.", "data": {
   "month": 9, "year": 2026, "events": [
     { "id": 5, "title": "Independence Day", "description": "...", "event_type": "holiday", "event_type_label": "Holiday", "start_date": "2026-09-02", "end_date": "2026-09-02", "is_published": true, "location": null, "audience": "all" }
   ]

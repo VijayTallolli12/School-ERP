@@ -7,17 +7,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <div class="d-flex align-items-center gap-2" style="background:#f8fafc;border:1px solid var(--erp-border-color);border-radius:0.75rem;padding:0.5rem 0.75rem;">
-                        <i class="ti ti-message text-muted" style="font-size:1.1rem;"></i>
-                        <input type="text" id="aiQuestion" class="form-control border-0 bg-transparent" placeholder="Ask about your school data..." maxlength="500" autocomplete="off" style="box-shadow:none;min-height:auto;padding:0.35rem 0.5rem;">
-                        <button class="btn btn-primary btn-sm flex-shrink-0" type="button" id="askErpBtn" style="border-radius:0.5rem;">
-                            <i class="ti ti-arrow-right"></i> Ask
-                        </button>
-                    </div>
-                </div>
-
+            <div class="modal-body" id="aiModalBody">
                 <div id="aiResponseArea" class="d-none">
                     <div id="aiResponseContent"></div>
                 </div>
@@ -29,8 +19,19 @@
                     <p class="mt-2" style="font-size:0.85rem;color:#94a3b8;">Querying ERP data...</p>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border:1px solid var(--erp-border-color);">Close</button>
+            <div class="modal-footer" style="display:flex; flex-direction:column; background:#fff; border-top:1px solid var(--erp-border-color);">
+                <div class="w-100 mb-2">
+                    <div class="d-flex align-items-center gap-2" style="background:#f8fafc;border:1px solid var(--erp-border-color);border-radius:0.75rem;padding:0.5rem 0.75rem;">
+                        <i class="ti ti-message text-muted" style="font-size:1.1rem;"></i>
+                        <input type="text" id="aiQuestion" class="form-control border-0 bg-transparent" placeholder="Ask about your school data..." maxlength="500" autocomplete="off" style="box-shadow:none;min-height:auto;padding:0.35rem 0.5rem;">
+                        <button class="btn btn-primary btn-sm flex-shrink-0" type="button" id="askErpBtn" style="border-radius:0.5rem;">
+                            <i class="ti ti-arrow-right"></i> Ask
+                        </button>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end w-100">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border:1px solid var(--erp-border-color);">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -50,8 +51,6 @@ $(document).ready(function () {
         div.textContent = str;
         return div.innerHTML;
     }
-
-    let pendingConfirmQuestion = '';
 
     function sendRequest(question, confirmed) {
         responseArea.addClass('d-none');
@@ -75,11 +74,12 @@ $(document).ready(function () {
                 if (res.success) {
                     const answer = res.answer || '';
                     const lines = answer.split('\n').filter(function (l) { return l.trim(); });
-                    const confPct = res.confidence ? Math.round(res.confidence * 100) : (res.agent_recommendation ? 92 : 78);
-                    const confLevel = confPct >= 85 ? 'high' : confPct >= 70 ? 'medium' : 'low';
 
                     if (res.confirmation_required) {
-                        pendingConfirmQuestion = question;
+                        // The action is persisted server-side. The Confirm/Cancel
+                        // buttons send a natural reply ("Yes"/"No") which the
+                        // backend resolves against the pending action — the user
+                        // can also type "Sure", "No", etc. in the input.
                         html += '<div class="aiw-response-section section-analysis">' +
                             '<div class="section-label"><i class="ti ti-alert-triangle" style="color:#f59e0b;"></i> Confirmation Required</div>' +
                             '<div class="section-content">' + escHtml(answer).replace(/\n/g, '<br>') + '</div></div>';
@@ -89,7 +89,7 @@ $(document).ready(function () {
                             '<div class="section-content">' +
                             '<div class="d-flex gap-2 mt-2">' +
                             '<button type="button" class="btn btn-success btn-sm" id="aiConfirmBtn" style="border-radius:0.5rem;font-weight:600;">' +
-                            '<i class="ti ti-check me-1"></i> Confirm</button>' +
+                            '<i class="ti ti-check me-1"></i> Confirm &amp; Send</button>' +
                             '<button type="button" class="btn btn-outline-secondary btn-sm" id="aiCancelBtn" style="border-radius:0.5rem;">' +
                             '<i class="ti ti-x me-1"></i> Cancel</button>' +
                             '</div></div></div>';
@@ -113,13 +113,6 @@ $(document).ready(function () {
                                 fHtml + '</div>';
                         }
                     }
-
-                    html += '<div class="aiw-response-section section-confidence">' +
-                        '<div class="section-label"><i class="ti ti-shield-check"></i> Confidence</div>' +
-                        '<div class="aiw-confidence">' +
-                        '<div class="conf-bar"><div class="conf-fill ' + confLevel + '" style="width:' + confPct + '%;"></div></div>' +
-                        '<span>' + confPct + '%</span>' +
-                        '</div></div>';
 
                     if (res.agent_recommendation && !res.confirmation_required) {
                         const rec = res.agent_recommendation;
@@ -148,13 +141,19 @@ $(document).ready(function () {
 
                 if (res.confirmation_required) {
                     $('#aiConfirmBtn').on('click', function () {
-                        sendRequest(pendingConfirmQuestion, true);
+                        sendRequest('Yes', false);
                     });
                     $('#aiCancelBtn').on('click', function () {
-                        responseArea.addClass('d-none');
-                        pendingConfirmQuestion = '';
+                        sendRequest('No', false);
                     });
                 }
+                
+                setTimeout(function() {
+                    const modalBody = document.getElementById('aiModalBody');
+                    if (modalBody) {
+                        modalBody.scrollTop = modalBody.scrollHeight;
+                    }
+                }, 50);
             },
             error: function () {
                 loading.addClass('d-none');
@@ -175,7 +174,6 @@ $(document).ready(function () {
             App.toast?.('warning', 'Please enter a question.');
             return;
         }
-        pendingConfirmQuestion = '';
         sendRequest(question, false);
     }
 

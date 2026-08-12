@@ -3345,7 +3345,6 @@ div.dataTables_wrapper table.dataTable td.dataTables_empty {
 .aiw-response-section.section-findings { border-left: 3px solid #f59e0b; }
 .aiw-response-section.section-actions  { border-left: 3px solid #16a34a; }
 .aiw-response-section.section-impact   { border-left: 3px solid #0ea5e9; }
-.aiw-response-section.section-confidence { border-left: 3px solid #8b5cf6; }
 
 /* --- Recommendation Card --- */
 .aiw-recommendation {
@@ -3441,30 +3440,6 @@ div.dataTables_wrapper table.dataTable td.dataTables_empty {
     font-size: 0.85rem;
     color: #334155;
 }
-
-/* --- Confidence Indicator --- */
-.aiw-confidence {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.78rem;
-    font-weight: 600;
-}
-.aiw-confidence .conf-bar {
-    width: 80px;
-    height: 5px;
-    border-radius: 3px;
-    background: var(--erp-border-color);
-    overflow: hidden;
-}
-.aiw-confidence .conf-bar .conf-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width .6s ease;
-}
-.aiw-confidence .conf-bar .conf-fill.high   { background: #16a34a; }
-.aiw-confidence .conf-bar .conf-fill.medium { background: #f59e0b; }
-.aiw-confidence .conf-bar .conf-fill.low    { background: #ef4444; }
 
 /* --- Recent Executions Compact --- */
 .aiw-recent {

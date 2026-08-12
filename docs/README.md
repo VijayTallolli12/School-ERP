@@ -54,7 +54,7 @@ Project overview, planning, business rules, role design, guides, and conventions
 | AI Phase 3 — Context | [01_Project/AI/AI_PHASE3_CONTEXT.md](01_Project/AI/AI_PHASE3_CONTEXT.md) |
 | AI Phase 4 — Parameter Resolution | [01_Project/AI/AI_PHASE4_PARAMETER_RESOLUTION.md](01_Project/AI/AI_PHASE4_PARAMETER_RESOLUTION.md) |
 | AI Phase 5 — Clarification | [01_Project/AI/AI_PHASE5_CLARIFICATION.md](01_Project/AI/AI_PHASE5_CLARIFICATION.md) |
-| AI Phase 6 — Executive Copilot | [01_Project/AI/AI_PHASE6_EXECUTIVE_COPILOT.md](01_Project/AI/AI_PHASE6_EXECUTIVE_COPILOT.md) |
+| AI Phase 6 — Executive Gemini | [01_Project/AI/AI_PHASE6_EXECUTIVE_COPILOT.md](01_Project/AI/AI_PHASE6_EXECUTIVE_COPILOT.md) |
 
 ### Guides
 

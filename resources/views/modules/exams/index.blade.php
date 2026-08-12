@@ -43,12 +43,12 @@
 
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="card-header d-flex align-items-center">
                     <h3 class="card-title fw-semibold mb-0">
                         <i class="ti ti-clipboard-list text-primary me-1"></i> Exam Results
                     </h3>
                     @can('exams.update')
-                        <div class="d-flex align-items-center gap-2 exam-results-toolbar">
+                        <div class="d-flex align-items-center gap-2 exam-results-toolbar ms-auto">
                             <a class="btn btn-sm btn-primary" id="bulkEntryButton" disabled>
                                 <i class="ti ti-table me-1"></i> Bulk Entry
                             </a>

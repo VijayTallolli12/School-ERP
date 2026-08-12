@@ -12,12 +12,12 @@
     <div class="row g-3">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="card-header d-flex align-items-center">
                     <h3 class="card-title fw-semibold mb-0">
                         <i class="ti ti-books text-primary me-1"></i> Homework List
                     </h3>
                     @can('homework.create')
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#homeworkModal" id="createHomework">
+                        <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#homeworkModal" id="createHomework">
                             <i class="ti ti-plus me-1"></i> Add Homework
                         </button>
                     @endcan

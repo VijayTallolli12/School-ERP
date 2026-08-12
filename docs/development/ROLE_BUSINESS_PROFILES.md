@@ -46,7 +46,7 @@ Schools Management → Global Settings → RBAC (all schools) → Audit Logs →
 - Audit trails for all roles
 
 ### AI Features
-- Executive Copilot (cross-school analytics)
+- Executive Gemini (cross-school analytics)
 - System health predictions
 - Anomaly detection in usage patterns
 
@@ -115,7 +115,7 @@ Dashboard → Students → Teachers → Parents → Academics → Attendance →
 - Personnel data (full)
 
 ### AI Features
-- Executive Copilot (school analytics, trends)
+- Executive Gemini (school analytics, trends)
 - AI Agents (automated tasks)
 - Ask ERP (natural language queries)
 - Execution History
@@ -191,7 +191,7 @@ Dashboard → Students → Teachers → Attendance → Exams → Homework → Ti
 - Payroll summary (no individual amounts)
 
 ### AI Features
-- Executive Copilot (school analytics)
+- Executive Gemini (school analytics)
 - Ask ERP (policy, student queries)
 - Insights (performance trends)
 
@@ -207,7 +207,7 @@ Dashboard → Students → Teachers → Attendance → Exams → Homework → Ti
 - View today's attendance
 - Check exam schedule
 - Review pending document verifications
-- View academic calendar
+- View event calendar
 
 ---
 
@@ -257,7 +257,7 @@ Dashboard → Students (own classes) → Attendance → Exams → Homework → T
 - Own attendance record
 - Own leave balance and history
 - Student records for assigned classes only
-- Academic calendar
+- Event calendar
 
 ### AI Features
 - Ask ERP (curriculum queries, student insights)
