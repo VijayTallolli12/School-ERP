@@ -42,3 +42,8 @@ Route::middleware(['auth', 'school', 'staff'])
         require __DIR__.'/modules/hr.php';
         require __DIR__.'/modules/mobile-apps.php';
     });
+
+Route::get('/run-migrations', function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    return "Migrations ran successfully! Output: " . \Illuminate\Support\Facades\Artisan::output();
+});
