@@ -8,21 +8,32 @@ use App\Http\Resources\Api\V1\TeacherResource;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\AcademicYear;
 use App\Models\User;
+use App\Models\VehicleLocation;
 use App\Modules\Academics\Models\ClassSection;
 use App\Modules\Attendance\Models\Attendance;
 use App\Modules\Attendance\Services\AttendanceService;
 use App\Modules\Auth\Services\LoginActivityService;
 use App\Modules\Exams\Models\Exam;
+use App\Modules\Exams\Models\ExamResult;
+use App\Modules\Exams\Models\ExamSchedule;
 use App\Modules\Exams\Services\ExamService;
 use App\Modules\Homework\Models\Homework;
 use App\Modules\Homework\Services\HomeworkService;
 use App\Modules\Leave\Models\LeaveRequest;
 use App\Modules\Leave\Models\LeaveType;
 use App\Modules\Leave\Services\LeaveService;
+use App\Modules\Notifications\Models\Notification;
 use App\Modules\Notifications\Services\NotificationService;
 use App\Modules\Students\Models\StudentSession;
 use App\Modules\Teachers\Models\Teacher;
+use App\Modules\Teachers\Models\TeacherDocument;
+use App\Modules\Teachers\Models\TeacherLeave;
 use App\Modules\Timetable\Models\TimetableSlot;
+use App\Modules\Transport\Models\Driver;
+use App\Modules\Transport\Models\Route as TransportRoute;
+use App\Modules\Transport\Models\RouteStop;
+use App\Modules\Transport\Models\TransportAssignment;
+use App\Modules\Transport\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -87,19 +98,23 @@ class TeacherAppController extends ApiBaseController
             return $this->error('This account is not active.', Response::HTTP_FORBIDDEN);
         }
 
+        // Spatie teams are enabled: the role lookup requires the school/team context
+        // to be set BEFORE hasRole()/getAllPermissions() are called.
+        $teacherProfile = $user->teacher;
+        $schoolId = $teacherProfile?->school_id ?? $user->current_school_id ?? $user->schools()->first()?->id;
+        app(PermissionRegistrar::class)->setPermissionsTeamId($schoolId);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        app(SchoolContext::class)->set($schoolId);
+
         if (! $user->hasRole('Teacher')) {
             $this->loginActivityService->recordFailure($request, 'Non-teacher login attempt');
             return $this->error('Only teacher accounts can use this endpoint.', Response::HTTP_FORBIDDEN);
         }
 
-        $teacher = $user->teacher;
+        $teacher = $teacherProfile;
         if (! $teacher) {
             return $this->error('Teacher profile not found.', Response::HTTP_NOT_FOUND);
         }
-
-        $schoolId = $teacher->school_id ?? $user->current_school_id ?? $user->schools()->first()?->id;
-        app(PermissionRegistrar::class)->setPermissionsTeamId($schoolId);
-        app(SchoolContext::class)->set($schoolId);
 
         $abilities = $user->getAllPermissions()->pluck('name')->values()->all();
         $token = $user->createToken(
@@ -394,7 +409,7 @@ class TeacherAppController extends ApiBaseController
 
         $validated = $request->validate([
             'class_section_id' => ['required', 'integer', 'exists:class_section,id'],
-            'attendance_date' => ['required', 'date', 'before_or_equal:today'],
+            'attendance_date' => ['required', 'date', 'before_or_equal:' . app(SchoolContext::class)->now()->format('Y-m-d')],
             'students' => ['required', 'array', 'min:1'],
             'students.*.student_id' => ['required', 'integer', 'exists:students,id'],
             'students.*.status' => ['required', 'string', 'in:present,absent,late,half_day,excused'],
@@ -748,6 +763,149 @@ class TeacherAppController extends ApiBaseController
     }
 
     // ────────────────────────────────────────────────────────────────────────────
+    // EXAMS — schedule, marks (GET), publish
+    // App contract: ExamScheduleResponse { data: ExamScheduleItem[] },
+    //               MarksResponse { data: MarksEntry[] }, PublishResultResponse
+    // ────────────────────────────────────────────────────────────────────────────
+
+    public function examsSchedule(int $examId): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+        $exam = Exam::query()->findOrFail($examId);
+
+        if (! $teacher->classSections->contains('id', $exam->class_section_id)) {
+            return $this->forbidden('You are not assigned to this class section.');
+        }
+
+        $rows = ExamSchedule::query()
+            ->where('exam_id', $examId)
+            ->with(['subject:id,name,code', 'exam.classSection.schoolClass', 'exam.classSection.section'])
+            ->orderBy('exam_date')
+            ->orderBy('start_time')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            // Fall back to the exam itself as a single schedule row.
+            $data = collect([[
+                'id' => (string) $exam->id,
+                'date' => $exam->exam_date?->format('Y-m-d'),
+                'startTime' => null,
+                'endTime' => null,
+                'subject' => $exam->subject?->name ?? '',
+                'className' => $exam->classSection?->schoolClass?->name ?? '',
+                'section' => $exam->classSection?->section?->name ?? '',
+                'maxMarks' => $exam->maximum_marks,
+            ]]);
+        } else {
+            $data = $rows->map(fn (ExamSchedule $s) => [
+                'id' => (string) $s->id,
+                'date' => $s->exam_date?->format('Y-m-d'),
+                'startTime' => $s->start_time ? \Carbon\Carbon::parse($s->start_time)->format('H:i') : null,
+                'endTime' => $s->end_time ? \Carbon\Carbon::parse($s->end_time)->format('H:i') : null,
+                'subject' => $s->subject?->name ?? $exam->subject?->name ?? '',
+                'className' => $s->exam?->classSection?->schoolClass?->name ?? $exam->classSection?->schoolClass?->name ?? '',
+                'section' => $s->exam?->classSection?->section?->name ?? $exam->classSection?->section?->name ?? '',
+                'maxMarks' => $s->maximum_marks ?? $exam->maximum_marks,
+            ]);
+        }
+
+        return $this->success($data->values(), 'Exam schedule retrieved.');
+    }
+
+    public function examsMarks(int $examId, Request $request): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+        $exam = Exam::query()->findOrFail($examId);
+
+        if (! $teacher->classSections->contains('id', $exam->class_section_id)) {
+            return $this->forbidden('You are not assigned to this class section.');
+        }
+
+        $academicYear = $this->currentAcademicYear();
+
+        $students = StudentSession::query()
+            ->where('class_section_id', $exam->class_section_id)
+            ->when($academicYear, fn ($q) => $q->where('academic_year_id', $academicYear->id))
+            ->with('student.user')
+            ->where('status', 'active')
+            ->orderBy('roll_no')
+            ->get()
+            ->map(function ($session) use ($exam) {
+                $result = ExamResult::query()
+                    ->where('exam_id', $exam->id)
+                    ->where('student_id', $session->student_id)
+                    ->first();
+
+                return [
+                    'studentId' => (string) $session->student->id,
+                    'studentName' => $session->student->full_name,
+                    'rollNumber' => (string) ($session->roll_no ?? '—'),
+                    'marks' => $result?->marks_obtained ?? null,
+                    'maxMarks' => $exam->maximum_marks,
+                    'isDraft' => false,
+                    'remarks' => $result?->remarks,
+                ];
+            });
+
+        return $this->success($students->values(), 'Exam marks retrieved.');
+    }
+
+    public function examsPublish(int $examId): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+        $exam = Exam::query()->findOrFail($examId);
+
+        if (! $teacher->classSections->contains('id', $exam->class_section_id)) {
+            return $this->forbidden('You are not assigned to this class section.');
+        }
+
+        if ($exam->is_published) {
+            return $this->error('Results are already published for this exam.', Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $this->examService->publish($exam);
+
+        return $this->success(message: 'Results published successfully.');
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // STUDENT ATTENDANCE (per student summary)
+    // App contract: StudentAttendanceResponse { data: AttendanceSummaryData }
+    // ────────────────────────────────────────────────────────────────────────────
+
+    public function studentAttendance(int $id): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+
+        $session = StudentSession::query()
+            ->where('student_id', $id)
+            ->whereIn('class_section_id', $teacher->classSections->pluck('id'))
+            ->where('status', 'active')
+            ->first();
+
+        if (! $session) {
+            return $this->notFound('Student not found in your classes.');
+        }
+
+        $query = Attendance::query()
+            ->where('student_id', $id)
+            ->whereIn('class_section_id', $teacher->classSections->pluck('id'));
+
+        $total = (clone $query)->count();
+        $present = (clone $query)->where('status', 'present')->count();
+        $absent = (clone $query)->where('status', 'absent')->count();
+        $late = (clone $query)->where('status', 'late')->count();
+
+        return $this->success([
+            'totalDays' => $total,
+            'present' => $present,
+            'absent' => $absent,
+            'late' => $late,
+            'percentage' => $total > 0 ? round(($present / $total) * 100, 1) : 0,
+        ], 'Student attendance retrieved.');
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
     // LEAVE
     // ────────────────────────────────────────────────────────────────────────────
 
@@ -994,6 +1152,493 @@ class TeacherAppController extends ApiBaseController
         return $this->success([
             'leave_types' => $types,
         ], 'Leave types retrieved.');
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // TEACHER LEAVE (teacher_leaves — the teacher's own leave)
+    // App contract: LeaveListResponse { data: LeaveItem[] }, LeaveItem camelCase.
+    // ────────────────────────────────────────────────────────────────────────────
+
+    public function leavesIndex(Request $request): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+
+        $query = TeacherLeave::query()
+            ->where('teacher_id', $teacher->id)
+            ->with(['approvedBy:id,name']);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+
+        $paginator = $query->orderByDesc('created_at')
+            ->paginate($request->integer('per_page', 50));
+
+        $data = $paginator->through(fn (TeacherLeave $leave) => $this->mapTeacherLeave($leave));
+
+        return $this->paginated($data, 'Leave records retrieved.');
+    }
+
+    public function leavesShow(int $leaveId): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+
+        $leave = TeacherLeave::query()
+            ->where('teacher_id', $teacher->id)
+            ->with(['approvedBy:id,name'])
+            ->findOrFail($leaveId);
+
+        return $this->success(
+            $this->mapTeacherLeave($leave),
+            'Leave record retrieved.'
+        );
+    }
+
+    public function leavesStore(Request $request): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+
+        $validated = $request->validate([
+            'leaveTypeId' => ['required', 'integer', 'exists:leave_types,id'],
+            'fromDate' => ['required', 'date', 'after_or_equal:today'],
+            'toDate' => ['required', 'date', 'after_or_equal:fromDate'],
+            'reason' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $leaveType = LeaveType::query()->findOrFail($validated['leaveTypeId']);
+        $from = \Carbon\Carbon::parse($validated['fromDate'])->startOfDay();
+        $to = \Carbon\Carbon::parse($validated['toDate'])->startOfDay();
+        $days = $from->diffInDays($to) + 1;
+
+        $data = [
+            'teacher_id' => $teacher->id,
+            'leave_type' => $leaveType->name,
+            'start_date' => $validated['fromDate'],
+            'end_date' => $validated['toDate'],
+            'reason' => $validated['reason'] ?? null,
+            'status' => 'pending',
+        ];
+
+        $leave = TeacherLeave::query()->create($data);
+
+        return $this->success([
+            'id' => $leave->id,
+            'status' => $leave->status,
+        ], 'Leave request submitted successfully.', Response::HTTP_CREATED);
+    }
+
+    public function leavesCancel(int $leaveId): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+
+        $leave = TeacherLeave::query()
+            ->where('teacher_id', $teacher->id)
+            ->findOrFail($leaveId);
+
+        if (! in_array($leave->status, ['pending', 'approved'], true)) {
+            return $this->error('Only pending or approved leave can be cancelled.', Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $leave->update([
+            'status' => 'cancelled',
+            'approved_at' => $leave->approved_at ?? now(),
+        ]);
+
+        return $this->success(message: 'Leave request cancelled successfully.');
+    }
+
+    public function leavesBalance(): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+        $schoolId = app(SchoolContext::class)->id();
+
+        $types = LeaveType::query()
+            ->where('school_id', $schoolId)
+            ->where('is_active', true)
+            ->get(['id', 'name']);
+
+        $balances = collect();
+
+        foreach ($types as $type) {
+            $used = TeacherLeave::query()
+                ->where('teacher_id', $teacher->id)
+                ->where('leave_type', $type->name)
+                ->whereIn('status', ['approved', 'cancelled'])
+                ->count();
+
+            $pending = TeacherLeave::query()
+                ->where('teacher_id', $teacher->id)
+                ->where('leave_type', $type->name)
+                ->where('status', 'pending')
+                ->count();
+
+            $balances->push([
+                'leaveTypeId' => (string) $type->id,
+                'leaveTypeName' => $type->name,
+                'total' => 0,
+                'used' => $used,
+                'remaining' => max(0, $pending > 0 ? 0 : $used),
+            ]);
+        }
+
+        return $this->success($balances->values(), 'Leave balance retrieved.');
+    }
+
+    public function leavesTypes(): JsonResponse
+    {
+        $schoolId = app(SchoolContext::class)->id();
+
+        $types = LeaveType::query()
+            ->where('school_id', $schoolId)
+            ->where('is_active', true)
+            ->get(['id', 'name', 'description']);
+
+        $data = $types->map(fn (LeaveType $type) => [
+            'id' => (string) $type->id,
+            'name' => $type->name,
+            'description' => $type->description ?? '',
+            'defaultDays' => 0,
+            'maxConsecutiveDays' => 0,
+        ]);
+
+        return $this->success($data->values(), 'Leave types retrieved.');
+    }
+
+    private function mapTeacherLeave(TeacherLeave $leave): array
+    {
+        $timeline = [
+            [
+                'status' => 'pending',
+                'date' => $leave->created_at?->toISOString(),
+                'remark' => 'Leave request submitted.',
+                'updatedBy' => null,
+            ],
+        ];
+
+        if ($leave->approved_at && in_array($leave->status, ['approved', 'rejected'], true)) {
+            $timeline[] = [
+                'status' => $leave->status,
+                'date' => $leave->approved_at?->toISOString(),
+                'remark' => $leave->remarks,
+                'updatedBy' => $leave->approvedBy?->name,
+            ];
+        }
+
+        return [
+            'id' => (string) $leave->id,
+            'leaveType' => $leave->leave_type,
+            'leaveTypeId' => (string) $leave->leave_type,
+            'fromDate' => $leave->start_date?->format('Y-m-d'),
+            'toDate' => $leave->end_date?->format('Y-m-d'),
+            'days' => $leave->start_date && $leave->end_date
+                ? $leave->start_date->startOfDay()->diffInDays($leave->end_date->startOfDay()) + 1
+                : 1,
+            'reason' => $leave->reason ?? '',
+            'status' => $leave->status,
+            'appliedDate' => $leave->created_at?->toISOString(),
+            'approver' => $leave->approvedBy?->name,
+            'remarks' => $leave->remarks,
+            'approvalDate' => $leave->approved_at?->toISOString(),
+            'attachment' => null,
+            'timeline' => $timeline,
+        ];
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // TRANSPORT (teacher view)
+    // App contract: RoutesResponse { data: Route[] }, VehiclesResponse { data: Vehicle[] },
+    //               VehicleLocationResponse { data: VehicleLocation },
+    //               LiveTransportStatusResponse { data: LiveTransportStatus },
+    //               RouteDetailResponse { data: Route }
+    // ────────────────────────────────────────────────────────────────────────────
+
+    private function mapTransportStatus(string $status): string
+    {
+        return match ($status) {
+            'active', 'on_time' => 'on_time',
+            'delayed' => 'delayed',
+            default => 'completed',
+        };
+    }
+
+    private function mapRoute(TransportRoute $route): array
+    {
+        $vehicle = $route->vehicle;
+        $driver = $route->driver;
+
+        $stops = $route->stops->map(fn (RouteStop $stop) => [
+            'id' => (string) $stop->id,
+            'name' => $stop->stop_name ?? '',
+            'address' => $stop->stop_name ?? '',
+            'latitude' => (float) ($stop->latitude ?? 0),
+            'longitude' => (float) ($stop->longitude ?? 0),
+            'arrivalTime' => $stop->pickup_time?->format('H:i'),
+            'departureTime' => $stop->drop_time?->format('H:i'),
+            'studentCount' => $stop->assignments()->where('status', 'active')->count(),
+        ]);
+
+        return [
+            'id' => (string) $route->id,
+            'name' => $route->route_name ?? '',
+            'description' => ($route->start_point ?? '') . ($route->end_point ? ' → ' . $route->end_point : ''),
+            'status' => $this->mapTransportStatus($route->status ?? ''),
+            'vehicleId' => $vehicle ? (string) $vehicle->id : null,
+            'vehicleName' => $vehicle?->vehicle_name,
+            'vehicleNumber' => $vehicle?->vehicle_number,
+            'driverName' => $driver?->name,
+            'driverPhone' => $driver?->mobile,
+            'stops' => $stops->values(),
+            'assignedStudents' => $route->assignments()->where('status', 'active')->count(),
+            'estimatedArrivalTimes' => $stops->first()['arrivalTime'] ?? '--:--',
+        ];
+    }
+
+    public function transportRoutes(): JsonResponse
+    {
+        $schoolId = app(SchoolContext::class)->id();
+
+        $routes = TransportRoute::query()
+            ->where('school_id', $schoolId)
+            ->with(['vehicle.driver', 'driver', 'stops'])
+            ->get()
+            ->map(fn (TransportRoute $route) => $this->mapRoute($route));
+
+        return $this->success($routes->values(), 'Transport routes retrieved.');
+    }
+
+    public function transportRouteShow(int $routeId): JsonResponse
+    {
+        $schoolId = app(SchoolContext::class)->id();
+
+        $route = TransportRoute::query()
+            ->where('school_id', $schoolId)
+            ->with(['vehicle.driver', 'driver', 'stops'])
+            ->findOrFail($routeId);
+
+        return $this->success($this->mapRoute($route), 'Transport route retrieved.');
+    }
+
+    public function transportVehicles(): JsonResponse
+    {
+        $schoolId = app(SchoolContext::class)->id();
+
+        $vehicles = Vehicle::query()
+            ->where('school_id', $schoolId)
+            ->with(['driver', 'routes'])
+            ->get()
+            ->map(function (Vehicle $vehicle) {
+                $latest = VehicleLocation::query()
+                    ->where('vehicle_id', $vehicle->id)
+                    ->orderByDesc('captured_at')
+                    ->first();
+
+                $route = $vehicle->routes->first();
+                $driver = $vehicle->driver;
+
+                return [
+                    'id' => (string) $vehicle->id,
+                    'name' => $vehicle->vehicle_name ?? $vehicle->vehicle_number ?? '',
+                    'vehicleNumber' => $vehicle->vehicle_number,
+                    'driverName' => $driver?->name,
+                    'driverPhone' => $driver?->mobile,
+                    'status' => $latest ? 'on_time' : 'completed',
+                    'currentLocation' => $latest ? [
+                        'latitude' => (float) $latest->latitude,
+                        'longitude' => (float) $latest->longitude,
+                    ] : null,
+                    'speed' => $latest?->speed ?? 0,
+                    'lastUpdate' => $latest?->captured_at?->toISOString(),
+                    'eta' => null,
+                    'routeName' => $route?->route_name,
+                    'capacity' => (int) ($vehicle->capacity ?? 0),
+                    'assignedStudents' => $vehicle->assignments()->where('status', 'active')->count(),
+                ];
+            });
+
+        return $this->success($vehicles->values(), 'Transport vehicles retrieved.');
+    }
+
+    public function transportVehicleLocation(int $vehicleId): JsonResponse
+    {
+        $schoolId = app(SchoolContext::class)->id();
+
+        $vehicle = Vehicle::query()
+            ->where('school_id', $schoolId)
+            ->with(['driver', 'routes'])
+            ->findOrFail($vehicleId);
+
+        $latest = VehicleLocation::query()
+            ->where('vehicle_id', $vehicle->id)
+            ->orderByDesc('captured_at')
+            ->first();
+
+        $route = $vehicle->routes->first();
+
+        return $this->success([
+            'vehicleId' => (string) $vehicle->id,
+            'vehicleName' => $vehicle->vehicle_name ?? $vehicle->vehicle_number ?? '',
+            'vehicleNumber' => $vehicle->vehicle_number,
+            'driverName' => $vehicle->driver?->name,
+            'latitude' => $latest ? (float) $latest->latitude : 0,
+            'longitude' => $latest ? (float) $latest->longitude : 0,
+            'speed' => $latest?->speed ?? 0,
+            'lastUpdate' => $latest?->captured_at?->toISOString(),
+            'eta' => null,
+            'status' => $latest ? 'on_time' : 'completed',
+            'routeName' => $route?->route_name,
+        ], 'Vehicle location retrieved.');
+    }
+
+    public function transportLiveStatus(): JsonResponse
+    {
+        $schoolId = app(SchoolContext::class)->id();
+
+        $routes = TransportRoute::query()
+            ->where('school_id', $schoolId)
+            ->with(['vehicle.driver', 'driver', 'stops'])
+            ->get();
+
+        $vehicles = Vehicle::query()
+            ->where('school_id', $schoolId)
+            ->with(['driver', 'routes'])
+            ->get();
+
+        $vehicleIds = $vehicles->pluck('id');
+
+        $latestLocations = VehicleLocation::query()
+            ->whereIn('vehicle_id', $vehicleIds)
+            ->orderByDesc('captured_at')
+            ->get()
+            ->unique('vehicle_id')
+            ->keyBy('vehicle_id');
+
+        $activeVehicles = $vehicles->filter(fn (Vehicle $v) => $latestLocations->has($v->id))->values();
+
+        $activeRoutes = $routes->filter(function (TransportRoute $r) use ($activeVehicles) {
+            return $r->vehicle_id && $activeVehicles->contains('id', $r->vehicle_id);
+        });
+
+        return $this->success([
+            'activeRoutes' => $activeRoutes->count(),
+            'vehiclesInTransit' => $activeVehicles->count(),
+            'upcomingArrivals' => 0,
+            'delayedRoutes' => 0,
+            'routes' => $routes->map(fn (TransportRoute $route) => $this->mapRoute($route))->values(),
+            'vehicles' => $activeVehicles->map(fn (Vehicle $vehicle) => [
+                'vehicleId' => (string) $vehicle->id,
+                'vehicleName' => $vehicle->vehicle_name ?? $vehicle->vehicle_number ?? '',
+                'vehicleNumber' => $vehicle->vehicle_number,
+                'driverName' => $vehicle->driver?->name,
+                'latitude' => (float) ($latestLocations[$vehicle->id]?->latitude ?? 0),
+                'longitude' => (float) ($latestLocations[$vehicle->id]?->longitude ?? 0),
+                'speed' => $latestLocations[$vehicle->id]?->speed ?? 0,
+                'lastUpdate' => $latestLocations[$vehicle->id]?->captured_at?->toISOString(),
+                'eta' => null,
+                'status' => 'on_time',
+                'routeName' => $vehicle->routes->first()?->route_name,
+            ])->values(),
+        ], 'Live transport status retrieved.');
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // DOCUMENTS (teacher's own documents)
+    // App contract: DocumentsResponse { data: DocumentItem[] }
+    // ────────────────────────────────────────────────────────────────────────────
+
+    public function documents(): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+
+        $docs = TeacherDocument::query()
+            ->where('teacher_id', $teacher->id)
+            ->orderByDesc('uploaded_at')
+            ->get()
+            ->map(function (TeacherDocument $doc) {
+                $fileName = basename((string) $doc->file_path);
+
+                return [
+                    'id' => (string) $doc->id,
+                    'title' => $doc->document_type ?? $fileName ?? 'Untitled document',
+                    'fileName' => $fileName ?: 'document',
+                    'fileUrl' => $doc->file_path ? asset('storage/' . ltrim($doc->file_path, '/')) : '',
+                    'fileType' => $doc->file_path ? pathinfo($doc->file_path, PATHINFO_EXTENSION) : '',
+                    'category' => ucwords(str_replace('_', ' ', (string) $doc->document_type)),
+                    'size' => 0,
+                    'uploadedAt' => $doc->uploaded_at?->toISOString(),
+                ];
+            });
+
+        return $this->success($docs->values(), 'Documents retrieved.');
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // CIRCULARS (announcements targeted at teachers)
+    // App contract: CircularsResponse { data: CircularItem[] }
+    // ────────────────────────────────────────────────────────────────────────────
+
+    public function circulars(Request $request): JsonResponse
+    {
+        $schoolId = app(SchoolContext::class)->id();
+
+        $notifications = Notification::query()
+            ->where('school_id', $schoolId)
+            ->whereIn('target_type', ['teachers', 'all'])
+            ->where('type', 'announcement')
+            ->where('status', 'sent')
+            ->orderByDesc('id')
+            ->limit(500)
+            ->get()
+            ->map(fn (Notification $n) => [
+                'id' => (string) $n->id,
+                'title' => $n->title ?? 'Circular',
+                'message' => $n->message ?? '',
+                'date' => $n->sent_at?->toISOString(),
+                'sent_at' => $n->sent_at?->toISOString(),
+                'attachmentUrl' => null,
+                'type' => 'system',
+            ]);
+
+        return $this->success($notifications->values(), 'Circulars retrieved.');
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // CREATE ALERT (POST /teacher/notifications)
+    // App payload: { title, message, audience, priority }
+    // ────────────────────────────────────────────────────────────────────────────
+
+    public function notificationsStore(Request $request): JsonResponse
+    {
+        $teacher = $this->resolveTeacher();
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'message' => ['required', 'string', 'max:5000'],
+            'audience' => ['required', 'string', 'max:100'],
+            'priority' => ['required', 'in:low,medium,high,urgent'],
+        ]);
+
+        $audience = strtolower($validated['audience']);
+        $targetType = match (true) {
+            str_contains($audience, 'student') => 'students',
+            str_contains($audience, 'parent') => 'parents',
+            str_contains($audience, 'teacher') => 'teachers',
+            str_contains($audience, 'staff') => 'staff',
+            default => 'all',
+        };
+
+        $notification = $this->notificationService->create([
+            'title' => $validated['title'],
+            'message' => $validated['message'],
+            'type' => 'announcement',
+            'priority' => $validated['priority'],
+            'status' => 'sent',
+            'target_type' => $targetType,
+            'channel' => 'in_app',
+        ]);
+
+        return $this->success([
+            'id' => $notification->id,
+        ], 'Alert created successfully.', Response::HTTP_CREATED);
     }
 
     // ────────────────────────────────────────────────────────────────────────────
