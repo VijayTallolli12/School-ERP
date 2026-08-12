@@ -121,25 +121,23 @@
 
 @push('scripts')
 <script>
-    (function () {
+    $(function () {
         const tutorialModalEl = document.getElementById('tutorialModal');
         const tutorialVideo = document.getElementById('tutorialVideo');
-        const tutorialModal = bootstrap.Modal.getOrCreateInstance(tutorialModalEl);
 
-        document.querySelectorAll('.watch-tutorial').forEach((btn) => {
-            btn.addEventListener('click', () => {
-                document.getElementById('tutorialModalAppName').textContent = btn.dataset.title;
-                tutorialVideo.src = btn.dataset.video;
-                tutorialVideo.load();
-                tutorialModal.show();
-            });
+        $(document).on('click', '.watch-tutorial', function () {
+            const btn = $(this);
+            $('#tutorialModalAppName').text(btn.data('title'));
+            tutorialVideo.src = btn.data('video');
+            tutorialVideo.load();
+            bootstrap.Modal.getOrCreateInstance(tutorialModalEl).show();
         });
 
-        tutorialModalEl.addEventListener('hidden.bs.modal', () => {
+        $(tutorialModalEl).on('hidden.bs.modal', function () {
             tutorialVideo.pause();
             tutorialVideo.removeAttribute('src');
             tutorialVideo.load();
         });
-    })();
+    });
 </script>
 @endpush
