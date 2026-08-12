@@ -39,9 +39,9 @@
 
     <!-- Export Buttons -->
     <div class="d-flex gap-2 mb-3">
-        <a id="exportExcel" href="{{ route('reports.students.list.export', ['type' => 'excel']) }}" class="btn btn-success btn-sm"><i class="ti ti-file-type-xls me-1"></i> Excel</a>
-        <a id="exportPdf" href="{{ route('reports.students.list.export', ['type' => 'pdf']) }}" class="btn btn-danger btn-sm"><i class="ti ti-file-type-pdf me-1"></i> PDF</a>
-        <a id="exportPrint" href="{{ route('reports.students.list.export', ['type' => 'print']) }}" class="btn btn-warning btn-sm" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+        <a id="exportExcel" href="{{ route('reports.students.list.export', ['type' => 'excel']) }}" class="btn btn-secondary btn-sm"><i class="ti ti-file-type-xls me-1"></i> Excel</a>
+        <a id="exportPdf" href="{{ route('reports.students.list.export', ['type' => 'pdf']) }}" class="btn btn-secondary btn-sm"><i class="ti ti-file-type-pdf me-1"></i> PDF</a>
+        <a id="exportPrint" href="{{ route('reports.students.list.export', ['type' => 'print']) }}" class="btn btn-secondary btn-sm" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
     </div>
 
     <!-- Table Card -->

@@ -1,5 +1,5 @@
 <div class="btn-group btn-group-sm">
-    <button class="btn btn-outline-info view-run" data-url="{{ route('admin.payroll.runs.show', $run) }}" data-items-url="{{ route('admin.payroll.runs.items.data', $run->id) }}" title="View">
+    <button class="btn btn-outline-primary view-run" data-url="{{ route('admin.payroll.runs.show', $run) }}" data-items-url="{{ route('admin.payroll.runs.items.data', $run->id) }}" title="View">
         <i class="ti ti-eye"></i>
     </button>
     @if($run->isDraft())

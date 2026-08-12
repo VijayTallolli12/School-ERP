@@ -39,9 +39,9 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
 
         return [
             $this->statCard('Total Students', $students, 'users', 'primary', null, null, route('admin.students.index')),
-            $this->statCard('Teachers', $teachers, 'graduation-cap', 'success', null, null, route('admin.teachers.index')),
-            $this->statCard("Today's Attendance", $attendanceRate.'%', 'check-circle', 'info'),
-            $this->statCard('Pending Leaves', $pendingLeaves, 'calendar-clock', 'warning', null, null, route('admin.leave-requests.index')),
+            $this->statCard('Teachers', $teachers, 'school', 'success', null, null, route('admin.teachers.index')),
+            $this->statCard("Today's Attendance", $attendanceRate.'%', 'circle-check', 'info'),
+            $this->statCard('Pending Leaves', $pendingLeaves, 'calendar-time', 'warning', null, null, route('admin.leave-requests.index')),
         ];
     }
 
@@ -76,7 +76,7 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
                     'collected' => $feeStats['total_collected'] ?? 0,
                     'pending' => $feeStats['pending_fees'] ?? 0,
                 ],
-                'money-bill-wave',
+                'cash',
                 'warning',
                 4, 2,
                 route('admin.fees.index'),
@@ -89,7 +89,7 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
                 'Pending Leave Approvals',
                 'list',
                 Cache::remember("dashboard.principal.pending_leaves.{$this->schoolId}", 60, fn () => LeaveRequest::query()->with(['student', 'leaveType', 'user'])->where('status', 'pending')->limit(5)->get()->toArray()),
-                'check-double',
+                'checks',
                 'success',
                 4, 2,
                 route('admin.leave-requests.index'),
@@ -103,7 +103,7 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
                 'Event Calendar',
                 'list',
                 $calendarCollector->upcomingEvents($this->schoolId),
-                'calendar-alt',
+                'calendar-event',
                 'info',
                 4, 2,
                 route('admin.calendar.index'),
@@ -135,7 +135,7 @@ class PrincipalDashboardBuilder extends BaseDashboardBuilder
     protected function buildQuickActions(): array
     {
         $actions = [
-            $this->quickAction('Approve Leave', route('admin.leave-requests.index'), 'check-double', 'success', 'leave_management.view'),
+            $this->quickAction('Approve Leave', route('admin.leave-requests.index'), 'checks', 'success', 'leave_management.view'),
             $this->quickAction('View Timetable', route('admin.timetable.index'), 'clock', 'info', 'timetable.view'),
             $this->quickAction('View Reports', route('reports.attendance.index'), 'chart-line', 'primary', 'reports.view'),
         ];

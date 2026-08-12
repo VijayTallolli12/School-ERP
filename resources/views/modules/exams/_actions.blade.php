@@ -5,7 +5,7 @@
 @endcan
 
 @can('exams.publish')
-    <button type="button" class="btn btn-sm btn-outline-info publish-exam" data-url="{{ route('admin.exams.publish', $exam) }}" title="{{ $exam->is_published ? 'Unpublish' : 'Publish' }}">
+    <button type="button" class="btn btn-sm btn-outline-primary publish-exam" data-url="{{ route('admin.exams.publish', $exam) }}" title="{{ $exam->is_published ? 'Unpublish' : 'Publish' }}">
         <i class="ti ti-{{ $exam->is_published ? 'eye-off' : 'eye' }}"></i>
     </button>
 @endcan

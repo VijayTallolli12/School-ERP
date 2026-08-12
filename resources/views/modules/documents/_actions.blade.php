@@ -1,6 +1,6 @@
 <div class="d-flex gap-1 justify-content-end">
     @can('student_documents.view')
-        <button type="button" class="btn btn-sm btn-outline-info view-document"
+        <button type="button" class="btn btn-sm btn-outline-primary view-document"
                 data-id="{{ $doc->id }}" title="View Document">
             <i class="ti ti-eye"></i>
         </button>

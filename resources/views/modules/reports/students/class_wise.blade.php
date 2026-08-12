@@ -23,9 +23,9 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <a href="{{ route('reports.students.class_wise.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-success py-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
-                    <a href="{{ route('reports.students.class_wise.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-danger py-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
-                    <a href="{{ route('reports.students.class_wise.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-warning py-2" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
+                    <a href="{{ route('reports.students.class_wise.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-secondary py-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
+                    <a href="{{ route('reports.students.class_wise.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-secondary py-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
+                    <a href="{{ route('reports.students.class_wise.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-secondary py-2" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
                 </div>
             </div>
         </div>

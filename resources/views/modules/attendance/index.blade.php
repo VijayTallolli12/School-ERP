@@ -17,7 +17,7 @@
                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#attendanceModal" id="btnOpenMark">
                         <i class="ti ti-plus me-1"></i> Mark Attendance
                     </button>
-                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#bulkMarkModal" id="btnOpenBulk">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#bulkMarkModal" id="btnOpenBulk">
                         <i class="ti ti-users me-1"></i> Bulk Mark
                     </button>
                 @endcan
@@ -34,7 +34,7 @@
                         <button type="button" class="btn btn-outline-danger" id="btnExportPdf" title="Export PDF">
                             <i class="ti ti-file-type-pdf me-1"></i> PDF
                         </button>
-                        <button type="button" class="btn btn-outline-info" id="btnPrint" title="Print">
+                        <button type="button" class="btn btn-outline-primary" id="btnPrint" title="Print">
                             <i class="ti ti-printer me-1"></i> Print
                         </button>
                     </div>
@@ -238,7 +238,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-success py-2"><i class="ti ti-device-floppy me-1"></i> Save attendance</button>
+                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save attendance</button>
                 </div>
             </form>
         </div>

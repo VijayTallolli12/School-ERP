@@ -177,7 +177,7 @@
                                     <p class="text-muted mb-0">The student's active session will be closed and their status will be set to <strong>Alumni</strong>.</p>
                                 </div>
                                 <div class="card-footer d-flex gap-2">
-                                    <button type="button" class="btn btn-dark lifecycle-alumni-submit">
+                                    <button type="button" class="btn btn-secondary lifecycle-alumni-submit">
                                         <i class="ti ti-graduation-cap me-1"></i> Mark Alumni
                                     </button>
                                 </div>

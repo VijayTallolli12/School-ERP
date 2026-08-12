@@ -9,7 +9,7 @@
         ][$type] ?? $type;
     @endphp
     @if ($type === 'route')
-        <button type="button" class="btn btn-sm btn-outline-info view-route"
+        <button type="button" class="btn btn-sm btn-outline-primary view-route"
                 data-url="{{ route('admin.transport.routes.detail', $model) }}"
                 title="View Route Detail">
             <i class="ti ti-map-route"></i>

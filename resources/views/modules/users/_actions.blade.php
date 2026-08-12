@@ -6,7 +6,7 @@
         <button type="button" class="btn btn-sm btn-outline-warning reset-password-btn" data-url="{{ route('admin.users.reset-password', $user) }}" data-name="{{ $user->name }}" title="Reset Password">
             <i class="ti ti-key"></i>
         </button>
-        <button type="button" class="btn btn-sm btn-outline-info assign-role-btn" data-url="{{ route('admin.users.assign-role', $user) }}" data-name="{{ $user->name }}" data-current-role="{{ $user->roles->first()?->name }}" title="Assign Role">
+        <button type="button" class="btn btn-sm btn-outline-primary assign-role-btn" data-url="{{ route('admin.users.assign-role', $user) }}" data-name="{{ $user->name }}" data-current-role="{{ $user->roles->first()?->name }}" title="Assign Role">
             <i class="ti ti-user-cog"></i>
         </button>
         <button type="button" class="btn btn-sm btn-outline-{{ $user->status === 'active' ? 'danger' : 'success' }} toggle-status-btn" data-url="{{ route('admin.users.toggle-status', $user) }}" title="{{ $user->status === 'active' ? 'Deactivate' : 'Activate' }}">

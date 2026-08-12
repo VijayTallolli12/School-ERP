@@ -37,7 +37,7 @@
                     </a>
                 @endif
                 @if ($admission->status !== 'converted' && $admission->status !== 'rejected' && auth()->user()->can('admissions.verify'))
-                    <button type="button" class="btn btn-outline-info btn-sm workflow-action" data-url="{{ route('admin.admissions.verify', $admission) }}" data-message="Verify this application?">
+                    <button type="button" class="btn btn-outline-primary btn-sm workflow-action" data-url="{{ route('admin.admissions.verify', $admission) }}" data-message="Verify this application?">
                         <i class="ti ti-shield-check me-1"></i> Verify
                     </button>
                 @endif

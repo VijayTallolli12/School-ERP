@@ -127,7 +127,7 @@
                         </div>
                         <div class="col-auto">
                             @can('payroll.payslip.generate')
-                                <button class="btn btn-sm btn-success" id="bulkGenerateBtn" disabled><i class="ti ti-receipt me-1"></i> Generate All Payslips</button>
+                                <button class="btn btn-sm btn-primary" id="bulkGenerateBtn" disabled><i class="ti ti-receipt me-1"></i> Generate All Payslips</button>
                             @endcan
                         </div>
                         <div class="col-auto ms-auto">

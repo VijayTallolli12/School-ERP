@@ -223,7 +223,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-success py-2" type="submit"><i class="ti ti-arrow-back-up me-1"></i> Return Book</button></div>
+                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-arrow-back-up me-1"></i> Return Book</button></div>
             </form>
         </div>
     </div>

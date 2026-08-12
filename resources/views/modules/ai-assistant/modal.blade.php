@@ -81,16 +81,16 @@ $(document).ready(function () {
                         // backend resolves against the pending action — the user
                         // can also type "Sure", "No", etc. in the input.
                         html += '<div class="aiw-response-section section-analysis">' +
-                            '<div class="section-label"><i class="ti ti-alert-triangle" style="color:#f59e0b;"></i> Confirmation Required</div>' +
+                            '<div class="section-label"><i class="ti ti-alert-triangle text-warning"></i> Confirmation Required</div>' +
                             '<div class="section-content">' + escHtml(answer).replace(/\n/g, '<br>') + '</div></div>';
 
-                        html += '<div class="aiw-response-section" style="border-left:3px solid #3b82f6;">' +
-                            '<div class="section-label" style="color:#3b82f6;"><i class="ti ti-info-circle"></i> Action Preview</div>' +
+                        html += '<div class="aiw-response-section" style="border-left:3px solid var(--erp-primary);">' +
+                            '<div class="section-label text-primary"><i class="ti ti-info-circle"></i> Action Preview</div>' +
                             '<div class="section-content">' +
                             '<div class="d-flex gap-2 mt-2">' +
-                            '<button type="button" class="btn btn-success btn-sm" id="aiConfirmBtn" style="border-radius:0.5rem;font-weight:600;">' +
+                            '<button type="button" class="btn btn-success btn-sm fw-semibold" id="aiConfirmBtn">' +
                             '<i class="ti ti-check me-1"></i> Confirm &amp; Send</button>' +
-                            '<button type="button" class="btn btn-outline-secondary btn-sm" id="aiCancelBtn" style="border-radius:0.5rem;">' +
+                            '<button type="button" class="btn btn-outline-secondary btn-sm" id="aiCancelBtn">' +
                             '<i class="ti ti-x me-1"></i> Cancel</button>' +
                             '</div></div></div>';
 
@@ -127,13 +127,13 @@ $(document).ready(function () {
                         html += '<div class="aiw-recommendation">' +
                             '<div class="rec-title"><i class="ti ti-robot me-1"></i> AI Recommendation</div>' +
                             '<div class="rec-agent-name">' + escHtml(rec.label) + '</div>' +
-                            '<a href="' + href + '" class="btn btn-primary w-100 mt-3" style="border-radius:0.625rem;font-weight:600;">' +
+                            '<a href="' + href + '" class="btn btn-primary w-100 mt-3 fw-semibold">' +
                             '<i class="ti ti-player-play me-1"></i> Execute Agent</a>' +
                             '</div>';
                     }
                 } else {
-                    html = '<div class="aiw-response-section" style="border-left:3px solid #ef4444;">' +
-                        '<div class="section-label" style="color:#ef4444;"><i class="ti ti-alert-circle"></i> Unable to Process</div>' +
+                    html = '<div class="aiw-response-section" style="border-left:3px solid var(--erp-danger);">' +
+                        '<div class="section-label text-danger"><i class="ti ti-alert-circle"></i> Unable to Process</div>' +
                         '<div class="section-content">' + escHtml(res.answer).replace(/\n/g, '<br>') + '</div></div>';
                 }
 

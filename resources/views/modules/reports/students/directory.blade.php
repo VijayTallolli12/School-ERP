@@ -70,13 +70,13 @@
                     <button type="button" id="resetBtn" class="btn btn-outline-secondary py-2">
                         <i class="ti ti-refresh me-1"></i> Reset
                     </button>
-                    <a id="exportExcel" href="{{ route('reports.students.directory.export', ['type' => 'excel']) }}" class="btn btn-success py-2">
+                    <a id="exportExcel" href="{{ route('reports.students.directory.export', ['type' => 'excel']) }}" class="btn btn-secondary py-2">
                         <i class="ti ti-file-type-xls me-1"></i> Excel
                     </a>
-                    <a id="exportPdf" href="{{ route('reports.students.directory.export', ['type' => 'pdf']) }}" class="btn btn-danger py-2">
+                    <a id="exportPdf" href="{{ route('reports.students.directory.export', ['type' => 'pdf']) }}" class="btn btn-secondary py-2">
                         <i class="ti ti-file-type-pdf me-1"></i> PDF
                     </a>
-                    <a id="exportPrint" href="{{ route('reports.students.directory.export', ['type' => 'print']) }}" class="btn btn-warning py-2" target="_blank">
+                    <a id="exportPrint" href="{{ route('reports.students.directory.export', ['type' => 'print']) }}" class="btn btn-secondary py-2" target="_blank">
                         <i class="ti ti-printer me-1"></i> Print
                     </a>
                 </div>

@@ -212,7 +212,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-info py-2"><i class="ti ti-user-cog me-1"></i> Assign Role</button>
+                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-user-cog me-1"></i> Assign Role</button>
                 </div>
             </form>
         </div>

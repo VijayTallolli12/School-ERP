@@ -682,7 +682,7 @@
 }
 
 .exec-message.ai .exec-message-avatar {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, var(--erp-primary), var(--erp-primary-hover));
     color: #fff;
 }
 
@@ -695,7 +695,7 @@
 }
 
 .exec-message.user .exec-message-content {
-    background: var(--erp-primary, #2563eb);
+    background: var(--erp-primary);
     color: #fff;
     border-bottom-right-radius: 0.25rem;
 }
@@ -729,7 +729,7 @@
 }
 
 .exec-response-card-header i {
-    color: var(--erp-primary, #2563eb);
+    color: var(--erp-primary);
 }
 
 .exec-response-kpi-grid {
@@ -770,7 +770,7 @@
     width: 36px;
     height: 36px;
     border-radius: 0.625rem;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, var(--erp-primary), var(--erp-primary-hover));
     color: #fff;
     display: flex;
     align-items: center;

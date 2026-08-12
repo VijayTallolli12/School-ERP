@@ -39,9 +39,9 @@ class AdminDashboardBuilder extends BaseDashboardBuilder
 
         return [
             $this->statCard('Total Students', $students, 'users', 'primary', 'up', null, route('admin.students.index')),
-            $this->statCard('Teachers', $teachers, 'graduation-cap', 'success', 'up', null, route('admin.teachers.index')),
-            $this->statCard('Attendance Rate', $attendanceRate.'%', 'check-circle', 'info'),
-            $this->statCard('Total Collected', 'Rs '.number_format($totalCollected, 0), 'rupee-sign', 'warning', null, null, route('admin.fees.index')),
+            $this->statCard('Teachers', $teachers, 'school', 'success', 'up', null, route('admin.teachers.index')),
+            $this->statCard('Attendance Rate', $attendanceRate.'%', 'circle-check', 'info'),
+            $this->statCard('Total Collected', 'Rs '.number_format($totalCollected, 0), 'currency-rupee', 'warning', null, null, route('admin.fees.index')),
         ];
     }
 
@@ -77,7 +77,7 @@ class AdminDashboardBuilder extends BaseDashboardBuilder
                 'Fee Summary',
                 'donut',
                 $feeStats,
-                'money-bill-wave',
+                'cash',
                 'warning',
                 4, 2,
                 route('admin.fees.index'),
@@ -108,7 +108,7 @@ class AdminDashboardBuilder extends BaseDashboardBuilder
                     'expiring_count' => $docService->getExpiringCount(30),
                     'pending_count' => $docService->getPendingCount(),
                 ],
-                'file-alt',
+                'file-text',
                 'danger',
                 4, 1,
                 route('admin.documents.index'),
@@ -139,10 +139,10 @@ class AdminDashboardBuilder extends BaseDashboardBuilder
     {
         return [
             $this->quickAction('Browse Students', route('admin.students.index'), 'user-plus', 'primary', 'students.view'),
-            $this->quickAction('Browse Teachers', route('admin.teachers.index'), 'chalkboard-teacher', 'success', 'teachers.view'),
-            $this->quickAction('Manage Fees', route('admin.fees.index'), 'money-bill', 'warning', 'fees.view'),
+            $this->quickAction('Browse Teachers', route('admin.teachers.index'), 'presentation', 'success', 'teachers.view'),
+            $this->quickAction('Manage Fees', route('admin.fees.index'), 'cash', 'warning', 'fees.view'),
             $this->quickAction('View Reports', route('reports.students.index'), 'chart-line', 'info', 'reports.view'),
-            $this->quickAction('Manage Users', route('admin.users.index'), 'users-cog', 'secondary', 'users.view'),
+            $this->quickAction('Manage Users', route('admin.users.index'), 'users-group', 'secondary', 'users.view'),
         ];
     }
 

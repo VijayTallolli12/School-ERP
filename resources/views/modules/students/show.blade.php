@@ -34,7 +34,7 @@
                     </a>
                 @endcan
                 @can('student_lifecycle.alumni')
-                    <button type="button" class="btn btn-outline-dark btn-sm lifecycle-quick-alumni"
+                    <button type="button" class="btn btn-outline-secondary btn-sm lifecycle-quick-alumni"
                             data-url="{{ route('admin.students.alumni', $student) }}"
                             data-name="{{ $student->full_name }}">
                         <i class="ti ti-graduation-cap me-1"></i> Mark Alumni

@@ -135,7 +135,7 @@
                                 <button type="submit" class="btn btn-primary" id="saveDraftBtn">
                                     <i class="ti ti-device-floppy me-1"></i> Save Draft
                                 </button>
-                                <button type="button" class="btn btn-success" id="savePublishBtn">
+                                <button type="button" class="btn btn-primary" id="savePublishBtn">
                                     <i class="ti ti-eye me-1"></i> Save &amp; Publish
                                 </button>
                             </div>

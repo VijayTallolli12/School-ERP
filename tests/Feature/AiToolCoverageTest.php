@@ -88,6 +88,7 @@ class AiToolCoverageTest extends TestCase
             'payroll.locked_runs' => ['question' => 'How many payroll runs are locked?', 'params' => []],
             'payroll.highest_salary' => ['question' => 'Who has the highest salary?', 'params' => []],
             'payroll.generated_this_month' => ['question' => 'How many payroll runs were generated this month?', 'params' => []],
+            'payroll.summary' => ['question' => 'What is the payroll summary?', 'params' => []],
             'school.summary' => ['question' => 'Give me an executive summary of the school.', 'params' => []],
         ];
     }
