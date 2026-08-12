@@ -15,6 +15,13 @@
                     <span class="d-none d-sm-inline fw-semibold">Ask ERP</span>
                 </button>
             </li>
+            @role('Super Admin|School Admin|Principal|Teacher|Accountant|Librarian|Payroll Manager|Receptionist|HR|Staff')
+                <li class="nav-item ms-1">
+                    <a class="btn btn-link nav-link" href="{{ route('admin.mobile-apps.index') }}" title="Mobile Apps" aria-label="Mobile Apps">
+                        <i class="ti ti-device-mobile"></i>
+                    </a>
+                </li>
+            @endrole
             @include('layouts.partials._bell')
             <li class="nav-item dropdown">
                 <button class="btn btn-link nav-link dropdown-toggle" data-bs-toggle="dropdown" type="button" aria-label="Toggle theme">
