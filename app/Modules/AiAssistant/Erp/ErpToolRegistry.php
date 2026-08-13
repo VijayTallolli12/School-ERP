@@ -685,7 +685,7 @@ class ErpToolRegistry
         'or', 'and', 'in', 'on', 'at', 'have', 'has', 'had', 'been', 'be', 'please',
         'could', 'can', 'would', 'will', 'my', 'our', 'your', 'all', 'list', 'get',
         'find', 'give', 'there', 'today', 'yesterday', 'tomorrow', 'this', 'that',
-        'some', 'any', 'with', 'from', 'by', 'about', 'over', 'under', 'into',
+        'some', 'any', 'with', 'from', 'by', 'about', 'over', 'under', 'into', 'active',
     ];
 
     private function scoreKeyword(string $question, string $keyword): int
