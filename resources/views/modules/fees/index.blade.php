@@ -143,6 +143,15 @@
                             <th>Status</th>
                         </tr>
                         </thead>
+                        <tfoot>
+                        <tr>
+                            <th colspan="4" class="text-end">Total:</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th colspan="2"></th>
+                        </tr>
+                        </tfoot>
                     </table>
                 </div>
 
@@ -688,7 +697,19 @@
                         {data: 'student_name'}, {data: 'admission_no'}, {data: 'academic_year'},
                         {data: 'category'}, {data: 'amount'}, {data: 'paid'}, {data: 'balance'},
                         {data: 'due_date'}, {data: 'overdue_badge', orderable: false, searchable: false}
-                    ]
+                    ],
+                    footerCallback: function (row, data, start, end, display) {
+                        var api = this.api();
+                        var intVal = function (i) {
+                            return typeof i === 'string' ? i.replace(/[\$,₹,]/g, '') * 1 : typeof i === 'number' ? i : 0;
+                        };
+                        var dueTotal = api.column(4, {search: 'applied'}).data().reduce(function (a, b) { return intVal(a) + intVal(b); }, 0);
+                        var paidTotal = api.column(5, {search: 'applied'}).data().reduce(function (a, b) { return intVal(a) + intVal(b); }, 0);
+                        var balanceTotal = api.column(6, {search: 'applied'}).data().reduce(function (a, b) { return intVal(a) + intVal(b); }, 0);
+                        $(api.column(4).footer()).html('₹ ' + dueTotal);
+                        $(api.column(5).footer()).html('₹ ' + paidTotal);
+                        $(api.column(6).footer()).html('₹ ' + balanceTotal);
+                    }
                 })
             };
             initTabPersistence('#feesTabs');

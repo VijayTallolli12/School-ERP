@@ -1,0 +1,7 @@
+School ERP Apks Link
+
+1. Parent App APK  : https://expo.dev/artifacts/eas/7VUYe0NzpCdC0yNqAVGiRXauJnUxGZaRKCmYyumOyuM.apk
+2. Student App APK : https://expo.dev/artifacts/eas/1K0Kr_SJA3fxqYZ8eBkb-elre_yO7j6jF9a9LN2AClc.apk
+3. Driver App APK  : https://expo.dev/artifacts/eas/qV05lxxPYqWImRf3wx9-4Cp5RFZIq7u_nRQuQKqhkf4.apk
+4. Teacher APP APK : https://expo.dev/artifacts/eas/ZU-sH-6BFxe8ZvK_RGzJlhJ86Gal3UVRyf8hQZsl95c.apk
+	
