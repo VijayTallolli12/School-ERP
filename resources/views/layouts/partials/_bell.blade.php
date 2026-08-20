@@ -1,9 +1,9 @@
 {{-- Notification Bell Partial --}}
 <li class="nav-item dropdown" id="notificationBellContainer">
-    <a class="nav-link" data-bs-toggle="dropdown" href="#" role="button" aria-label="Notifications">
-        <span class="position-relative d-inline-block">
-            <i class="ti ti-bell"></i>
-            <span class="position-absolute top-0 end-0 notification-badge d-none" id="notificationBadge" aria-hidden="true"></span>
+    <a class="nav-link text-muted" data-bs-toggle="dropdown" href="#" role="button" aria-label="Notifications">
+        <span class="position-relative d-inline-flex align-items-center justify-content-center">
+            <i class="ti ti-bell" style="font-size: 1.4rem;"></i>
+            <span class="position-absolute d-none" id="notificationBadge" style="top: 0; right: 2px; width: 8px; height: 8px; background-color: var(--erp-primary, #7755CC); border-radius: 50%; border: 1.5px solid #fff;" aria-hidden="true"></span>
         </span>
     </a>
     <div class="dropdown-menu dropdown-menu-end p-0 notification-dropdown">
@@ -60,7 +60,6 @@
                     const count = data.unread_count || 0;
 
                     if (count > 0) {
-                        badge.textContent = count > 99 ? '99+' : count;
                         badge.classList.remove('d-none');
                     } else {
                         badge.classList.add('d-none');

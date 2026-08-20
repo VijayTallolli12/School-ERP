@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 // (external mobile-app roles) must never reach /reports/*.
 Route::middleware(['auth:sanctum', 'verified', 'school', 'staff', 'permission:reports.view'])->group(function () {
     Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Modules\Reports\Controllers\ReportController::class, 'index'])->name('index');
+        
         // Student Reports
         Route::get('students', [\App\Modules\Reports\Controllers\StudentReportController::class, 'index'])->name('students.index');
         Route::get('students/list', [\App\Modules\Reports\Controllers\StudentReportController::class, 'list'])->name('students.list');

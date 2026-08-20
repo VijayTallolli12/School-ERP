@@ -1,51 +1,65 @@
-<nav class="app-header navbar navbar-expand bg-body">
+<style>
+/* Navbar and Header styling */
+.app-header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    min-height: 64px;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+}
+.navbar-breadcrumb {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    margin-left: 8px;
+}
+.navbar-breadcrumb-active {
+    color: #111827;
+    font-weight: 600;
+}
+</style>
+<nav class="app-header navbar navbar-expand bg-body sticky-top" style="z-index: 1040;">
     <div class="container-fluid">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar">
-                    <i class="ti ti-menu-2"></i>
+        <ul class="navbar-nav align-items-center">
+            <!-- Sidebar toggle -->
+            <li class="nav-item d-flex align-items-center">
+                <a class="nav-link p-0 d-flex align-items-center justify-content-center" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar" style="color: #6b7280; height: 32px; width: 32px;">
+                    <i class="ti ti-menu-2" style="font-size: 1.4rem; line-height: 1;"></i>
                 </a>
+            </li>
+            <li class="nav-item d-none d-md-flex align-items-center navbar-breadcrumb h-100">
+                <ol class="breadcrumb m-0 bg-transparent p-0 d-flex align-items-center">
+                    @hasSection('breadcrumbs')
+                        @yield('breadcrumbs')
+                    @else
+                        <li class="breadcrumb-item active text-dark fw-semibold d-flex align-items-center" style="line-height: 1; padding-top: 2px;">@yield('page-title', 'Dashboard')</li>
+                    @endif
+                </ol>
             </li>
         </ul>
 
-        <ul class="navbar-nav ms-auto align-items-center">
-            <li class="nav-item me-2">
-                <button class="btn btn-sm btn-primary d-flex align-items-center gap-1 px-3" type="button" data-bs-toggle="modal" data-bs-target="#askErpModal" style="border-radius:var(--erp-btn-radius);">
-                    <i class="ti ti-sparkles"></i>
-                    <span class="d-none d-sm-inline fw-semibold">Ask ERP</span>
-                </button>
-            </li>
-            @role('Super Admin|School Admin|Principal|Teacher|Accountant|Librarian|Payroll Manager|Receptionist|HR|Staff')
-                <li class="nav-item ms-1">
-                    <a class="btn btn-link nav-link" href="{{ route('admin.mobile-apps.index') }}" title="Mobile Apps" aria-label="Mobile Apps">
-                        <i class="ti ti-device-mobile"></i>
-                    </a>
-                </li>
-            @endrole
+        <ul class="navbar-nav ms-auto align-items-center gap-1">
             @include('layouts.partials._bell')
-            <li class="nav-item dropdown">
-                <button class="btn btn-link nav-link dropdown-toggle" data-bs-toggle="dropdown" type="button" aria-label="Toggle theme">
-                    <i class="ti ti-sun-moon"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <h6 class="dropdown-header text-uppercase">Theme</h6>
-                    <button class="dropdown-item d-flex align-items-center gap-2" type="button" data-bs-theme-value="light">
-                        <i class="ti ti-sun text-warning"></i> Light
-                    </button>
-                    <button class="dropdown-item d-flex align-items-center gap-2" type="button" data-bs-theme-value="dark">
-                        <i class="ti ti-moon text-info"></i> Dark
-                    </button>
-                </div>
+            <li class="nav-item">
+                <a class="nav-link text-muted" href="#" title="Help">
+                    <i class="ti ti-help-circle" style="font-size: 1.4rem;"></i>
+                </a>
             </li>
-            <li class="nav-item dropdown ms-2">
-                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 p-1 pe-2 rounded hover-bg-light" data-bs-toggle="dropdown" href="#" role="button" style="transition: background-color 0.2s;">
-                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 text-primary fw-bold" style="width:36px;height:36px;font-size:.9rem;">
-                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
+            <div class="vr mx-2 bg-secondary opacity-25" style="height: 32px; align-self: center;"></div>
+            <li class="nav-item dropdown ms-1">
+                <a class="nav-link d-flex align-items-center gap-2 p-1 pe-2 rounded hover-bg-light text-decoration-none" data-bs-toggle="dropdown" href="#" role="button" style="transition: background-color 0.2s;">
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-bold" style="width:36px;height:36px;font-size:.9rem; overflow:hidden; background-color: var(--erp-primary-light); color: var(--erp-primary);">
+                        @if(auth()->user()->profile_photo_url ?? null)
+                            <img src="{{ auth()->user()->profile_photo_url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
+                        @else
+                            {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
+                        @endif
                     </span>
                     <span class="d-none d-md-block text-start lh-sm ms-1">
-                        <div class="fw-semibold text-dark" style="font-size: 0.875rem;">{{ auth()->user()->name }}</div>
-                        <div class="text-muted" style="font-size: 0.72rem; letter-spacing: 0.02em;">{{ auth()->user()->roles->first()?->name ?? 'User' }}</div>
+                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">{{ auth()->user()->name }}</div>
+                        <div class="text-muted" style="font-size: 0.72rem; letter-spacing: 0.02em;">{{ auth()->user()->roles->first()?->name ?? 'System Admin' }}</div>
                     </span>
+                    <i class="ti ti-chevron-down text-muted ms-1" style="font-size: 12px;"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width:240px; border-radius: 0.75rem;">
                     @if($logo = setting('school_logo'))

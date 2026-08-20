@@ -1,6 +1,6 @@
 @extends("modules.reports.reports_layout")
 
-@section("title", "Student List Report")
+@section("title", "Student Reports")
 
 @section("content")
     <!-- Filters -->
@@ -46,7 +46,7 @@
 
     <!-- Table Card -->
     <div class="card">
-        <div class="card-body p-0">
+        <div class="card-body">
             <table id="studentsTable" class="table">
                 <thead>
                     <tr>

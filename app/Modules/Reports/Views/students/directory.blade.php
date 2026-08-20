@@ -33,7 +33,7 @@
                         <option value="inactive">Inactive</option>
                     </select>
                 </div>
-                <button type="button" id="filterBtn" class="btn btn-primary"><i class="ti ti-filter me-1"></i> Filter</button>
+                <button type="button" id="filterBtn" class="btn btn-outline-secondary"><i class="ti ti-filter me-1"></i> Filter</button>
                 <button type="button" id="resetBtn" class="btn btn-secondary ms-2"><i class="ti ti-refresh me-1"></i> Reset</button>
                 <a id="exportExcel" href="{{ route('reports.students.directory.export', ['type' => 'excel']) }}" class="btn btn-success ms-2"><i class="ti ti-file-spreadsheet me-1"></i> Export Excel</a>
                 <a id="exportPdf" href="{{ route('reports.students.directory.export', ['type' => 'pdf']) }}" class="btn btn-danger ms-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>

@@ -1,13 +1,48 @@
+<style>
+.aiw-modal .btn-close:focus, .aiw-modal .btn-close:active {
+    box-shadow: none;
+    outline: none;
+}
+.ai-chat-wrapper {
+    background: #ffffff;
+    border: 1px solid var(--erp-gray-200, #e5e7eb);
+    border-radius: var(--erp-input-radius, 8px);
+    padding: 6px 6px 6px 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+.ai-chat-wrapper:focus-within {
+    border-color: var(--erp-primary);
+    box-shadow: 0 4px 12px rgba(119, 85, 204, 0.15), 0 0 0 4px var(--erp-primary-light);
+}
+.ai-chat-input {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    font-size: 15px;
+    color: var(--erp-gray-900);
+}
+.ai-chat-input:focus {
+    box-shadow: none !important;
+}
+</style>
 <div class="modal fade aiw-modal" id="askErpModal" tabindex="-1" aria-labelledby="askErpModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="askErpModalLabel">
-                    <i class="ti ti-sparkles me-1" style="color:#2563eb;"></i> Ask ERP
+        <div class="modal-content" style="border-radius: var(--erp-card-radius); border: none; box-shadow: var(--erp-card-shadow-hover);">
+            <div class="modal-header border-bottom border-light p-4">
+                <h5 class="modal-title fw-bold" id="askErpModalLabel">
+                    <i class="ti ti-sparkles me-2" style="color:var(--erp-primary);"></i>Ask ERP
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="aiModalBody">
+            <div class="modal-body p-4" id="aiModalBody">
+                <div id="aiEmptyState" class="text-center py-5 my-4">
+                    <i class="ti ti-sparkles mb-3" style="font-size: 48px; color: var(--erp-primary); opacity: 0.15;"></i>
+                    <h5 class="fw-semibold text-dark mb-2">How can I help you today?</h5>
+                    <p class="text-muted mb-0" style="font-size: 15px;">Ask me to analyze attendance, fee collection, or summarize student data.</p>
+                </div>
+
                 <div id="aiResponseArea" class="d-none">
                     <div id="aiResponseContent"></div>
                 </div>
@@ -16,21 +51,18 @@
                     <div class="spinner-border text-primary" role="status" style="width:1.5rem;height:1.5rem;">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p class="mt-2" style="font-size:0.85rem;color:#94a3b8;">Querying ERP data...</p>
+                    <p class="mt-2 text-muted" style="font-size:14px;">Querying ERP data...</p>
                 </div>
             </div>
-            <div class="modal-footer" style="display:flex; flex-direction:column; background:#fff; border-top:1px solid var(--erp-border-color);">
-                <div class="w-100 mb-2">
-                    <div class="d-flex align-items-center gap-2" style="background:#f8fafc;border:1px solid var(--erp-border-color);border-radius:0.75rem;padding:0.5rem 0.75rem;">
-                        <i class="ti ti-message text-muted" style="font-size:1.1rem;"></i>
-                        <input type="text" id="aiQuestion" class="form-control border-0 bg-transparent" placeholder="Ask about your school data..." maxlength="500" autocomplete="off" style="box-shadow:none;min-height:auto;padding:0.35rem 0.5rem;">
-                        <button class="btn btn-primary btn-sm flex-shrink-0" type="button" id="askErpBtn" style="border-radius:0.5rem;">
-                            <i class="ti ti-arrow-right"></i> Ask
+            <div class="modal-footer p-4 pt-2 border-0 bg-white">
+                <div class="w-100">
+                    <div class="d-flex align-items-center gap-2 ai-chat-wrapper">
+                        <i class="ti ti-message text-muted" style="font-size:1.2rem;"></i>
+                        <input type="text" id="aiQuestion" class="form-control ai-chat-input" placeholder="Ask about your school data..." maxlength="500" autocomplete="off">
+                        <button class="btn-primary-action px-4 flex-shrink-0 m-0" type="button" id="askErpBtn" style="height: 38px;">
+                            Ask <i class="ti ti-arrow-right ms-1"></i>
                         </button>
                     </div>
-                </div>
-                <div class="d-flex justify-content-end w-100">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border:1px solid var(--erp-border-color);">Close</button>
                 </div>
             </div>
         </div>
@@ -53,6 +85,7 @@ $(document).ready(function () {
     }
 
     function sendRequest(question, confirmed) {
+        $('#aiEmptyState').addClass('d-none');
         responseArea.addClass('d-none');
         loading.removeClass('d-none');
         askBtn.prop('disabled', true);

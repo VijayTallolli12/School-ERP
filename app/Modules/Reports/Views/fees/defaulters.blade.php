@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('modules.reports.reports_layout')
 
 @section("title", "Fee Defaulters Report")
 @section("page-title", "Fee Defaulters Report")
@@ -12,11 +12,7 @@
 @endpush
 
 @section("content")
-    <div class="mb-3">
-        <a href="{{ route('reports.fees.index') }}" class="btn btn-outline-secondary">
-            <i class="ti ti-arrow-left me-1"></i> Back to Fee Reports
-        </a>
-    </div>
+    
 
     {{-- Filter Card --}}
     <div class="card mb-4">

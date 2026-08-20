@@ -42,6 +42,11 @@ class SettingsService
                 'website' => $data['school']['website'] ?? null,
                 'principal_name' => $data['school']['principal_name'] ?? null,
                 'favicon_path' => Arr::get($currentSettings, 'school.favicon_path'),
+                'auth_background_path' => Arr::get($currentSettings, 'school.auth_background_path'),
+                'auth_background_color' => $data['school']['auth_background_color'] ?? Arr::get($currentSettings, 'school.auth_background_color'),
+                'primary_color' => $data['school']['primary_color'] ?? Arr::get($currentSettings, 'school.primary_color'),
+                'secondary_color' => $data['school']['secondary_color'] ?? Arr::get($currentSettings, 'school.secondary_color'),
+                'text_color' => $data['school']['text_color'] ?? Arr::get($currentSettings, 'school.text_color'),
             ],
             'academic' => [
                 'current_academic_year_id' => $data['academic']['current_academic_year_id'] ?? null,
@@ -75,6 +80,35 @@ class SettingsService
 
         if (isset($data['school']['favicon']) && $data['school']['favicon'] instanceof UploadedFile) {
             $settings['school']['favicon_path'] = $this->storeImage($data['school']['favicon'], 'settings/schools', Arr::get($currentSettings, 'school.favicon_path'));
+        }
+
+        if (isset($data['school']['auth_background']) && $data['school']['auth_background'] instanceof UploadedFile) {
+            $settings['school']['auth_background_path'] = $this->storeImage(
+                $data['school']['auth_background'], 
+                'settings/schools', 
+                Arr::get($currentSettings, 'school.auth_background_path')
+            );
+        } elseif (!empty($data['school']['remove_auth_background'])) {
+            $oldPath = Arr::get($currentSettings, 'school.auth_background_path');
+            if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
+            $settings['school']['auth_background_path'] = null;
+        }
+
+        if (!empty($data['school']['remove_favicon'])) {
+            $oldPath = Arr::get($currentSettings, 'school.favicon_path');
+            if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
+            $settings['school']['favicon_path'] = null;
+        }
+
+        if (!empty($data['school']['remove_logo'])) {
+            if ($school->logo_path && Storage::disk('public')->exists($school->logo_path)) {
+                Storage::disk('public')->delete($school->logo_path);
+            }
+            $attributes['logo_path'] = null;
         }
 
         if (! empty($data['email']['smtp_password'])) {

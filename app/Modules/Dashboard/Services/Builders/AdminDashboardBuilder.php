@@ -40,8 +40,8 @@ class AdminDashboardBuilder extends BaseDashboardBuilder
         return [
             $this->statCard('Total Students', $students, 'users', 'primary', 'up', null, route('admin.students.index')),
             $this->statCard('Teachers', $teachers, 'school', 'success', 'up', null, route('admin.teachers.index')),
-            $this->statCard('Attendance Rate', $attendanceRate.'%', 'circle-check', 'info'),
-            $this->statCard('Total Collected', 'Rs '.number_format($totalCollected, 0), 'currency-rupee', 'warning', null, null, route('admin.fees.index')),
+            $this->statCard('Attendance Rate', $attendanceRate.'%', 'circle-check', 'info', 'up'),
+            $this->statCard('Total Collected', '₹'.number_format($totalCollected, 0), 'currency-rupee', 'warning', 'up', null, route('admin.fees.index')),
         ];
     }
 

@@ -5,18 +5,24 @@
 
 @section('breadcrumbs')
     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-    <li class="breadcrumb-item active">Student Documents</li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.students.index') }}">Students</a></li>
+    <li class="breadcrumb-item active">Documents</li>
 @endsection
 
 @section('content')
     <div class="card">
         <div class="card-header d-flex align-items-center flex-wrap gap-2">
             <h3 class="card-title mb-0"><i class="ti ti-file-text text-primary me-2"></i>All Documents</h3>
-            @can('student_documents.create')
-                <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#documentModal" id="createDocument">
-                    <i class="ti ti-plus me-1"></i> Upload Document
-                </button>
-            @endcan
+            <div class="ms-auto d-flex gap-2">
+                <a href="{{ route('admin.students.index') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="ti ti-arrow-left me-1"></i> Back to Students
+                </a>
+                @can('student_documents.create')
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#documentModal" id="createDocument">
+                        <i class="ti ti-plus me-1"></i> Upload Document
+                    </button>
+                @endcan
+            </div>
         </div>
         <div class="card-body">
             <!-- Filters -->

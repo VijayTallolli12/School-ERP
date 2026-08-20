@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('modules.reports.reports_layout')
 
 @section("title", "Subject Allocation Report")
 @section("page-title", "Subject Allocation Report")
@@ -31,7 +31,7 @@
                     </select>
                 </div>
                 <div class="col-md-4 mb-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter me-1"></i> Apply Filters</button>
+                    <button type="submit" class="btn btn-outline-secondary w-100"><i class="ti ti-filter me-1"></i> Apply Filters</button>
                 </div>
             </form>
         </div>

@@ -18,8 +18,10 @@
     //$logoUrl = $school->logo_path ? Storage::url($school->logo_path) : null;
     $logoUrl = $school->logo_path ? asset('storage/'.$school->logo_path) : null;
     $faviconPath = data_get($schoolSettings, 'favicon_path');
-    //$faviconUrl = $faviconPath ? Storage::url($faviconPath) : null;
     $faviconUrl = $faviconPath ? asset('storage/'.$faviconPath) : null;
+    
+    $authBgPath = data_get($schoolSettings, 'auth_background_path');
+    $authBgUrl = $authBgPath ? asset('storage/'.$authBgPath) : null;
 @endphp
 
 @section('content')
@@ -95,6 +97,12 @@
                                                 <span id="logoEmpty" class="text-secondary {{ $logoUrl ? 'd-none' : '' }}">No logo</span>
                                             </div>
                                             <input type="file" name="school[logo]" class="form-control image-preview-input" data-preview="#logoPreview" data-empty="#logoEmpty" accept="image/*">
+                                            @if($logoUrl)
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input" type="checkbox" name="school[remove_logo]" value="1" id="removeLogo">
+                                                <label class="form-check-label text-danger small" for="removeLogo">Remove existing logo</label>
+                                            </div>
+                                            @endif
                                         </div>
                                         <div>
                                             <label class="form-label">Favicon</label>
@@ -103,7 +111,91 @@
                                                 <span id="faviconEmpty" class="text-secondary {{ $faviconUrl ? 'd-none' : '' }}">No favicon</span>
                                             </div>
                                             <input type="file" name="school[favicon]" class="form-control image-preview-input" data-preview="#faviconPreview" data-empty="#faviconEmpty" accept="image/*,.ico">
+                                            @if($faviconUrl)
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input" type="checkbox" name="school[remove_favicon]" value="1" id="removeFavicon">
+                                                <label class="form-check-label text-danger small" for="removeFavicon">Remove existing favicon</label>
+                                            </div>
+                                            @endif
                                         </div>
+                                    </div>
+                                </div>
+                            </div>                            
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-lg-12">
+                                <div class="card mb-3">
+                                    <div class="card-header"><h5 class="fw-semibold mb-0"><i class="ti ti-color-swatch text-primary me-2"></i>Theme & Branding</h5></div>
+                                    <div class="card-body">
+                                        <div class="mb-4">
+                                            <label class="form-label">Auth Background Image</label>
+                                            <div class="border rounded bg-body-tertiary d-flex align-items-center justify-content-center mb-2 overflow-hidden" style="height: 120px; position: relative;">
+                                                <img id="authBgPreview" src="{{ $authBgUrl ?: '' }}" alt="Background preview" class="{{ $authBgUrl ? '' : 'd-none' }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                <span id="authBgEmpty" class="text-secondary {{ $authBgUrl ? 'd-none' : '' }}">No background image</span>
+                                            </div>
+                                            <input type="file" name="school[auth_background]" class="form-control image-preview-input" data-preview="#authBgPreview" data-empty="#authBgEmpty" accept="image/*">
+                                            @if($authBgUrl)
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input" type="checkbox" name="school[remove_auth_background]" value="1" id="removeAuthBg">
+                                                <label class="form-check-label text-danger small" for="removeAuthBg">Remove existing background image</label>
+                                            </div>
+                                            @endif
+                                            <small class="text-muted d-block mt-1">Shown on the right side of the Login and Forgot Password screens.</small>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label">Auth Background Color / Gradient</label>
+                                            <textarea name="school[auth_background_color]" class="form-control font-monospace" rows="4" placeholder="e.g. #8C52FF or linear-gradient(...)">{{ old('school.auth_background_color', data_get($schoolSettings, 'auth_background_color')) }}</textarea>
+                                            <small class="text-muted d-block mt-1">Accepts hex codes, rgba, or valid CSS gradients (e.g. <code>linear-gradient(180deg, #1b1626 0%, #54102f 100%)</code>). This is used as the background if no image is uploaded.</small>
+                                        </div>
+
+                                        <hr>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Primary Color</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="color" name="school[primary_color]" class="form-control form-control-color" style="width: 50px; padding: 0.375rem;" value="{{ old('school.primary_color', data_get($schoolSettings, 'primary_color', '#7755CC')) }}" title="Choose primary color" oninput="$(this).next().val(this.value.toUpperCase())">
+                                                    <input type="text" class="form-control font-monospace text-uppercase" value="{{ old('school.primary_color', data_get($schoolSettings, 'primary_color', '#7755CC')) }}" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Primary Hover Color</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="color" name="school[primary_hover_color]" class="form-control form-control-color" style="width: 50px; padding: 0.375rem;" value="{{ old('school.primary_hover_color', data_get($schoolSettings, 'primary_hover_color', '#6848B8')) }}" title="Choose primary hover color" oninput="$(this).next().val(this.value.toUpperCase())">
+                                                    <input type="text" class="form-control font-monospace text-uppercase" value="{{ old('school.primary_hover_color', data_get($schoolSettings, 'primary_hover_color', '#6848B8')) }}" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Primary Light Color</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="color" name="school[primary_light_color]" class="form-control form-control-color" style="width: 50px; padding: 0.375rem;" value="{{ old('school.primary_light_color', data_get($schoolSettings, 'primary_light_color', '#F7F4FD')) }}" title="Choose primary light color" oninput="$(this).next().val(this.value.toUpperCase())">
+                                                    <input type="text" class="form-control font-monospace text-uppercase" value="{{ old('school.primary_light_color', data_get($schoolSettings, 'primary_light_color', '#F7F4FD')) }}" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Text Color (Dark)</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="color" name="school[text_color]" class="form-control form-control-color" style="width: 50px; padding: 0.375rem;" value="{{ old('school.text_color', data_get($schoolSettings, 'text_color', '#17151C')) }}" title="Choose text color" oninput="$(this).next().val(this.value.toUpperCase())">
+                                                    <input type="text" class="form-control font-monospace text-uppercase" value="{{ old('school.text_color', data_get($schoolSettings, 'text_color', '#17151C')) }}" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Text Color (Muted)</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="color" name="school[text_muted_color]" class="form-control form-control-color" style="width: 50px; padding: 0.375rem;" value="{{ old('school.text_muted_color', data_get($schoolSettings, 'text_muted_color', '#5B5565')) }}" title="Choose muted text color" oninput="$(this).next().val(this.value.toUpperCase())">
+                                                    <input type="text" class="form-control font-monospace text-uppercase" value="{{ old('school.text_muted_color', data_get($schoolSettings, 'text_muted_color', '#5B5565')) }}" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Border Color</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="color" name="school[border_color]" class="form-control form-control-color" style="width: 50px; padding: 0.375rem;" value="{{ old('school.border_color', data_get($schoolSettings, 'border_color', '#DDD9E2')) }}" title="Choose border color" oninput="$(this).next().val(this.value.toUpperCase())">
+                                                    <input type="text" class="form-control font-monospace text-uppercase" value="{{ old('school.border_color', data_get($schoolSettings, 'border_color', '#DDD9E2')) }}" readonly>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">These colors apply to the authentication pages and other branded interfaces.</small>
                                     </div>
                                 </div>
                             </div>

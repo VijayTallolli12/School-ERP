@@ -12,11 +12,18 @@
     <div class="card">
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title mb-0"><i class="ti ti-school text-primary me-2"></i>Students</h3>
-            @can('students.create')
-                <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#studentModal" id="createStudent">
-                    <i class="ti ti-plus me-1"></i> Admit Student
-                </button>
-            @endcan
+            <div class="ms-auto d-flex gap-2">
+                @can('student_documents.view')
+                    <a href="{{ route('admin.documents.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="ti ti-file-text me-1"></i> Documents
+                    </a>
+                @endcan
+                @can('students.create')
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#studentModal" id="createStudent">
+                        <i class="ti ti-plus me-1"></i> Admit Student
+                    </button>
+                @endcan
+            </div>
         </div>
         <div class="card-body">
             <table class="table table-striped table-bordered w-100" id="studentsTable">

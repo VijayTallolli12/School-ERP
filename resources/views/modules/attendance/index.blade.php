@@ -69,7 +69,7 @@
                     <label for="filterToDate" class="form-label">To Date</label>
                     <input type="date" id="filterToDate" class="form-control form-control-sm" value="{{ now()->toDateString() }}">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md">
                     <label for="filterStatus" class="form-label">Status</label>
                     <select id="filterStatus" class="form-select form-select-sm">
                         <option value="">All statuses</option>
@@ -78,8 +78,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-1 d-flex align-items-end gap-1">
-                    <button type="button" class="btn btn-primary btn-sm w-100" id="btnApplyFilters"><i class="ti ti-check me-1"></i>Apply</button>
+                <div class="col-md-auto d-flex align-items-end gap-1">
+                    <button type="button" class="btn btn-primary btn-sm w-100" id="btnApplyFilters" style="white-space: nowrap;"><i class="ti ti-check me-1"></i>Apply</button>
                 </div>
             </div>
             <div class="mt-2">

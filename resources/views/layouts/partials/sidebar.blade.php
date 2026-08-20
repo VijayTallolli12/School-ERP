@@ -1,4 +1,55 @@
-<aside class="app-sidebar bg-white">
+<style>
+/* Sidebar customizations to match reference design */
+.app-sidebar {
+    background-color: #ffffff !important;
+    border-right: 1px solid rgba(0,0,0,0.05);
+}
+.sidebar-menu .nav-item {
+    margin-bottom: 2px;
+}
+.sidebar-menu .nav-link {
+    color: #4b5563 !important;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin: 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.sidebar-menu .nav-link:hover {
+    background-color: #f9fafb !important;
+    color: #111827 !important;
+}
+.sidebar-menu .nav-link.active {
+    background-color: var(--erp-primary-light, #f3f0ff) !important;
+    color: var(--erp-primary, #7755CC) !important;
+}
+.sidebar-menu .nav-link.active i {
+    color: var(--erp-primary, #7755CC) !important;
+}
+.sidebar-menu .nav-header {
+    padding: 24px 16px 8px 24px;
+}
+.sidebar-menu .nav-header-label, .sidebar-menu .nav-header {
+    color: #9ca3af !important;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.sidebar-brand {
+    border-bottom: none !important;
+    padding: 16px 20px;
+}
+.brand-text {
+    color: #111827 !important;
+    font-weight: 700 !important;
+    font-size: 18px !important;
+}
+</style>
+<aside class="app-sidebar bg-white shadow-sm border-0">
     <div class="sidebar-brand">
         <a href="{{ route('admin.dashboard') }}" class="brand-link d-flex align-items-center gap-2 text-decoration-none">
             @if($logo = setting('school_logo'))
@@ -629,14 +680,7 @@
                     </li>
                 @endcan
 
-                @can('student_documents.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.documents.index') }}" class="nav-link @if(request()->routeIs('admin.documents.*')) active @endif">
-                            <i class="nav-icon ti ti-file-text"></i>
-                            <p>Student Documents</p>
-                        </a>
-                    </li>
-                @endcan
+
 
                 @can('transport.view')
                     <li class="nav-item">
@@ -800,32 +844,7 @@
                     <span class="nav-header-label">Administration</span>
                 </li>
 
-                @canany(['roles.view', 'permissions.view'])
-                    <li class="nav-item @if(request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*')) menu-open @endif">
-                        <a href="#" class="nav-link @if(request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*')) active @endif">
-                            <i class="nav-icon ti ti-shield-lock"></i>
-                            <p>Access Control <i class="nav-arrow ti ti-chevron-right"></i></p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            @can('roles.view')
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.roles.index') }}" class="nav-link @if(request()->routeIs('admin.roles.*')) active @endif">
-                                        <i class="nav-icon ti ti-id-badge"></i>
-                                        <p>Roles</p>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('permissions.view')
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.permissions.index') }}" class="nav-link @if(request()->routeIs('admin.permissions.*')) active @endif">
-                                        <i class="nav-icon ti ti-key"></i>
-                                        <p>Permissions</p>
-                                    </a>
-                                </li>
-                            @endcan
-                        </ul>
-                    </li>
-                @endcanany
+
 
                 @can('leave_management.view')
                     <li class="nav-item @if(request()->routeIs('admin.leave-*')) menu-open @endif">
@@ -859,271 +878,63 @@
                     </li>
                 @endcan
 
-                @can('settings.view')
-                    <li class="nav-item">
-                        <a href="{{ route('admin.settings.index') }}" class="nav-link @if(request()->routeIs('admin.settings.index')) active @endif">
+                @canany(['settings.view', 'roles.view', 'permissions.view'])
+                    <li class="nav-item @if(request()->routeIs('admin.settings.*') || request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*')) menu-open @endif">
+                        <a href="#" class="nav-link @if(request()->routeIs('admin.settings.*') || request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*')) active @endif">
                             <i class="nav-icon ti ti-settings"></i>
-                            <p>Settings</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('admin.settings.mobile.branding') }}" class="nav-link @if(request()->routeIs('admin.settings.mobile.*')) active @endif">
-                            <i class="nav-icon ti ti-palette"></i>
-                            <p>Mobile Branding</p>
-                        </a>
-                    </li>
-                @endcan
-
-                @can('reports.view')
-                    <li class="nav-item @if(request()->routeIs('reports.*')) menu-open @endif">
-                        <a href="#" class="nav-link @if(request()->routeIs('reports.*')) active @endif">
-                            <i class="nav-icon ti ti-chart-bar"></i>
-                            <p>Analytics <i class="nav-arrow ti ti-chevron-right"></i></p>
+                            <p>Settings <i class="nav-arrow ti ti-chevron-right"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item @if(request()->routeIs('reports.students.*')) menu-open @endif">
-                                <a href="#" class="nav-link @if(request()->routeIs('reports.students.*')) active @endif">
-                                    <i class="nav-icon ti ti-school"></i>
-                                    <p>Student Reports <i class="nav-arrow ti ti-chevron-right"></i></p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a href="{{ route('reports.students.index') }}" class="nav-link @if(request()->routeIs('reports.students.index')) active @endif">
-                                            <i class="nav-icon ti ti-circle"></i>
-                                            <p>Dashboard</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ route('reports.students.directory') }}" class="nav-link @if(request()->routeIs('reports.students.directory')) active @endif">
-                                            <i class="nav-icon ti ti-circle"></i>
-                                            <p>Student Directory</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ route('reports.students.gender_wise') }}" class="nav-link @if(request()->routeIs('reports.students.gender_wise')) active @endif">
-                                            <i class="nav-icon ti ti-circle"></i>
-                                            <p>Gender-wise Report</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="nav-item @if(request()->routeIs('reports.attendance.*')) menu-open @endif">
-                                <a href="#" class="nav-link @if(request()->routeIs('reports.attendance.*')) active @endif">
-                                    <i class="nav-icon ti ti-calendar-check"></i>
-                                    <p>Attendance Reports <i class="nav-arrow ti ti-chevron-right"></i></p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a href="{{ route('reports.attendance.index') }}" class="nav-link @if(request()->routeIs('reports.attendance.index')) active @endif">
-                                            <i class="nav-icon ti ti-circle"></i>
-                                            <p>Dashboard</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ route('reports.attendance.daily') }}" class="nav-link @if(request()->routeIs('reports.attendance.daily') && !request()->routeIs('reports.attendance.daily_list')) active @endif">
-                                            <i class="nav-icon ti ti-circle"></i>
-                                            <p>Daily Attendance</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ route('reports.attendance.monthly') }}" class="nav-link @if(request()->routeIs('reports.attendance.monthly')) active @endif">
-                                            <i class="nav-icon ti ti-circle"></i>
-                                            <p>Monthly Attendance</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ route('reports.attendance.class_wise') }}" class="nav-link @if(request()->routeIs('reports.attendance.class_wise')) active @endif">
-                                            <i class="nav-icon ti ti-circle"></i>
-                                            <p>Class-wise Attendance</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ route('reports.attendance.absent_students') }}" class="nav-link @if(request()->routeIs('reports.attendance.absent_students*')) active @endif">
-                                            <i class="nav-icon ti ti-circle"></i>
-                                            <p>Absent Students</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            @can('fees.reports')
-                                <li class="nav-item @if(request()->routeIs('reports.fees.*')) menu-open @endif">
-                                    <a href="#" class="nav-link @if(request()->routeIs('reports.fees.*')) active @endif">
-                                        <i class="nav-icon ti ti-cash"></i>
-                                        <p>Fee Reports <i class="nav-arrow ti ti-chevron-right"></i></p>
+                            @can('settings.view')
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.settings.index') }}" class="nav-link @if(request()->routeIs('admin.settings.index')) active @endif">
+                                        <i class="nav-icon ti ti-adjustments-horizontal"></i>
+                                        <p>General Settings</p>
                                     </a>
-                                    <ul class="nav nav-treeview">
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.fees.index') }}" class="nav-link @if(request()->routeIs('reports.fees.index')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Dashboard</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.fees.paid') }}" class="nav-link @if(request()->routeIs('reports.fees.paid')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Paid Fees</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.fees.pending') }}" class="nav-link @if(request()->routeIs('reports.fees.pending')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Pending Fees</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.fees.overdue') }}" class="nav-link @if(request()->routeIs('reports.fees.overdue')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Overdue Fees</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.fees.collection_summary') }}" class="nav-link @if(request()->routeIs('reports.fees.collection_summary')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Collection Summary</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.fees.defaulters') }}" class="nav-link @if(request()->routeIs('reports.fees.defaulters')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Fee Defaulters</p>
-                                            </a>
-                                        </li>
-                                    </ul>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.settings.mobile.branding') }}" class="nav-link @if(request()->routeIs('admin.settings.mobile.*')) active @endif">
+                                        <i class="nav-icon ti ti-palette"></i>
+                                        <p>Mobile Branding</p>
+                                    </a>
                                 </li>
                             @endcan
-                            @can('exams.reports')
-                                <li class="nav-item @if(request()->routeIs('reports.exams.*')) menu-open @endif">
-                                    <a href="#" class="nav-link @if(request()->routeIs('reports.exams.*')) active @endif">
-                                        <i class="nav-icon ti ti-file-pencil"></i>
-                                        <p>Exam Reports <i class="nav-arrow ti ti-chevron-right"></i></p>
+                            @canany(['roles.view', 'permissions.view'])
+                                <li class="nav-item @if(request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*')) menu-open @endif">
+                                    <a href="#" class="nav-link @if(request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*')) active @endif">
+                                        <i class="nav-icon ti ti-shield-lock"></i>
+                                        <p>Access Control <i class="nav-arrow ti ti-chevron-right"></i></p>
                                     </a>
                                     <ul class="nav nav-treeview">
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.exams.index') }}" class="nav-link @if(request()->routeIs('reports.exams.index')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Dashboard</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.exams.results') }}" class="nav-link @if(request()->routeIs('reports.exams.results')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Exam Results</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.exams.class_performance') }}" class="nav-link @if(request()->routeIs('reports.exams.class_performance')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Class Performance</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.exams.subject_performance') }}" class="nav-link @if(request()->routeIs('reports.exams.subject_performance')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Subject Performance</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.exams.student_summary') }}" class="nav-link @if(request()->routeIs('reports.exams.student_summary')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Student Summary</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.exams.top_performers') }}" class="nav-link @if(request()->routeIs('reports.exams.top_performers')) active @endif">
-                                                <i class="nav-icon ti ti-trophy"></i>
-                                                <p>Top Performers</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.exams.pass_fail_analysis') }}" class="nav-link @if(request()->routeIs('reports.exams.pass_fail_analysis')) active @endif">
-                                                <i class="nav-icon ti ti-checkup-list"></i>
-                                                <p>Pass/Fail Analysis</p>
-                                            </a>
-                                        </li>
+                                        @can('roles.view')
+                                            <li class="nav-item">
+                                                <a href="{{ route('admin.roles.index') }}" class="nav-link @if(request()->routeIs('admin.roles.*')) active @endif">
+                                                    <i class="nav-icon ti ti-id-badge"></i>
+                                                    <p>Roles</p>
+                                                </a>
+                                            </li>
+                                        @endcan
+                                        @can('permissions.view')
+                                            <li class="nav-item">
+                                                <a href="{{ route('admin.permissions.index') }}" class="nav-link @if(request()->routeIs('admin.permissions.*')) active @endif">
+                                                    <i class="nav-icon ti ti-key"></i>
+                                                    <p>Permissions</p>
+                                                </a>
+                                            </li>
+                                        @endcan
                                     </ul>
                                 </li>
-                            @endcan
-                            @can('teachers.reports')
-                                <li class="nav-item @if(request()->routeIs('reports.teachers.*')) menu-open @endif">
-                                    <a href="#" class="nav-link @if(request()->routeIs('reports.teachers.*')) active @endif">
-                                        <i class="nav-icon ti ti-presentation"></i>
-                                        <p>Teacher Reports <i class="nav-arrow ti ti-chevron-right"></i></p>
-                                    </a>
-                                    <ul class="nav nav-treeview">
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.teachers.index') }}" class="nav-link @if(request()->routeIs('reports.teachers.index')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Dashboard</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.teachers.list') }}" class="nav-link @if(request()->routeIs('reports.teachers.list')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Teacher List</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.teachers.attendance') }}" class="nav-link @if(request()->routeIs('reports.teachers.attendance')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Attendance</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.teachers.subject_allocation') }}" class="nav-link @if(request()->routeIs('reports.teachers.subject_allocation')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Subject Allocation</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.teachers.class_teacher_mapping') }}" class="nav-link @if(request()->routeIs('reports.teachers.class_teacher_mapping')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Class Teacher Map</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.teachers.workload') }}" class="nav-link @if(request()->routeIs('reports.teachers.workload')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Workload</p>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            @endcan
-                            @can('parents.reports')
-                                <li class="nav-item @if(request()->routeIs('reports.parents.*')) menu-open @endif">
-                                    <a href="#" class="nav-link @if(request()->routeIs('reports.parents.*')) active @endif">
-                                        <i class="nav-icon ti ti-users"></i>
-                                        <p>Parent Reports <i class="nav-arrow ti ti-chevron-right"></i></p>
-                                    </a>
-                                    <ul class="nav nav-treeview">
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.parents.index') }}" class="nav-link @if(request()->routeIs('reports.parents.index')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Dashboard</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.parents.list') }}" class="nav-link @if(request()->routeIs('reports.parents.list')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Parent List</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.parents.mapping') }}" class="nav-link @if(request()->routeIs('reports.parents.mapping')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Parent-Student Mapping</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{{ route('reports.parents.activity_summary') }}" class="nav-link @if(request()->routeIs('reports.parents.activity_summary')) active @endif">
-                                                <i class="nav-icon ti ti-circle"></i>
-                                                <p>Activity Summary</p>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            @endcan
+                            @endcanany
                         </ul>
+                    </li>
+                @endcanany
+
+                @can('reports.view')
+                    <li class="nav-item">
+                        <a href="{{ route('reports.index') }}" class="nav-link @if(request()->routeIs('reports.*')) active @endif">
+                            <i class="nav-icon ti ti-chart-bar"></i>
+                            <p>Analytics</p>
+                        </a>
                     </li>
                 @endcan
 

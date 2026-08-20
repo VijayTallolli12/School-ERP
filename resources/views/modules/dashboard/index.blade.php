@@ -8,15 +8,15 @@
 @endsection
 
 @section('content')
-    <div class="hero-welcome">
-        <div class="hw-left">
-            <div class="hw-avatar">
-                <i class="ti ti-sparkles"></i>
-            </div>
-            <div>
-                <div class="hw-greeting">{{ $dashboard->greeting }}</div>
-                <div class="hw-sub">{{ \Carbon\Carbon::now()->format('l, F j, Y') }} &middot; {{ date('h:i A') }}</div>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="font-size: 26px; color: #111827;">Dashboard Overview</h2>
+            <div style="font-size: 14px; color: #6b7280;">Welcome back, {{ auth()->user()->name }}. Here is today's summary.</div>
+        </div>
+        <div>
+            <a href="{{ route('reports.index') }}" class="d-flex justify-content-center align-items-center text-decoration-none" style="background-color: var(--erp-primary, #7755CC); color: #ffffff; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; padding: 10px 20px; cursor: pointer; transition: all 0.2s ease-in-out;" onmouseover="this.style.backgroundColor='var(--erp-primary-hover, #6848B8)'" onmouseout="this.style.backgroundColor='var(--erp-primary, #7755CC)'">
+                Generate Report
+            </a>
         </div>
     </div>
 
@@ -41,14 +41,11 @@
             @foreach($dashboard->widgets as $widget)
                 <div class="col-xl-{{ $widget->cols ?? 4 }}">
                     <div class="card h-100">
-                        <div class="card-header d-flex align-items-center">
-                            @if($widget->icon)
-                                <i class="ti ti-{{ $widget->icon }} text-primary me-2"></i>
-                            @endif
-                            <h3 class="card-title mb-0">{{ $widget->title }}</h3>
+                        <div class="card-header d-flex align-items-center border-0 bg-transparent pb-0">
+                            <h3 class="card-title fw-bold text-dark mb-0 fs-5">{{ $widget->title }}</h3>
                             @if($widget->route)
-                                <a href="{{ $widget->route }}" class="btn btn-sm btn-outline-primary ms-auto">
-                                    <i class="ti ti-eye me-1"></i>Details
+                                <a href="{{ $widget->route }}" class="text-decoration-none fw-semibold ms-auto" style="color: var(--erp-primary, #4f46e5); font-size: 0.875rem;">
+                                    View All
                                 </a>
                             @endif
                         </div>
@@ -109,10 +106,7 @@
                                             @endif
                                         </div>
                                     @empty
-                                        <div class="text-center text-secondary py-4">
-                                            <i class="ti ti-calendar-off d-block fs-3 mb-1 opacity-25"></i>
-                                            <small>{{ $widget->emptyMessage ?? 'No data available.' }}</small>
-                                        </div>
+                                        <x-erp.empty-state icon="calendar" title="No Upcoming Events" message="There are no scheduled events for this week." />
                                     @endforelse
                                 </div>
                             @elseif($widget->type === 'summary')
@@ -178,8 +172,8 @@
             @foreach($dashboard->charts as $chart)
                 <div class="col-xl-7">
                     <div class="card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h3 class="card-title mb-0"><i class="ti ti-chart-bar text-primary me-2"></i>{{ $chart->title }}</h3>
+                        <div class="card-header d-flex align-items-center justify-content-between border-0 bg-transparent pb-0">
+                            <h3 class="card-title fw-bold text-dark mb-0 fs-5">{{ $chart->title }}</h3>
                         </div>
                         <div class="card-body" style="height:{{ $chart->height }}px;">
                             <canvas id="chart-{{ $chart->key }}"></canvas>
@@ -190,9 +184,9 @@
             @if(count($dashboard->recentActivity) > 0)
                 <div class="col-xl-5">
                     <div class="card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h3 class="card-title mb-0"><i class="ti ti-login text-primary me-2"></i>Recent Activity</h3>
-                            <span class="badge bg-secondary-subtle text-secondary fs-13">{{ count($dashboard->recentActivity) }} entries</span>
+                        <div class="card-header d-flex align-items-center justify-content-between border-0 bg-transparent pb-0">
+                            <h3 class="card-title fw-bold text-dark mb-0 fs-5">Recent Activity</h3>
+                            <a href="#" class="text-decoration-none fw-semibold ms-auto" style="color: var(--erp-primary, #4f46e5); font-size: 0.875rem;">View All</a>
                         </div>
                         <div class="card-body p-0">
                             <div class="compact-widget px-3 py-2">
@@ -207,10 +201,7 @@
                                         </div>
                                     </div>
                                 @empty
-                                    <div class="text-center text-secondary py-4">
-                                        <i class="ti ti-inbox d-block fs-3 mb-1 opacity-25"></i>
-                                        <small>No login activity yet.</small>
-                                    </div>
+                                    <x-erp.empty-state icon="clock" title="No Recent Activity" message="Activity logs will appear here once users interact with the system." />
                                 @endforelse
                             </div>
                         </div>
@@ -224,8 +215,8 @@
         <div class="row g-3 mb-3">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title mb-0"><i class="ti ti-bolt text-primary me-2"></i>Quick Actions</h3>
+                    <div class="card-header border-0 bg-transparent pb-0">
+                        <h3 class="card-title fw-bold text-dark mb-0 fs-5">Quick Actions</h3>
                     </div>
                     <div class="card-body">
                         <div class="d-flex flex-wrap gap-2">

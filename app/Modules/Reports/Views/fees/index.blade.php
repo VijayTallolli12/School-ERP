@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('modules.reports.reports_layout')
 
 @section("title", "Fee Reports Dashboard")
 @section("page-title", "Fee Reports Dashboard")

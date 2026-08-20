@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('modules.reports.reports_layout')
 
 @section("title", "Teacher Workload Report")
 @section("page-title", "Teacher Workload Report")
@@ -11,11 +11,7 @@
 @endpush
 
 @section("content")
-    <div class="mb-3">
-        <a href="{{ route('reports.teachers.index') }}" class="btn btn-outline-secondary">
-            <i class="ti ti-arrow-left me-1"></i> Back to Teacher Reports
-        </a>
-    </div>
+    
 
     <div class="card mb-4">
         <div class="card-body">

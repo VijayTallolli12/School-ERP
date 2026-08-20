@@ -38,6 +38,10 @@ if (! function_exists('setting')) {
                 if (! $school && auth()->check()) {
                     $school = auth()->user()->currentSchool;
                 }
+
+                if (! $school && class_exists(\App\Models\School::class)) {
+                    $school = \App\Models\School::first();
+                }
             } catch (Throwable) {
                 // Application not fully booted (CLI, queue, early bootstrap, etc.)
             }
@@ -54,6 +58,9 @@ if (! function_exists('setting')) {
                 'favicon'      => ($fav = data_get($school->settings, 'school.favicon_path'))
                                     ? asset('storage/' . $fav)
                                     : null,
+                'auth_background_image' => ($bg = data_get($school->settings, 'school.auth_background_path'))
+                                            ? asset('storage/' . $bg)
+                                            : null,
                 'principal_name' => data_get($school->settings, 'school.principal_name'),
                 'website'      => data_get($school->settings, 'school.website'),
                 'address'      => $school->address,

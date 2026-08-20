@@ -1,0 +1,80 @@
+:root {
+    --primary: #8C52FF;
+    --primary-alternate: #1C0054;
+    --secondary: #C5FF52;
+}
+
+.primary-color {
+    color: var(--primary);
+}
+
+.secondary-color {
+    color: var(--secondary);
+}
+
+.primary-light-color {
+    color: #F1E9FF;
+}
+
+.grey-color {
+    color: #9A96A3;
+}
+
+.grey-text {
+    color: #665D7A;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-secondary {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+    color: #000;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-alternate);
+    border-color: var(--primary-alternate);
+}
+
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:active,
+.btn-outline-primary.active,
+.btn-check:checked + .btn-outline-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.btn-outline-primary:focus,
+.btn-outline-primary:focus-visible {
+    background-color: transparent;
+    color: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(140, 82, 255, 0.25);
+}
+
+.btn-outline-primary:focus:hover,
+.btn-outline-primary:focus:active {
+    background-color: var(--primary);
+    color: #fff;
+}
+
+.btn-outline-primary:disabled,
+.btn-outline-primary.disabled {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.form-switch .form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}

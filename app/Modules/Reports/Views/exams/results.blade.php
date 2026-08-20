@@ -1,12 +1,10 @@
-@extends('layouts.admin')
+@extends('modules.reports.reports_layout')
 
 @section("title", "Exam Results Report")
 @section("page-title", "Exam Results Report")
 
 @section("content")
-    <div class="mb-3">
-        <a href="{{ route('reports.exams.index') }}" class="btn btn-outline-secondary"><i class="ti ti-arrow-left me-1"></i> Back to Exam Reports</a>
-    </div>
+    
 
     <div class="row mb-3">
         <div class="col-md-12">
@@ -48,7 +46,7 @@
                     </select>
                 </div>
                 <div class="col-auto mb-2">
-                    <button type="button" id="filterBtn" class="btn btn-primary me-2"><i class="ti ti-filter me-1"></i>Filter</button>
+                    <button type="button" id="filterBtn" class="btn btn-outline-secondary me-2"><i class="ti ti-filter me-1"></i>Filter</button>
                     <button type="button" id="resetBtn" class="btn btn-secondary me-2"><i class="ti ti-refresh me-1"></i>Reset</button>
                     <a id="exportExcel" href="{{ route('reports.exams.export.excel', ['type' => 'results']) }}" class="btn btn-sm btn-outline-success me-2"><i class="ti ti-file-spreadsheet me-1"></i>Export Excel</a>
                     <a id="exportPdf" href="{{ route('reports.exams.export.pdf', ['type' => 'results']) }}" class="btn btn-sm btn-outline-danger me-2"><i class="ti ti-file-type-pdf me-1"></i>Export PDF</a>

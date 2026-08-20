@@ -107,7 +107,7 @@ class LibraryController extends Controller
             ->addColumn('category_name', fn (Book $b) => $b->category?->name ?? '-')
             ->addColumn('author_name', fn (Book $b) => $b->author?->name ?? '-')
             ->addColumn('publisher_name', fn (Book $b) => $b->publisher?->name ?? '-')
-            ->editColumn('status', fn (Book $b) => '<span class="badge bg-'.($b->status === 'active' ? 'success' : 'secondary').'">'.$b->status.'</span>')
+            ->editColumn('status', fn (Book $b) => '<span class="status-pill status-'.($b->status === 'active' ? 'active' : 'inactive').'">'.$b->status.'</span>')
             ->addColumn('actions', fn (Book $b) => view('modules.library._actions', ['type' => 'book', 'model' => $b])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -141,7 +141,7 @@ class LibraryController extends Controller
     public function categoriesData(): JsonResponse
     {
         return DataTables::of($this->library->categories())
-            ->editColumn('status', fn (Category $c) => '<span class="badge bg-'.($c->status === 'active' ? 'success' : 'secondary').'">'.$c->status.'</span>')
+            ->editColumn('status', fn (Category $c) => '<span class="status-pill status-'.($c->status === 'active' ? 'active' : 'inactive').'">'.$c->status.'</span>')
             ->addColumn('actions', fn (Category $c) => view('modules.library._actions', ['type' => 'category', 'model' => $c])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -175,7 +175,7 @@ class LibraryController extends Controller
     public function authorsData(): JsonResponse
     {
         return DataTables::of($this->library->authors())
-            ->editColumn('status', fn (Author $a) => '<span class="badge bg-'.($a->status === 'active' ? 'success' : 'secondary').'">'.$a->status.'</span>')
+            ->editColumn('status', fn (Author $a) => '<span class="status-pill status-'.($a->status === 'active' ? 'active' : 'inactive').'">'.$a->status.'</span>')
             ->addColumn('actions', fn (Author $a) => view('modules.library._actions', ['type' => 'author', 'model' => $a])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -209,7 +209,7 @@ class LibraryController extends Controller
     public function publishersData(): JsonResponse
     {
         return DataTables::of($this->library->publishers())
-            ->editColumn('status', fn (Publisher $p) => '<span class="badge bg-'.($p->status === 'active' ? 'success' : 'secondary').'">'.$p->status.'</span>')
+            ->editColumn('status', fn (Publisher $p) => '<span class="status-pill status-'.($p->status === 'active' ? 'active' : 'inactive').'">'.$p->status.'</span>')
             ->addColumn('actions', fn (Publisher $p) => view('modules.library._actions', ['type' => 'publisher', 'model' => $p])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -246,9 +246,9 @@ class LibraryController extends Controller
             ->addColumn('book_title', fn (BookIssue $i) => $i->book?->title ?? '-')
             ->addColumn('borrower', fn (BookIssue $i) => $this->getBorrowerName($i))
             ->addColumn('is_overdue', fn (BookIssue $i) => $i->status === 'issued' && now()->isAfter($i->due_date)
-                ? '<span class="badge bg-danger">Yes</span>'
-                : '<span class="badge bg-success">No</span>')
-            ->editColumn('status', fn (BookIssue $i) => '<span class="badge bg-'.($i->status === 'issued' ? 'primary' : ($i->status === 'returned' ? 'success' : 'secondary')).'">'.$i->status.'</span>')
+                ? '<span class="status-pill status-warning">Yes</span>'
+                : '<span class="status-pill status-active">No</span>')
+            ->editColumn('status', fn (BookIssue $i) => '<span class="status-pill status-'.($i->status === 'issued' ? 'primary' : ($i->status === 'returned' ? 'active' : 'inactive')).'">'.ucfirst($i->status).'</span>')
             ->editColumn('fine_amount', fn (BookIssue $i) => '<span class="text-end d-block">'.number_format((float) $i->fine_amount, 2).'</span>')
             ->addColumn('actions', fn (BookIssue $i) => view('modules.library._actions', ['type' => 'issue', 'model' => $i])->render())
             ->rawColumns(['is_overdue', 'status', 'fine_amount', 'actions'])
@@ -312,7 +312,7 @@ class LibraryController extends Controller
         return DataTables::of($this->library->fineSettings())
             ->editColumn('fine_per_day', fn (FineSetting $f) => number_format((float) $f->fine_per_day, 2))
             ->editColumn('max_fine', fn (FineSetting $f) => $f->max_fine !== null ? number_format((float) $f->max_fine, 2) : '-')
-            ->editColumn('status', fn (FineSetting $f) => '<span class="badge bg-'.($f->status === 'active' ? 'success' : 'secondary').'">'.$f->status.'</span>')
+            ->editColumn('status', fn (FineSetting $f) => '<span class="status-pill status-'.($f->status === 'active' ? 'active' : 'inactive').'">'.$f->status.'</span>')
             ->addColumn('actions', fn (FineSetting $f) => view('modules.library._actions', ['type' => 'fine-setting', 'model' => $f])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -370,7 +370,7 @@ class LibraryController extends Controller
             ->addColumn('category_name', fn (Book $b) => $b->category?->name ?? '-')
             ->addColumn('author_name', fn (Book $b) => $b->author?->name ?? '-')
             ->addColumn('publisher_name', fn (Book $b) => $b->publisher?->name ?? '-')
-            ->editColumn('status', fn (Book $b) => '<span class="badge bg-'.($b->status === 'active' ? 'success' : 'secondary').'">'.$b->status.'</span>')
+            ->editColumn('status', fn (Book $b) => '<span class="status-pill status-'.($b->status === 'active' ? 'active' : 'inactive').'">'.$b->status.'</span>')
             ->rawColumns(['status'])
             ->toJson();
     }
@@ -392,7 +392,7 @@ class LibraryController extends Controller
             ->addColumn('borrower', fn (BookIssue $i) => $i->issueable?->full_name ?? '-')
             ->editColumn('issueable_type', fn (BookIssue $i) => class_basename($i->issueable_type))
             ->addColumn('overdue_days', fn (BookIssue $i) => now()->isAfter($i->due_date) ? now()->diffInDays($i->due_date) : 0)
-            ->editColumn('status', fn (BookIssue $i) => '<span class="badge bg-primary">'.$i->status.'</span>')
+            ->editColumn('status', fn (BookIssue $i) => '<span class="status-pill status-primary">'.$i->status.'</span>')
             ->rawColumns(['status'])
             ->toJson();
     }
@@ -411,7 +411,7 @@ class LibraryController extends Controller
             ->addColumn('book_title', fn (BookIssue $i) => $i->book?->title ?? '-')
             ->addColumn('borrower', fn (BookIssue $i) => $i->issueable?->full_name ?? '-')
             ->addColumn('overdue_days', fn (BookIssue $i) => now()->diffInDays($i->due_date))
-            ->editColumn('status', fn (BookIssue $i) => '<span class="badge bg-danger">Overdue</span>')
+            ->editColumn('status', fn (BookIssue $i) => '<span class="status-pill status-warning">Overdue</span>')
             ->rawColumns(['status'])
             ->toJson();
     }
@@ -433,8 +433,8 @@ class LibraryController extends Controller
             ->addColumn('borrower', fn (BookIssue $i) => $i->issueable?->full_name ?? '-')
             ->editColumn('fine_amount', fn (BookIssue $i) => '<span class="text-end d-block">'.number_format((float) $i->fine_amount, 2).'</span>')
             ->editColumn('fine_paid', fn (BookIssue $i) => $i->fine_paid
-                ? '<span class="badge bg-success">Paid</span>'
-                : '<span class="badge bg-warning">Unpaid</span>')
+                ? '<span class="status-pill status-active">Paid</span>'
+                : '<span class="status-pill status-warning">Unpaid</span>')
             ->rawColumns(['fine_amount', 'fine_paid'])
             ->toJson();
     }
@@ -453,7 +453,7 @@ class LibraryController extends Controller
             ->addColumn('book_title', fn (BookIssue $i) => $i->book?->title ?? '-')
             ->addColumn('isbn', fn (BookIssue $i) => $i->book?->isbn ?? '-')
             ->editColumn('fine_amount', fn (BookIssue $i) => '<span class="text-end d-block">'.number_format((float) $i->fine_amount, 2).'</span>')
-            ->editColumn('status', fn (BookIssue $i) => '<span class="badge bg-'.($i->status === 'returned' ? 'success' : 'primary').'">'.$i->status.'</span>')
+            ->editColumn('status', fn (BookIssue $i) => '<span class="status-pill status-'.($i->status === 'returned' ? 'active' : 'primary').'">'.$i->status.'</span>')
             ->rawColumns(['fine_amount', 'status'])
             ->toJson();
     }
@@ -472,7 +472,7 @@ class LibraryController extends Controller
             ->addColumn('book_title', fn (BookIssue $i) => $i->book?->title ?? '-')
             ->addColumn('isbn', fn (BookIssue $i) => $i->book?->isbn ?? '-')
             ->editColumn('fine_amount', fn (BookIssue $i) => '<span class="text-end d-block">'.number_format((float) $i->fine_amount, 2).'</span>')
-            ->editColumn('status', fn (BookIssue $i) => '<span class="badge bg-'.($i->status === 'returned' ? 'success' : 'primary').'">'.$i->status.'</span>')
+            ->editColumn('status', fn (BookIssue $i) => '<span class="status-pill status-'.($i->status === 'returned' ? 'active' : 'primary').'">'.$i->status.'</span>')
             ->rawColumns(['fine_amount', 'status'])
             ->toJson();
     }

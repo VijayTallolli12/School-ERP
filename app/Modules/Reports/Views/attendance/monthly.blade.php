@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('modules.reports.reports_layout')
 
 @section("title", "Monthly Attendance Report")
 @section("page-title", "Monthly Attendance Report")

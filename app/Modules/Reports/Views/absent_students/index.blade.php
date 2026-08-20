@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('modules.reports.reports_layout')
 
 @section("title", "Absent Students Report")
 @section("page-title", "Absent Students Report")
@@ -10,9 +10,7 @@
 @endpush
 
 @section("content")
-    <div class="mb-3">
-        <a href="{{ route('reports.attendance.index') }}" class="btn btn-outline-secondary"><i class="ti ti-arrow-left me-1"></i> Back to Attendance Dashboard</a>
-    </div>
+    
 
     {{-- Filter Card --}}
     <div class="card mb-4">
@@ -52,7 +50,7 @@
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <div class="d-flex gap-2 w-100">
-                        <button type="button" id="filterBtn" class="btn btn-primary py-2 flex-fill"><i class="ti ti-filter me-1"></i> Filter</button>
+                        <button type="button" id="filterBtn" class="btn btn-outline-secondary py-2 flex-fill"><i class="ti ti-filter me-1"></i> Filter</button>
                         <button type="button" id="resetBtn" class="btn btn-outline-secondary py-2"><i class="ti ti-refresh"></i></button>
                     </div>
                 </div>

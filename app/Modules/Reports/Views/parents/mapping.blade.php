@@ -1,12 +1,10 @@
-@extends('layouts.admin')
+@extends('modules.reports.reports_layout')
 
 @section("title", "Parent-Student Mapping Report")
 @section("page-title", "Parent-Student Mapping Report")
 
 @section("content")
-    <div class="mb-3">
-        <a href="{{ route('reports.parents.index') }}" class="btn btn-outline-secondary"><i class="ti ti-arrow-left me-1"></i> Back to Parent Reports</a>
-    </div>
+    
 
     <div class="card mb-4">
         <div class="card-body">
@@ -30,7 +28,7 @@
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="button" id="filterBtn" class="btn btn-primary"><i class="ti ti-filter me-1"></i> Filter</button>
+                    <button type="button" id="filterBtn" class="btn btn-outline-secondary"><i class="ti ti-filter me-1"></i> Filter</button>
                     <button type="button" id="resetBtn" class="btn btn-outline-secondary"><i class="ti ti-refresh"></i> Reset</button>
                 </div>
             </form>
