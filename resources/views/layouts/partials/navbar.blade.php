@@ -41,8 +41,8 @@
         <ul class="navbar-nav ms-auto align-items-center gap-1">
             @include('layouts.partials._bell')
             <li class="nav-item">
-                <a class="nav-link text-muted" href="#" title="Help">
-                    <i class="ti ti-help-circle" style="font-size: 1.4rem;"></i>
+                <a class="nav-link text-muted" href="{{ route('admin.mobile-apps.index') }}" title="Mobile Apps">
+                    <i class="ti ti-device-mobile" style="font-size: 1.4rem;"></i>
                 </a>
             </li>
             <div class="vr mx-2 bg-secondary opacity-25" style="height: 32px; align-self: center;"></div>
