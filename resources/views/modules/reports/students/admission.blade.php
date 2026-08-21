@@ -16,17 +16,17 @@
                     <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request('end_date') }}">
                 </div>
                 <div class="col-auto d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-filter me-1"></i> Filter</button>
-                    <a href="{{ route('reports.students.admission') }}" class="btn btn-outline-secondary py-2"><i class="ti ti-refresh me-1"></i> Reset</a>
+                    <button type="submit" class="btn btn-primary"><i class="ti ti-filter me-1"></i> Filter</button>
+                    <x-erp.export-buttons 
+                        excelUrl="{{ route('reports.students.admission.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}"
+                        pdfUrl="{{ route('reports.students.admission.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}"
+                        printUrl="{{ route('reports.students.admission.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}"
+                    />
+                    <a href="{{ route('reports.students.admission') }}" class="btn btn-outline-secondary"><i class="ti ti-refresh me-1"></i> Reset</a>
                 </div>
             </form>
             <div class="row mt-3">
-                <div class="col-12">
-                    <a href="{{ route('reports.students.admission.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-secondary py-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
-                    <a href="{{ route('reports.students.admission.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-secondary py-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
-                    <a href="{{ route('reports.students.admission.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-secondary py-2" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
                 </div>
-            </div>
         </div>
     </div>
 

@@ -1,7 +1,9 @@
-<div class="table-actions d-flex gap-1">
+<x-erp.table-action-menu>
     @if ($t->transfer_type === 'tc' && $t->tc_no && auth()->user()->can('student_lifecycle.tc'))
-        <a href="{{ route('admin.lifecycle.tc.print', $t) }}" class="btn btn-sm btn-outline-secondary" target="_blank" title="Print TC">
-            <i class="ti ti-printer"></i>
-        </a>
+        <li>
+            <a href="{{ route('admin.lifecycle.tc.print', $t) }}" class="dropdown-item d-flex align-items-center" target="_blank" title="Print TC">
+                <i class="ti ti-printer me-2"></i> Print TC
+            </a>
+        </li>
     @endif
-</div>
+</x-erp.table-action-menu>

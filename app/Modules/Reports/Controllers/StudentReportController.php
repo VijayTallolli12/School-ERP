@@ -135,7 +135,7 @@ class StudentReportController extends Controller
                     $row = $format($s);
                     $contactJs = "window.location.href='tel:" . e($row['parent_mobile']) . "'";
                     return '<div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary action-menu-trigger" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="' . e($row['profile_url']) . '"><i class="ti ti-eye me-2"></i>View Profile</a></li>
                             <li><a class="dropdown-item" href="#" onclick="' . $contactJs . '"><i class="ti ti-phone me-2"></i>Call Parent</a></li>

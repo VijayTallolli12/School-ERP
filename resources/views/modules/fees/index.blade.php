@@ -20,7 +20,7 @@
                     'dues' => 'ti-alert-triangle',
                 ] as $id => $icon)
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"><i class="ti {{ $icon }} me-1"></i>{{ ucfirst($id === 'dues' ? 'Due Tracking' : ($id === 'collections' ? 'Collections' : ucfirst($id))) }}</button>
+                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"> {{ ucfirst($id === 'dues' ? 'Due Tracking' : ($id === 'collections' ? 'Collections' : ucfirst($id))) }}</button>
                     </li>
                 @endforeach
                 @can('fees.reports')
@@ -35,9 +35,7 @@
                 <div class="tab-pane fade show active" id="categoriesPane">
                     <div class="d-flex mb-3">
                         @can('fees.create')
-                            <button type="button" class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#categoryModal" id="createCategory">
-                                <i class="ti ti-plus me-1"></i> Add Category
-                            </button>
+                            <button type="button" class="btn btn-primary btn-sm ms-auto" id="createCategory">Add Category</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="categoriesTable">
@@ -56,9 +54,7 @@
                 <div class="tab-pane fade" id="structuresPane">
                     <div class="d-flex mb-3">
                         @can('fees.create')
-                            <button type="button" class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#structureModal" id="createStructure">
-                                <i class="ti ti-plus me-1"></i> Add Structure
-                            </button>
+                            <button type="button" class="btn btn-primary btn-sm ms-auto" id="createStructure">Add Structure</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="structuresTable">
@@ -79,12 +75,8 @@
                 <div class="tab-pane fade" id="assignmentsPane">
                     <div class="d-flex flex-wrap gap-2 mb-3 justify-content-end">
                         @can('fees.create')
-                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#bulkAssignModal">
-                                <i class="ti ti-users me-1"></i> Bulk Assign
-                            </button>
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assignModal" id="createAssign">
-                                <i class="ti ti-plus me-1"></i> Assign Student
-                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="bulkAssignBtn">Bulk Assign</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="createAssign">Assign Student</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="assignmentsTable">
@@ -106,9 +98,7 @@
                 <div class="tab-pane fade" id="collectionsPane">
                     <div class="d-flex mb-3">
                         @can('fees.collect')
-                            <button type="button" class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#collectModal" id="openCollect">
-                                <i class="ti ti-cash-register me-1"></i> Collect Fees
-                            </button>
+                            <button type="button" class="btn btn-primary btn-sm ms-auto" id="openCollect">Collect Fees</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="collectionsTable">
@@ -173,284 +163,259 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form fees-category-form" id="categoryForm" method="POST" action="{{ route('admin.fees.categories.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="categoryMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="categoryModalTitle">Fee Category</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body row g-3">
-                    <div class="col-12">
-                        <label class="form-label required">Code</label>
-                        <input class="form-control" name="code" required maxlength="40">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label required">Name</label>
-                        <input class="form-control" name="name" required maxlength="120">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" name="description" rows="2" maxlength="500"></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Sort order</label>
-                        <input class="form-control" type="number" name="sort_order" value="0" min="0">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save</button>
-                </div>
-            </form>
+    <x-erp.side-panel
+        id="categoryOffcanvas"
+        formId="categoryForm"
+        title="Fee Category"
+        action="{{ route('admin.fees.categories.store') }}"
+        method="POST"
+        width="600px"
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="categoryMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Category Details</h6>
+        <div class="row g-4">
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Code</label>
+                <input class="form-control" name="code" required maxlength="40">
+            </div>
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Name</label>
+                <input class="form-control" name="name" required maxlength="120">
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Description</label>
+                <textarea class="form-control" name="description" rows="2" maxlength="500"></textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Sort order</label>
+                <input class="form-control" type="number" name="sort_order" value="0" min="0">
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="structureModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form fees-structure-form" id="structureForm" method="POST" action="{{ route('admin.fees.structures.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="structureMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="structureModalTitle">Fee Structure</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label required">Academic Year</label>
-                            <select class="form-select" name="academic_year_id" required>
-                                <option value="">Select</option>
-                                @foreach ($academicYears as $y)
-                                    <option value="{{ $y->id }}">{{ $y->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Class & Section</label>
-                            <select class="form-select" name="class_section_id" required>
-                                <option value="">Select</option>
-                                @foreach ($classSections as $cs)
-                                    <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Label</label>
-                            <input class="form-control" name="name" maxlength="150" placeholder="Optional">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Status</label>
-                            <select class="form-select" name="status" required>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center mb-2">
-                        <strong>Fee lines</strong>
-                        <button type="button" class="btn btn-sm btn-outline-primary ms-auto" id="addStructureRow"><i class="ti ti-plus"></i> Add line</button>
-                    </div>
-                    <table class="table table-sm" id="structureItemsTable">
-                        <thead><tr><th>Category</th><th>Amount</th><th></th></tr></thead>
-                        <tbody id="structureItemsBody"></tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save</button>
-                </div>
-            </form>
+    <x-erp.side-panel
+        id="structureOffcanvas"
+        formId="structureForm"
+        title="Fee Structure"
+        action="{{ route('admin.fees.structures.store') }}"
+        method="POST"
+        width="700px"
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="structureMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Structure Details</h6>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark">Academic Year</label>
+                <select class="form-select" name="academic_year_id" required>
+                    <option value="">Select</option>
+                    @foreach ($academicYears as $y)
+                        <option value="{{ $y->id }}">{{ $y->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark">Class & Section</label>
+                <select class="form-select" name="class_section_id" required>
+                    <option value="">Select</option>
+                    @foreach ($classSections as $cs)
+                        <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium text-dark">Label</label>
+                <input class="form-control" name="name" maxlength="150" placeholder="Optional">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark">Status</label>
+                <select class="form-select" name="status" required>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
         </div>
-    </div>
+        <div class="d-flex align-items-center mb-2">
+            <h6 class="fw-bold text-uppercase text-muted mb-0" style="font-size: 0.75rem; letter-spacing: 0.5px;">Fee lines</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary ms-auto" id="addStructureRow">Add line</button>
+        </div>
+        <table class="table table-sm" id="structureItemsTable">
+            <thead><tr><th>Category</th><th>Amount</th><th></th></tr></thead>
+            <tbody id="structureItemsBody"></tbody>
+        </table>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="assignModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form" id="assignForm" method="POST" action="{{ route('admin.fees.assignments.store') }}">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Assign fees to student</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body row g-3">
-                    <div class="col-12">
-                        <label class="form-label required">Student</label>
-                        <select class="form-select searchable-select" name="student_id" required data-ajax-url="{{ route('admin.students.search') }}" data-placeholder="Search student by name or admission no...">
-                            <option value=""></option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label required">Academic Year</label>
-                        <select class="form-select" name="academic_year_id" required>
-                            @foreach ($academicYears as $y)
-                                <option value="{{ $y->id }}">{{ $y->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label required">Fee structure</label>
-                        <select class="form-select" name="fee_structure_id" required id="assignStructureSelect">
-                            <option value="">Select class/year first</option>
-                        </select>
-                        <small class="text-secondary">Choose the structure that matches the student's class for that year.</small>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Default due date (all lines)</label>
-                        <input type="date" class="form-control" name="default_due_date">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-user-check me-1"></i> Assign</button>
-                </div>
-            </form>
+    <x-erp.side-panel
+        id="assignOffcanvas"
+        formId="assignForm"
+        title="Assign fees to student"
+        action="{{ route('admin.fees.assignments.store') }}"
+        method="POST"
+        width="600px"
+        saveButtonText="Assign"
+    >
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Assignment Details</h6>
+        <div class="row g-4">
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Student</label>
+                <select class="form-select searchable-select" name="student_id" required data-ajax-url="{{ route('admin.students.search') }}" data-placeholder="Search student by name or admission no...">
+                    <option value=""></option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Academic Year</label>
+                <select class="form-select" name="academic_year_id" required>
+                    @foreach ($academicYears as $y)
+                        <option value="{{ $y->id }}">{{ $y->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Fee structure</label>
+                <select class="form-select" name="fee_structure_id" required id="assignStructureSelect">
+                    <option value="">Select class/year first</option>
+                </select>
+                <small class="text-secondary d-block mt-1">Choose the structure that matches the student's class for that year.</small>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Default due date (all lines)</label>
+                <input type="date" class="form-control" name="default_due_date">
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="bulkAssignModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form" id="bulkAssignForm" method="POST" action="{{ route('admin.fees.assignments.bulk') }}">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Bulk assign (class)</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body row g-3">
-                    <div class="col-12">
-                        <label class="form-label required">Academic Year</label>
-                        <select class="form-select" name="academic_year_id" required>
-                            @foreach ($academicYears as $y)
-                                <option value="{{ $y->id }}">{{ $y->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label required">Class & Section</label>
-                        <select class="form-select" name="class_section_id" required>
-                            @foreach ($classSections as $cs)
-                                <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label required">Fee structure</label>
-                        <select class="form-select" name="fee_structure_id" required id="bulkStructureSelect">
-                            <option value="">Select year & class</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Default due date</label>
-                        <input type="date" class="form-control" name="default_due_date">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-users me-1"></i> Assign Class</button>
-                </div>
-            </form>
+    <x-erp.side-panel
+        id="bulkAssignOffcanvas"
+        formId="bulkAssignForm"
+        title="Bulk assign (class)"
+        action="{{ route('admin.fees.assignments.bulk') }}"
+        method="POST"
+        width="600px"
+        saveButtonText="Assign Class"
+    >
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Bulk Assignment Details</h6>
+        <div class="row g-4">
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Academic Year</label>
+                <select class="form-select" name="academic_year_id" required>
+                    @foreach ($academicYears as $y)
+                        <option value="{{ $y->id }}">{{ $y->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Class & Section</label>
+                <select class="form-select" name="class_section_id" required>
+                    @foreach ($classSections as $cs)
+                        <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Fee structure</label>
+                <select class="form-select" name="fee_structure_id" required id="bulkStructureSelect">
+                    <option value="">Select year & class</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Default due date</label>
+                <input type="date" class="form-control" name="default_due_date">
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="editAssignModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <form class="modal-content ajax-form" id="editAssignForm" method="POST" action="#">
-                @csrf
-                <input type="hidden" name="_method" value="PUT" id="editAssignMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit assignment</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label required">Status</label>
-                        <select class="form-select" name="status" id="editAssignStatus" required>
-                            <option value="active">Active</option>
-                            <option value="waived">Waived</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <table class="table table-sm" id="editAssignItemsTable">
-                            <thead><tr><th>Category</th><th>Amount</th><th>Due</th></tr></thead>
-                            <tbody id="editAssignItemsBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Update</button>
-                </div>
-            </form>
+    <x-erp.side-panel
+        id="editAssignOffcanvas"
+        formId="editAssignForm"
+        title="Edit assignment"
+        action="#"
+        method="POST"
+        width="600px"
+        saveButtonText="Update"
+    >
+        <input type="hidden" name="_method" value="PUT" id="editAssignMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Assignment Details</h6>
+        <div class="row g-4 mb-4">
+            <div class="col-md-12">
+                <label class="form-label required fw-medium text-dark">Status</label>
+                <select class="form-select" name="status" id="editAssignStatus" required>
+                    <option value="active">Active</option>
+                    <option value="waived">Waived</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <table class="table table-sm" id="editAssignItemsTable">
+                    <thead><tr><th>Category</th><th>Amount</th><th>Due</th></tr></thead>
+                    <tbody id="editAssignItemsBody"></tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="collectModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="collectForm" method="POST" action="{{ route('admin.fees.collections.store') }}">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Collect fees</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label required">Student</label>
-                        <select class="form-select searchable-select" name="student_id" id="collectStudentId" required data-ajax-url="{{ route('admin.students.search') }}" data-placeholder="Search student by name or admission no...">
-                            <option value=""></option>
-                        </select>
-                    </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Academic Year</label>
-                            <select class="form-select" name="academic_year_id" id="collectYearId" required>
-                                @foreach ($academicYears as $y)
-                                    <option value="{{ $y->id }}">{{ $y->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Paid on</label>
-                            <input type="date" class="form-control" name="paid_on" value="{{ now()->toDateString() }}" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Mode</label>
-                            <select class="form-select" name="payment_mode" required>
-                                @foreach ($paymentModes as $k => $label)
-                                    <option value="{{ $k }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Remarks</label>
-                            <input class="form-control" name="remarks" maxlength="500">
-                        </div>
-                        <div class="col-12">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="loadCollectLines"><i class="ti ti-list me-1"></i>Load pending lines</button>
-                        </div>
-                    </div>
-                    <table class="table table-sm">
-                        <thead><tr><th>Category</th><th>Balance</th><th>Pay now</th></tr></thead>
-                        <tbody id="collectLinesBody"></tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Payment</button>
-                </div>
-            </form>
+    <x-erp.side-panel
+        id="collectOffcanvas"
+        formId="collectForm"
+        title="Collect fees"
+        action="{{ route('admin.fees.collections.store') }}"
+        method="POST"
+        width="700px"
+        saveButtonText="Save Payment"
+    >
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Payment Details</h6>
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Student</label>
+                <select class="form-select searchable-select" name="student_id" id="collectStudentId" required data-ajax-url="{{ route('admin.students.search') }}" data-placeholder="Search student by name or admission no...">
+                    <option value=""></option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Academic Year</label>
+                <select class="form-select" name="academic_year_id" id="collectYearId" required>
+                    @foreach ($academicYears as $y)
+                        <option value="{{ $y->id }}">{{ $y->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Paid on</label>
+                <input type="date" class="form-control" name="paid_on" value="{{ now()->toDateString() }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Mode</label>
+                <select class="form-select" name="payment_mode" required>
+                    @foreach ($paymentModes as $k => $label)
+                        <option value="{{ $k }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label fw-medium text-dark">Remarks</label>
+                <input class="form-control" name="remarks" maxlength="500">
+            </div>
+            <div class="col-12 mt-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="loadCollectLines">Load pending lines</button>
+            </div>
         </div>
-    </div>
+        <h6 class="fw-bold text-uppercase text-muted mb-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">Pending Lines</h6>
+        <table class="table table-sm">
+            <thead><tr><th>Category</th><th>Balance</th><th>Pay now</th></tr></thead>
+            <tbody id="collectLinesBody"></tbody>
+        </table>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const categoryModal = new bootstrap.Modal('#categoryModal');
-            const structureModal = new bootstrap.Modal('#structureModal');
-            const editAssignModal = new bootstrap.Modal('#editAssignModal');
-            const collectModal = new bootstrap.Modal('#collectModal');
+            const categoryOffcanvas = new bootstrap.Offcanvas(document.getElementById('categoryOffcanvas'));
+            const structureOffcanvas = new bootstrap.Offcanvas(document.getElementById('structureOffcanvas'));
+            const editAssignOffcanvas = new bootstrap.Offcanvas(document.getElementById('editAssignOffcanvas'));
+            const collectOffcanvas = new bootstrap.Offcanvas(document.getElementById('collectOffcanvas'));
+            const assignOffcanvas = new bootstrap.Offcanvas(document.getElementById('assignOffcanvas'));
+            const bulkAssignOffcanvas = new bootstrap.Offcanvas(document.getElementById('bulkAssignOffcanvas'));
 
             const feeCategoryOptions = `@foreach($feeCategories as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach`;
 
@@ -481,9 +446,11 @@
                 form[0].reset();
                 $('#categoryMethod').val('POST');
                 form.attr('action', '{{ route('admin.fees.categories.store') }}');
-                $('#categoryModalTitle').text('Add Fee Category');
+                $('#categoryOffcanvas').find('.offcanvas-title').text('Add Fee Category');
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
+
+                categoryOffcanvas.show();
             });
 
             $('#categoriesTable').on('click', '.edit-fee-category', function () {
@@ -492,11 +459,12 @@
                     form[0].reset();
                     form.attr('action', $(this).data('update-url'));
                     $('#categoryMethod').val('PUT');
-                    $('#categoryModalTitle').text('Edit Fee Category');
+                    $('#categoryOffcanvas').find('.offcanvas-title').text('Edit Fee Category');
                     Object.entries(res.data).forEach(([k, v]) => form.find(`[name="${k}"]`).val(v));
                     form.find('.is-invalid').removeClass('is-invalid');
                     form.find('.invalid-feedback.dynamic').remove();
-                    categoryModal.show();
+
+                    categoryOffcanvas.show();
                 });
             });
 
@@ -512,11 +480,13 @@
                 form[0].reset();
                 $('#structureMethod').val('POST');
                 form.attr('action', '{{ route('admin.fees.structures.store') }}');
-                $('#structureModalTitle').text('Add Fee Structure');
+                $('#structureOffcanvas').find('.offcanvas-title').text('Add Fee Structure');
                 $('#structureItemsBody').empty();
                 addStructureRow();
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
+
+                structureOffcanvas.show();
             });
 
             $('#structuresTable').on('click', '.edit-fee-structure', function () {
@@ -525,7 +495,7 @@
                     form[0].reset();
                     form.attr('action', $(this).data('update-url'));
                     $('#structureMethod').val('PUT');
-                    $('#structureModalTitle').text('Edit Fee Structure');
+                    $('#structureOffcanvas').find('.offcanvas-title').text('Edit Fee Structure');
                     $('#structureItemsBody').empty();
                     const d = res.data;
                     form.find('[name="academic_year_id"]').val(d.academic_year_id);
@@ -536,7 +506,8 @@
                     if (!(d.items || []).length) addStructureRow();
                     form.find('.is-invalid').removeClass('is-invalid');
                     form.find('.invalid-feedback.dynamic').remove();
-                    structureModal.show();
+
+                    structureOffcanvas.show();
                 });
             });
 
@@ -571,6 +542,25 @@
             $('#bulkAssignForm [name="academic_year_id"], #bulkAssignForm [name="class_section_id"]').on('change', refreshStructureSelects);
             refreshStructureSelects();
 
+            $('#createAssign').on('click', () => {
+                const form = $('#assignForm');
+                form[0].reset();
+                form.find('select.searchable-select').val(null).trigger('change');
+                form.find('.is-invalid').removeClass('is-invalid');
+                form.find('.invalid-feedback.dynamic').remove();
+
+                assignOffcanvas.show();
+            });
+
+            $('#bulkAssignBtn').on('click', () => {
+                const form = $('#bulkAssignForm');
+                form[0].reset();
+                form.find('.is-invalid').removeClass('is-invalid');
+                form.find('.invalid-feedback.dynamic').remove();
+
+                bulkAssignOffcanvas.show();
+            });
+
             $('#assignmentsTable').on('click', '.edit-assignment', function () {
                 const form = $('#editAssignForm');
                 $.get($(this).data('url'), (res) => {
@@ -586,7 +576,8 @@
                     });
                     form.find('.is-invalid').removeClass('is-invalid');
                     form.find('.invalid-feedback.dynamic').remove();
-                    editAssignModal.show();
+
+                    editAssignOffcanvas.show();
                 });
             });
 
@@ -595,6 +586,17 @@
                     url: $(this).data('url'),
                     onSuccess: () => tables.assignments?.ajax.reload(null, false)
                 });
+            });
+
+            $('#openCollect').on('click', () => {
+                const form = $('#collectForm');
+                form[0].reset();
+                form.find('select.searchable-select').val(null).trigger('change');
+                $('#collectLinesBody').empty();
+                form.find('.is-invalid').removeClass('is-invalid');
+                form.find('.invalid-feedback.dynamic').remove();
+
+                collectOffcanvas.show();
             });
 
             $('#loadCollectLines').on('click', () => {
@@ -715,29 +717,29 @@
             initTabPersistence('#feesTabs');
 
             $('.fees-category-form').on('erp:success', () => {
-                categoryModal.hide();
+                categoryOffcanvas.hide();
                 tables.categories?.ajax.reload(null, false);
             });
 
             $('.fees-structure-form').on('erp:success', () => {
-                structureModal.hide();
+                structureOffcanvas.hide();
                 tables.structures?.ajax.reload(null, false);
                 window.location.reload();
             });
 
             $('#assignForm, #bulkAssignForm').on('erp:success', () => {
-                bootstrap.Modal.getInstance(document.getElementById('assignModal'))?.hide();
-                bootstrap.Modal.getInstance(document.getElementById('bulkAssignModal'))?.hide();
+                assignOffcanvas.hide();
+                bulkAssignOffcanvas.hide();
                 tables.assignments?.ajax.reload(null, false);
             });
 
             $('#editAssignForm').on('erp:success', () => {
-                editAssignModal.hide();
+                editAssignOffcanvas.hide();
                 tables.assignments?.ajax.reload(null, false);
             });
 
             $('#collectForm').on('erp:success', () => {
-                collectModal.hide();
+                collectOffcanvas.hide();
                 tables.collections?.ajax.reload(null, false);
                 tables.dues?.ajax.reload(null, false);
             });

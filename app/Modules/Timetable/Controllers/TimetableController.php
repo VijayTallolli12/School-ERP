@@ -60,7 +60,7 @@ class TimetableController extends Controller
                 ->addColumn('teacher', fn (TimetableSlot $slot) => $slot->teacher?->full_name ?? '-')
                 ->addColumn('day', fn (TimetableSlot $slot) => e($slot->day_name))
                 ->addColumn('time_range', fn (TimetableSlot $slot) => e($slot->time_range))
-                ->addColumn('status_label', fn (TimetableSlot $slot) => '<span class="badge bg-'.($slot->status === 'active' ? 'success' : 'secondary').'">'.e(ucfirst($slot->status)).'</span>')
+                ->addColumn('status_label', fn (TimetableSlot $slot) => '<span class="badge bg-'.($slot->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.e(ucfirst($slot->status)).'</span>')
                 ->addColumn('actions', fn (TimetableSlot $row) => view('modules.timetable._actions', ['timetableSlot' => $row])->render())
                 ->rawColumns(['status_label', 'actions'])
                 ->toJson();

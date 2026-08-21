@@ -78,7 +78,7 @@ class HomeworkController extends Controller
             ->addColumn('due_date', fn (Homework $hw) => $hw->due_date?->format('M d, Y'))
             ->addColumn('class_section', fn (Homework $hw) => $hw->classSection?->schoolClass->name.' - '.$hw->classSection?->section->name)
             ->addColumn('subject', fn (Homework $hw) => $hw->subject?->name ?? '-')
-            ->addColumn('status_label', fn (Homework $hw) => '<span class="badge bg-'.($hw->status === 'active' ? 'success' : 'secondary').'">'.e($hw->status_label).'</span>')
+            ->addColumn('status_label', fn (Homework $hw) => '<span class="badge bg-'.($hw->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.e($hw->status_label).'</span>')
             ->addColumn('actions', fn (Homework $hw) => view('modules.homework._actions', compact('hw'))->render())
             ->rawColumns(['status_label', 'actions'])
             ->toJson();

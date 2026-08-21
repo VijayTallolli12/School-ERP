@@ -1,4 +1,4 @@
-<div class="table-actions">
+<x-erp.table-action-menu>
     @php
         $routeBase = [
             'academic-year' => 'academic-years',
@@ -10,17 +10,21 @@
         ][$type] ?? $type;
     @endphp
     @can('academics.update')
-        <button type="button" class="btn btn-sm btn-outline-primary edit-academic"
-                data-type="{{ $type }}"
-                data-url="{{ route('admin.academics.'.$routeBase.'.show', $model) }}"
-                data-update-url="{{ route('admin.academics.'.$routeBase.'.update', $model) }}">
-            <i class="ti ti-pencil"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center edit-academic"
+                    data-type="{{ $type }}"
+                    data-url="{{ route('admin.academics.'.$routeBase.'.show', $model) }}"
+                    data-update-url="{{ route('admin.academics.'.$routeBase.'.update', $model) }}">
+                <i class="ti ti-pencil me-2"></i> Edit
+            </button>
+        </li>
     @endcan
     @can('academics.delete')
-        <button type="button" class="btn btn-sm btn-outline-danger delete-academic"
-                data-url="{{ route('admin.academics.'.$routeBase.'.destroy', $model) }}">
-            <i class="ti ti-trash"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center text-danger delete-academic"
+                    data-url="{{ route('admin.academics.'.$routeBase.'.destroy', $model) }}">
+                <i class="ti ti-trash me-2"></i> Delete
+            </button>
+        </li>
     @endcan
-</div>
+</x-erp.table-action-menu>

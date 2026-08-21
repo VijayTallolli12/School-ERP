@@ -18,9 +18,7 @@
                     </h3>
                     @can('leave_management.create')
                         <div class="d-flex align-items-center gap-3">
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#leaveTypeModal" id="createLeaveType">
-                                <i class="ti ti-plus me-1"></i> Add Leave Type
-                            </button>
+                            <button class="btn btn-primary" id="createLeaveType">Add Leave Type</button>
                         </div>
                     @endcan
                 </div>
@@ -42,47 +40,42 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="leaveTypeModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="leaveTypeForm" method="POST" action="{{ route('admin.leave-types.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="leaveTypeMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="leaveTypeModalTitle">Add Leave Type</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <x-erp.side-panel
+        id="leaveTypeOffcanvas"
+        formId="leaveTypeForm"
+        title="Add Leave Type"
+        action="{{ route('admin.leave-types.store') }}"
+        method="POST"
+        width="500px"
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="leaveTypeMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Leave Type Details</h6>
+        
+        <div class="row g-4">
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Name</label>
+                <input class="form-control" name="name" required maxlength="150" placeholder="e.g. Sick Leave, Casual Leave">
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Description</label>
+                <textarea class="form-control" name="description" rows="3" maxlength="1000"></textarea>
+            </div>
+            <div class="col-12">
+                <div class="form-check form-switch">
+                    <input type="hidden" name="is_active" value="0">
+                    <input class="form-check-input" type="checkbox" name="is_active" value="1" id="leaveTypeActive" checked>
+                    <label class="form-check-label fw-medium text-dark" for="leaveTypeActive">Active</label>
                 </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label required">Name</label>
-                            <input class="form-control" name="name" required maxlength="150" placeholder="e.g. Sick Leave, Casual Leave">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="3" maxlength="1000"></textarea>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                <input type="hidden" name="is_active" value="0">
-                                <input class="form-check-input" type="checkbox" name="is_active" value="1" id="leaveTypeActive" checked>
-                                <label class="form-check-label" for="leaveTypeActive">Active</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const modal = new bootstrap.Modal('#leaveTypeModal');
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('leaveTypeOffcanvas'));
             const form = $('#leaveTypeForm');
 
             const table = $('#leaveTypesTable').DataTable({
@@ -103,10 +96,12 @@
                 form[0].reset();
                 $('#leaveTypeMethod').val('POST');
                 form.attr('action', '{{ route('admin.leave-types.store') }}');
-                $('#leaveTypeModalTitle').text('Add Leave Type');
+                $('#leaveTypeOffcanvasTitle').text('Add Leave Type');
                 $('#leaveTypeActive').prop('checked', true);
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
+
+                offcanvas.show();
             });
 
             $('#leaveTypesTable').on('click', '.edit-leave-type', function () {
@@ -120,13 +115,13 @@
                     form.find('.invalid-feedback.dynamic').remove();
                     form.attr('action', updateUrl);
                     $('#leaveTypeMethod').val('PUT');
-                    $('#leaveTypeModalTitle').text('Edit Leave Type');
+                    $('#leaveTypeOffcanvasTitle').text('Edit Leave Type');
 
                     form.find('[name="name"]').val(data.name);
                     form.find('[name="description"]').val(data.description);
                     $('#leaveTypeActive').prop('checked', data.is_active);
 
-                    modal.show();
+                    offcanvas.show();
                 });
             });
 
@@ -138,7 +133,7 @@
             });
 
             form.on('erp:success', () => {
-                modal.hide();
+                offcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });

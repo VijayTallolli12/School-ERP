@@ -1,12 +1,16 @@
-<div class="btn-group btn-group-sm">
+<x-erp.table-action-menu>
     @can('fees.update')
-        <button type="button" class="btn btn-outline-primary edit-fee-category" data-url="{{ route('admin.fees.categories.show', $row) }}" data-update-url="{{ route('admin.fees.categories.update', $row) }}">
-            <i class="ti ti-pencil"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center edit-fee-category" data-url="{{ route('admin.fees.categories.show', $row) }}" data-update-url="{{ route('admin.fees.categories.update', $row) }}">
+                <i class="ti ti-pencil me-2"></i> Edit
+            </button>
+        </li>
     @endcan
     @can('fees.delete')
-        <button type="button" class="btn btn-outline-danger delete-fee-category" data-url="{{ route('admin.fees.categories.destroy', $row) }}">
-            <i class="ti ti-trash"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center text-danger delete-fee-category" data-url="{{ route('admin.fees.categories.destroy', $row) }}">
+                <i class="ti ti-trash me-2 text-danger"></i> Delete
+            </button>
+        </li>
     @endcan
-</div>
+</x-erp.table-action-menu>

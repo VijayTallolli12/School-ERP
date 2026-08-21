@@ -1,28 +1,36 @@
-<div class="btn-group" role="group">
-    <button type="button" class="btn btn-sm btn-outline-secondary view-leave-request"
-            data-url="{{ route('admin.leave-requests.show', $lr) }}"
-            title="View">
-        <i class="ti ti-eye"></i>
-    </button>
+<x-erp.table-action-menu>
+    <li>
+        <button type="button" class="dropdown-item d-flex align-items-center view-leave-request"
+                data-url="{{ route('admin.leave-requests.show', $lr) }}"
+                title="View">
+            <i class="ti ti-eye me-2"></i> View
+        </button>
+    </li>
     @can('leave_management.approve')
         @if($lr->status === 'pending')
-            <button type="button" class="btn btn-sm btn-outline-success approve-leave-request"
-                    data-url="{{ route('admin.leave-requests.approve', $lr) }}"
-                    title="Approve">
-                <i class="ti ti-check"></i>
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-danger reject-leave-request"
-                    data-url="{{ route('admin.leave-requests.reject', $lr) }}"
-                    title="Reject">
-                <i class="ti ti-x"></i>
-            </button>
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center approve-leave-request"
+                        data-url="{{ route('admin.leave-requests.approve', $lr) }}"
+                        title="Approve">
+                    <i class="ti ti-check me-2"></i> Approve
+                </button>
+            </li>
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center reject-leave-request"
+                        data-url="{{ route('admin.leave-requests.reject', $lr) }}"
+                        title="Reject">
+                    <i class="ti ti-x me-2"></i> Reject
+                </button>
+            </li>
         @endif
     @endcan
     @can('leave_management.delete')
-        <button type="button" class="btn btn-sm btn-outline-danger delete-leave-request"
-                data-url="{{ route('admin.leave-requests.destroy', $lr) }}"
-                title="Delete">
-            <i class="ti ti-trash"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center text-danger delete-leave-request"
+                    data-url="{{ route('admin.leave-requests.destroy', $lr) }}"
+                    title="Delete">
+                <i class="ti ti-trash me-2 text-danger"></i> Delete
+            </button>
+        </li>
     @endcan
-</div>
+</x-erp.table-action-menu>

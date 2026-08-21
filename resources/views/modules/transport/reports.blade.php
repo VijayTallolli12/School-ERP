@@ -14,22 +14,22 @@
         <div class="card-header p-0 border-bottom-0">
             <ul class="nav nav-tabs" id="reportTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#vehicleReportPane" type="button"><i class="ti ti-bus me-1"></i>Vehicle Report</button>
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#vehicleReportPane" type="button">Vehicle Report</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#driverReportPane" type="button"><i class="ti ti-user me-1"></i>Driver Report</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#driverReportPane" type="button">Driver Report</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#routeReportPane" type="button"><i class="ti ti-map me-1"></i>Route Report</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#routeReportPane" type="button">Route Report</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#routeStudentsPane" type="button"><i class="ti ti-users me-1"></i>Route-wise Students</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#routeStudentsPane" type="button">Route-wise Students</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#occupancyPane" type="button"><i class="ti ti-chart-bar me-1"></i>Vehicle Occupancy</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#occupancyPane" type="button">Vehicle Occupancy</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#feeReportPane" type="button"><i class="ti ti-wallet me-1"></i>Transport Fee</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#feeReportPane" type="button">Transport Fee</button>
                 </li>
             </ul>
         </div>
@@ -39,11 +39,9 @@
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="vFilterType"><option value="">All Types</option><option value="bus">Bus</option><option value="van">Van</option><option value="car">Car</option><option value="other">Other</option></select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="vFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="vFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="vFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.transport.reports.export.excel', 'vehicles') }}" id="vExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.transport.reports.export.pdf', 'vehicles') }}" id="vPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.transport.reports.print', 'vehicles') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.transport.reports.export.excel', 'vehicles') }}" pdfUrl="{{ route('admin.transport.reports.export.pdf', 'vehicles') }}" printUrl="{{ route('admin.transport.reports.print', 'vehicles') }}" excelId="vExcel" pdfId="vPdf" printId="vPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="vehicleReportTable">
@@ -54,11 +52,9 @@
                 <div class="tab-pane fade" id="driverReportPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="dFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="dFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="dFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.transport.reports.export.excel', 'drivers') }}"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.transport.reports.export.pdf', 'drivers') }}"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.transport.reports.print', 'drivers') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.transport.reports.export.excel', 'drivers') }}" pdfUrl="{{ route('admin.transport.reports.export.pdf', 'drivers') }}" printUrl="{{ route('admin.transport.reports.print', 'drivers') }}" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="driverReportTable">
@@ -69,11 +65,9 @@
                 <div class="tab-pane fade" id="routeReportPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="rFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="rFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="rFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.transport.reports.export.excel', 'routes') }}"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.transport.reports.export.pdf', 'routes') }}"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.transport.reports.print', 'routes') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.transport.reports.export.excel', 'routes') }}" pdfUrl="{{ route('admin.transport.reports.export.pdf', 'routes') }}" printUrl="{{ route('admin.transport.reports.print', 'routes') }}" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="routeReportTable">
@@ -85,11 +79,9 @@
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="rsFilterRoute"><option value="">All Routes</option>@foreach($routes as $route)<option value="{{ $route->id }}">{{ $route->route_name }}</option>@endforeach</select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="rsFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="rsFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="rsFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.transport.reports.export.excel', 'route_students') }}"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.transport.reports.export.pdf', 'route_students') }}"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.transport.reports.print', 'route_students') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.transport.reports.export.excel', 'route_students') }}" pdfUrl="{{ route('admin.transport.reports.export.pdf', 'route_students') }}" printUrl="{{ route('admin.transport.reports.print', 'route_students') }}" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="routeStudentsTable">
@@ -100,11 +92,9 @@
                 <div class="tab-pane fade" id="occupancyPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="oFilterType"><option value="">All Types</option><option value="bus">Bus</option><option value="van">Van</option><option value="car">Car</option><option value="other">Other</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="oFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="oFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.transport.reports.export.excel', 'vehicle_occupancy') }}"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.transport.reports.export.pdf', 'vehicle_occupancy') }}"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.transport.reports.print', 'vehicle_occupancy') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.transport.reports.export.excel', 'vehicle_occupancy') }}" pdfUrl="{{ route('admin.transport.reports.export.pdf', 'vehicle_occupancy') }}" printUrl="{{ route('admin.transport.reports.print', 'vehicle_occupancy') }}" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="occupancyTable">
@@ -115,11 +105,9 @@
                 <div class="tab-pane fade" id="feeReportPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="fFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="fFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="fFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.transport.reports.export.excel', 'transport_fee') }}"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.transport.reports.export.pdf', 'transport_fee') }}"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.transport.reports.print', 'transport_fee') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.transport.reports.export.excel', 'transport_fee') }}" pdfUrl="{{ route('admin.transport.reports.export.pdf', 'transport_fee') }}" printUrl="{{ route('admin.transport.reports.print', 'transport_fee') }}" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="feeReportTable">
@@ -157,6 +145,7 @@
                 const qs = $.param(params);
                 $(`#${prefix}Excel`).attr('href', baseExcel.replace('REPLACE', reportKey) + '?' + qs);
                 $(`#${prefix}Pdf`).attr('href', basePdf.replace('REPLACE', reportKey) + '?' + qs);
+                $(`#${prefix}Print`).attr('href', basePrint.replace('REPLACE', reportKey) + '?' + qs);
             }
 
             const vTable = $('#vehicleReportTable').DataTable({processing: true, serverSide: true, responsive: true, stateSave: true, ajax: {url: '{{ route('admin.transport.reports.vehicles.data') }}', data: d => { d.vehicle_type = $('#vFilterType').val(); d.status = $('#vFilterStatus').val(); }}, columns: [
@@ -212,7 +201,7 @@
                                         <div class="col-md-4"><strong>Driver:</strong> ${route.driver?.name ?? '-'}</div>
                                         <div class="col-md-4"><strong>Start:</strong> ${route.start_point ?? '-'}</div>
                                         <div class="col-md-4"><strong>End:</strong> ${route.end_point ?? '-'}</div>
-                                        <div class="col-md-4"><strong>Status:</strong> <span class="badge bg-${route.status === 'active' ? 'success' : 'secondary'}">${route.status}</span></div>
+                                        <div class="col-md-4"><strong>Status:</strong> <span class="badge bg-${route.status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary'}">${route.status}</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -222,10 +211,10 @@
                         if (!stops || !stops.length) return '<p class="text-secondary">No stops.</p>';
                         return stops.map((s, i) => `
                             <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="badge bg-secondary rounded-pill flex-shrink-0" style="width:24px">${i + 1}</span>
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill flex-shrink-0" style="width:24px">${i + 1}</span>
                                 <span class="fw-medium">${s.stop_name}</span>
-                                ${s.pickup_time ? `<span class="badge bg-info">Pickup ${s.pickup_time}</span>` : ''}
-                                ${s.drop_time ? `<span class="badge bg-warning">Drop ${s.drop_time}</span>` : ''}
+                                ${s.pickup_time ? `<span class="badge bg-info-subtle text-info">Pickup ${s.pickup_time}</span>` : ''}
+                                ${s.drop_time ? `<span class="badge bg-warning-subtle text-warning">Drop ${s.drop_time}</span>` : ''}
                             </div>
                             ${i < stops.length - 1 ? `<div class="ms-3 mb-1 text-secondary"><i class="ti ${arrowIcon}"></i></div>` : ''}
                         `).join('');

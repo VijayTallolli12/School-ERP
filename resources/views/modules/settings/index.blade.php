@@ -32,19 +32,19 @@
             <div class="card-header p-0 border-bottom-0">
                 <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="school-tab" data-bs-toggle="tab" data-bs-target="#school-pane" type="button" role="tab"><i class="ti ti-school me-1"></i>School</button>
+                        <button class="nav-link active" id="school-tab" data-bs-toggle="tab" data-bs-target="#school-pane" type="button" role="tab">School</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="academic-tab" data-bs-toggle="tab" data-bs-target="#academic-pane" type="button" role="tab"><i class="ti ti-book me-1"></i>Academic</button>
+                        <button class="nav-link" id="academic-tab" data-bs-toggle="tab" data-bs-target="#academic-pane" type="button" role="tab">Academic</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system-pane" type="button" role="tab"><i class="ti ti-settings me-1"></i>System</button>
+                        <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system-pane" type="button" role="tab">System</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-pane" type="button" role="tab"><i class="ti ti-mail me-1"></i>Email</button>
+                        <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-pane" type="button" role="tab">Email</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment-pane" type="button" role="tab"><i class="ti ti-credit-card me-1"></i>Payment</button>
+                        <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment-pane" type="button" role="tab">Payment</button>
                     </li>
                 </ul>
             </div>
@@ -372,9 +372,7 @@
             </div>
 
             <div class="card-footer d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary py-2">
-                    <i class="ti ti-device-floppy me-1"></i> Save Settings
-                </button>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
             </div>
         </div>
     </form>

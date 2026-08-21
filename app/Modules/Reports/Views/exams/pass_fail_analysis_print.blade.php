@@ -147,7 +147,7 @@
                             <td>{{ $row['exam_name'] }}</td>
                             <td class="text-center">{{ $row['percentage'] }}%</td>
                             <td class="text-center">
-                                <span class="badge bg-{{ $row['result'] == 'Pass' ? 'success' : 'danger' }}">
+                                <span class="badge bg-{{ $row['result'] == 'Pass' ? 'success-subtle text-success' : 'danger-subtle text-danger' }}">
                                     {{ $row['result'] }}
                                 </span>
                             </td>

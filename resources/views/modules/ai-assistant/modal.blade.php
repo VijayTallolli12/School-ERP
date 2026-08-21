@@ -59,9 +59,7 @@
                     <div class="d-flex align-items-center gap-2 ai-chat-wrapper">
                         <i class="ti ti-message text-muted" style="font-size:1.2rem;"></i>
                         <input type="text" id="aiQuestion" class="form-control ai-chat-input" placeholder="Ask about your school data..." maxlength="500" autocomplete="off">
-                        <button class="btn-primary-action px-4 flex-shrink-0 m-0" type="button" id="askErpBtn" style="height: 38px;">
-                            Ask <i class="ti ti-arrow-right ms-1"></i>
-                        </button>
+                        <button class="btn-primary-action px-4 flex-shrink-0 m-0" type="button" id="askErpBtn" style="height: 38px;">Ask</button>
                     </div>
                 </div>
             </div>
@@ -122,9 +120,9 @@ $(document).ready(function () {
                             '<div class="section-content">' +
                             '<div class="d-flex gap-2 mt-2">' +
                             '<button type="button" class="btn btn-success btn-sm fw-semibold" id="aiConfirmBtn">' +
-                            '<i class="ti ti-check me-1"></i> Confirm &amp; Send</button>' +
+                            ' Confirm &amp; Send</button>' +
                             '<button type="button" class="btn btn-outline-secondary btn-sm" id="aiCancelBtn">' +
-                            '<i class="ti ti-x me-1"></i> Cancel</button>' +
+                            ' Cancel</button>' +
                             '</div></div></div>';
 
                     } else {

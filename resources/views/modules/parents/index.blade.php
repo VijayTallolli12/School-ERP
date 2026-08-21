@@ -13,9 +13,7 @@
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title fw-semibold mb-0"><i class="ti ti-users-group text-primary me-2"></i>Parents</h3>
             @can('parents.create')
-                <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#parentModal" id="createParent">
-                    <i class="ti ti-plus me-1"></i> Add Parent
-                </button>
+                <button class="btn btn-primary btn-sm ms-auto" id="createParent">Add Parent</button>
             @endcan
         </div>
 
@@ -53,78 +51,75 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="parentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-xl">
-            <form class="modal-content ajax-form" id="parentForm" method="POST" action="{{ route('admin.parents.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="parentMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="parentModalTitle">Add Parent</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <ul class="nav nav-tabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">Basic Info</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab">Students</button>
-                        </li>
-                    </ul>
-                    <div class="tab-content mt-3">
-                        <div class="tab-pane fade show active" id="basic" role="tabpanel">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label required">First Name</label>
-                                    <input class="form-control" name="first_name" required maxlength="255">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label required">Last Name</label>
-                                    <input class="form-control" name="last_name" required maxlength="255">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label required">Email</label>
-                                    <input class="form-control" type="email" name="email" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Phone</label>
-                                    <input class="form-control" name="phone" maxlength="20">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Occupation</label>
-                                    <input class="form-control" name="occupation" maxlength="255">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label required">Status</label>
-                                    <select class="form-select" name="status" required>
-                                        @foreach($statuses as $status)
-                                            <option value="{{ $status }}" @selected($status === 'active')>{{ ucfirst($status) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Address</label>
-                                    <textarea class="form-control" name="address" rows="3"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="students" role="tabpanel">
-                            <div id="studentSelections">
-                                <p class="text-muted">Select students to associate with this parent.</p>
-                            </div>
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="addStudent">
-                                <i class="ti ti-plus me-1"></i> Add Student
-                            </button>
-                        </div>
+    <x-erp.side-panel 
+        id="parentOffcanvas" 
+        formId="parentForm" 
+        title="Add Parent"
+        subtitle="Create and manage parent information"
+        action="{{ route('admin.parents.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Save Parent"
+        :hasTabs="true"
+    >
+        <x-slot name="tabs">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-medium px-4" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">Basic Info</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-medium px-4" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab">Students</button>
+                </li>
+            </ul>
+        </x-slot>
+
+        <input type="hidden" name="_method" value="POST" id="parentMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Parent Information</h6>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label required fw-medium text-dark">First Name</label>
+                        <input class="form-control" name="first_name" required maxlength="255">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label required fw-medium text-dark">Last Name</label>
+                        <input class="form-control" name="last_name" required maxlength="255">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label required fw-medium text-dark">Email</label>
+                        <input class="form-control" type="email" name="email" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium text-dark">Phone</label>
+                        <input class="form-control" name="phone" maxlength="20">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium text-dark">Occupation</label>
+                        <input class="form-control" name="occupation" maxlength="255">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label required fw-medium text-dark">Status</label>
+                        <select class="form-select" name="status" required>
+                            @foreach($statuses as $status)
+                                <option value="{{ $status }}" @selected($status === 'active')>{{ ucfirst($status) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium text-dark">Address</label>
+                        <textarea class="form-control" name="address" rows="3"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Parent</button>
+            </div>
+            <div class="tab-pane fade" id="students" role="tabpanel">
+                <div id="studentSelections">
+                    <p class="text-muted">Select students to associate with this parent.</p>
                 </div>
-            </form>
+                <button type="button" class="btn btn-outline-primary btn-sm mt-3" id="addStudent">Add Student</button>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
@@ -132,7 +127,8 @@
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
             const filterStatus = $('#filterStatus');
             const filterSearch = $('#filterSearch');
-            const parentModal = new bootstrap.Modal('#parentModal');
+            const parentOffcanvasElement = document.getElementById('parentOffcanvas');
+            const parentOffcanvas = new bootstrap.Offcanvas(parentOffcanvasElement);
             const parentForm = $('#parentForm');
             let studentCounter = 0;
 
@@ -165,11 +161,13 @@
                 parentForm[0].reset();
                 $('#parentMethod').val('POST');
                 parentForm.attr('action', '{{ route('admin.parents.store') }}');
-                $('#parentModalTitle').text('Add Parent');
+                $('#parentOffcanvasTitle').text('Add Parent');
                 parentForm.find('.is-invalid').removeClass('is-invalid');
                 parentForm.find('.invalid-feedback.dynamic').remove();
                 $('#studentSelections').html('<p class="text-muted">Select students to associate with this parent.</p>');
                 studentCounter = 0;
+
+                parentOffcanvas.show();
             });
 
             $('#addStudent').on('click', () => {
@@ -195,10 +193,10 @@
                                     <option value="other">Other</option>
                                 </select>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label">&nbsp;</label>
-                                <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-student">
-                                    <i class="ti ti-trash"></i>
+                            <div class="col-auto">
+                                <label class="form-label d-none d-md-block">&nbsp;</label>
+                                <button type="button" class="btn btn-soft-danger remove-student p-0 d-flex align-items-center justify-content-center" title="Remove Student" style="width: 43px; height: 43px;">
+                                    <i class="ti ti-trash fs-5"></i>
                                 </button>
                             </div>
                         </div>
@@ -218,7 +216,7 @@
                     parentForm.find('.invalid-feedback.dynamic').remove();
                     parentForm.attr('action', $(this).data('update-url'));
                     $('#parentMethod').val('PUT');
-                    $('#parentModalTitle').text('Edit Parent');
+                    $('#parentOffcanvasTitle').text('Edit Parent');
 
                     Object.entries(response.data).forEach(([key, value]) => {
                         if (key === 'students') {
@@ -241,10 +239,10 @@
                                                 <label class="form-label">Relationship</label>
                                                 <div class="form-control-plaintext py-2 text-capitalize">${student.relationship || 'Guardian'}</div>
                                             </div>
-                                            <div class="col-md-2">
-                                                <label class="form-label">&nbsp;</label>
-                                                <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-student">
-                                                    <i class="ti ti-trash"></i>
+                                            <div class="col-auto">
+                                                <label class="form-label d-none d-md-block">&nbsp;</label>
+                                                <button type="button" class="btn btn-soft-danger remove-student p-0 d-flex align-items-center justify-content-center" title="Remove Student" style="width: 43px; height: 43px;">
+                                                    <i class="ti ti-trash fs-5"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -260,7 +258,7 @@
                         }
                     });
 
-                    parentModal.show();
+                    parentOffcanvas.show();
                 });
             });
 
@@ -272,7 +270,7 @@
             });
 
             parentForm.on('erp:success', () => {
-                parentModal.hide();
+                parentOffcanvas.hide();
                 parentsTable.ajax.reload(null, false);
             });
         })(); });

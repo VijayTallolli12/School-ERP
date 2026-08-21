@@ -21,7 +21,7 @@
                     'classSubjects' => 'ti-book-2',
                 ] as $id => $icon)
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"><i class="ti {{ $icon }} me-1"></i>{{ str_replace('classSections', 'Class Sections', str_replace('classSubjects', 'Class Subjects', ucfirst($id))) }}</button>
+                        <button class="nav-link @if($loop->first) active @endif" data-bs-toggle="tab" data-bs-target="#{{ $id }}Pane" type="button"> {{ str_replace('classSections', 'Class Sections', str_replace('classSubjects', 'Class Subjects', ucfirst($id))) }}</button>
                     </li>
                 @endforeach
             </ul>
@@ -31,9 +31,7 @@
                 <div class="tab-pane fade show active" id="yearsPane">
                     <div class="d-flex mb-3">
                         @can('academics.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#yearModal">
-                                <i class="ti ti-plus me-1"></i> Add Academic Year
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#yearOffcanvas">Add Academic Year</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="yearsTable">
@@ -44,9 +42,7 @@
                 <div class="tab-pane fade" id="classesPane">
                     <div class="d-flex mb-3">
                         @can('academics.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#classModal">
-                                <i class="ti ti-plus me-1"></i> Add Class
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#classOffcanvas">Add Class</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="classesTable">
@@ -57,9 +53,7 @@
                 <div class="tab-pane fade" id="sectionsPane">
                     <div class="d-flex mb-3">
                         @can('academics.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#sectionModal">
-                                <i class="ti ti-plus me-1"></i> Add Section
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#sectionOffcanvas">Add Section</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="sectionsTable">
@@ -70,9 +64,7 @@
                 <div class="tab-pane fade" id="classSectionsPane">
                     <div class="d-flex mb-3">
                         @can('academics.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#classSectionModal">
-                                <i class="ti ti-plus me-1"></i> Add Class Section
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#classSectionOffcanvas">Add Class Section</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="classSectionsTable">
@@ -83,9 +75,7 @@
                 <div class="tab-pane fade" id="subjectsPane">
                     <div class="d-flex mb-3">
                         @can('academics.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#subjectModal">
-                                <i class="ti ti-plus me-1"></i> Add Subject
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#subjectOffcanvas">Add Subject</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="subjectsTable">
@@ -96,9 +86,7 @@
                 <div class="tab-pane fade" id="classSubjectsPane">
                     <div class="d-flex mb-3">
                         @can('academics.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#classSubjectModal">
-                                <i class="ti ti-plus me-1"></i> Assign Subject
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#classSubjectOffcanvas">Assign Subject</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="classSubjectsTable">
@@ -111,106 +99,100 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="yearModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form academic-form" method="POST" action="{{ route('admin.academics.academic-years.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Academic Year</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-12"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
-                    <div class="col-md-6"><label class="form-label required">Starts On</label><input class="form-control" type="date" name="starts_on" required></div>
-                    <div class="col-md-6"><label class="form-label required">Ends On</label><input class="form-control" type="date" name="ends_on" required></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option><option value="archived">Archived</option></select></div>
-                    <div class="col-md-6 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_active" value="1" id="isActiveYear"><label class="form-check-label" for="isActiveYear">Current active year</label></div></div>
+    <x-erp.side-panel id="yearOffcanvas" formId="yearForm" formClass="ajax-form" title="Academic Year" action="{{ route('admin.academics.academic-years.store') }}" method="POST" width="700px" saveButtonText="Save">
+        <input type="hidden" name="_method" value="POST" id="yearMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="yearBasic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Academic Year Details</h6>
+                <div class="row g-4">
+                    <div class="col-12"><label class="form-label required fw-medium text-dark">Name</label><input class="form-control" name="name" required></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Starts On</label><input class="form-control" type="date" name="starts_on" required></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Ends On</label><input class="form-control" type="date" name="ends_on" required></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option><option value="archived">Archived</option></select></div>
+                    <div class="col-md-6 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_active" value="1" id="isActiveYear"><label class="form-check-label fw-medium text-dark" for="isActiveYear">Current active year</label></div></div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="classModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form academic-form" method="POST" action="{{ route('admin.academics.classes.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Class</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
-                    <div class="col-md-6"><label class="form-label required">Code</label><input class="form-control" name="code" required></div>
-                    <div class="col-md-6"><label class="form-label">Sort Order</label><input class="form-control" type="number" name="sort_order" min="0" value="0"></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+    <x-erp.side-panel id="classOffcanvas" formId="classForm" formClass="ajax-form" title="Class" action="{{ route('admin.academics.classes.store') }}" method="POST" width="700px" saveButtonText="Save">
+        <input type="hidden" name="_method" value="POST" id="classMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="classBasic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Class Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Name</label><input class="form-control" name="name" required></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Code</label><input class="form-control" name="code" required></div>
+                    <div class="col-md-6"><label class="form-label fw-medium text-dark">Sort Order</label><input class="form-control" type="number" name="sort_order" min="0" value="0"></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="sectionModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form academic-form" method="POST" action="{{ route('admin.academics.sections.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Section</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
-                    <div class="col-md-6"><label class="form-label required">Code</label><input class="form-control" name="code" required></div>
-                    <div class="col-md-6"><label class="form-label">Capacity</label><input class="form-control" type="number" name="capacity" min="1"></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+    <x-erp.side-panel id="sectionOffcanvas" formId="sectionForm" formClass="ajax-form" title="Section" action="{{ route('admin.academics.sections.store') }}" method="POST" width="700px" saveButtonText="Save">
+        <input type="hidden" name="_method" value="POST" id="sectionMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="sectionBasic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Section Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Name</label><input class="form-control" name="name" required></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Code</label><input class="form-control" name="code" required></div>
+                    <div class="col-md-6"><label class="form-label fw-medium text-dark">Capacity</label><input class="form-control" type="number" name="capacity" min="1"></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="classSectionModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form academic-form" method="POST" action="{{ route('admin.academics.class-sections.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Class Section</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6"><label class="form-label required">Class</label><select class="form-select" name="class_id" required><option value="">Select</option>@foreach($classes as $class)<option value="{{ $class->id }}">{{ $class->name }}</option>@endforeach</select></div>
-                    <div class="col-md-6"><label class="form-label required">Section</label><select class="form-select" name="section_id" required><option value="">Select</option>@foreach($sections as $section)<option value="{{ $section->id }}">{{ $section->name }}</option>@endforeach</select></div>
-                    <div class="col-md-6"><label class="form-label">Class Teacher</label><select class="form-select" name="class_teacher_id"><option value="">Unassigned</option>@foreach($teachers as $teacher)<option value="{{ $teacher->id }}">{{ $teacher->name }}</option>@endforeach</select></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+    <x-erp.side-panel id="classSectionOffcanvas" formId="classSectionForm" formClass="ajax-form" title="Class Section" action="{{ route('admin.academics.class-sections.store') }}" method="POST" width="700px" saveButtonText="Save">
+        <input type="hidden" name="_method" value="POST" id="classSectionMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="classSectionBasic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Class Section Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Class</label><select class="form-select" name="class_id" required><option value="">Select</option>@foreach($classes as $class)<option value="{{ $class->id }}">{{ $class->name }}</option>@endforeach</select></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Section</label><select class="form-select" name="section_id" required><option value="">Select</option>@foreach($sections as $section)<option value="{{ $section->id }}">{{ $section->name }}</option>@endforeach</select></div>
+                    <div class="col-md-6"><label class="form-label fw-medium text-dark">Class Teacher</label><select class="form-select" name="class_teacher_id"><option value="">Unassigned</option>@foreach($teachers as $teacher)<option value="{{ $teacher->id }}">{{ $teacher->name }}</option>@endforeach</select></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="subjectModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form academic-form" method="POST" action="{{ route('admin.academics.subjects.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Subject</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
-                    <div class="col-md-6"><label class="form-label required">Code</label><input class="form-control" name="code" required></div>
-                    <div class="col-md-6"><label class="form-label required">Type</label><select class="form-select" name="type"><option value="core">Core</option><option value="elective">Elective</option><option value="optional">Optional</option><option value="co_scholastic">Co-scholastic</option></select></div>
-                    <div class="col-md-6"><label class="form-label">Credit Hours</label><input class="form-control" type="number" name="credit_hours" min="0" value="0"></div>
-                    <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="3"></textarea></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+    <x-erp.side-panel id="subjectOffcanvas" formId="subjectForm" formClass="ajax-form" title="Subject" action="{{ route('admin.academics.subjects.store') }}" method="POST" width="700px" saveButtonText="Save">
+        <input type="hidden" name="_method" value="POST" id="subjectMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="subjectBasic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Subject Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Name</label><input class="form-control" name="name" required></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Code</label><input class="form-control" name="code" required></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Type</label><select class="form-select" name="type"><option value="core">Core</option><option value="elective">Elective</option><option value="optional">Optional</option><option value="co_scholastic">Co-scholastic</option></select></div>
+                    <div class="col-md-6"><label class="form-label fw-medium text-dark">Credit Hours</label><input class="form-control" type="number" name="credit_hours" min="0" value="0"></div>
+                    <div class="col-12"><label class="form-label fw-medium text-dark">Description</label><textarea class="form-control" name="description" rows="3"></textarea></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="classSubjectModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form academic-form" method="POST" action="{{ route('admin.academics.class-subjects.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Assign Subject</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6"><label class="form-label required">Academic Year</label><select class="form-select" name="academic_year_id" required>@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected($year->is_active)>{{ $year->name }}</option>@endforeach</select></div>
-                    <div class="col-md-6"><label class="form-label required">Class</label><select class="form-select" name="class_id" required>@foreach($classes as $class)<option value="{{ $class->id }}">{{ $class->name }}</option>@endforeach</select></div>
-                    <div class="col-md-6"><label class="form-label required">Subject</label><select class="form-select" name="subject_id" required>@foreach($subjects as $subject)<option value="{{ $subject->id }}">{{ $subject->name }}</option>@endforeach</select></div>
-                    <div class="col-md-6"><label class="form-label">Teacher</label><select class="form-select" name="teacher_id"><option value="">Unassigned</option>@foreach($teachers as $teacher)<option value="{{ $teacher->id }}">{{ $teacher->name }}</option>@endforeach</select></div>
-                    <div class="col-md-6"><label class="form-label">Weekly Periods</label><input class="form-control" type="number" name="weekly_periods" min="0" value="0"></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+    <x-erp.side-panel id="classSubjectOffcanvas" formId="classSubjectForm" formClass="ajax-form" title="Assign Subject" action="{{ route('admin.academics.class-subjects.store') }}" method="POST" width="700px" saveButtonText="Save">
+        <input type="hidden" name="_method" value="POST" id="classSubjectMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="classSubjectBasic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Class Subject Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Academic Year</label><select class="form-select" name="academic_year_id" required>@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected($year->is_active)>{{ $year->name }}</option>@endforeach</select></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Class</label><select class="form-select" name="class_id" required>@foreach($classes as $class)<option value="{{ $class->id }}">{{ $class->name }}</option>@endforeach</select></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Subject</label><select class="form-select" name="subject_id" required>@foreach($subjects as $subject)<option value="{{ $subject->id }}">{{ $subject->name }}</option>@endforeach</select></div>
+                    <div class="col-md-6"><label class="form-label fw-medium text-dark">Teacher</label><select class="form-select" name="teacher_id"><option value="">Unassigned</option>@foreach($teachers as $teacher)<option value="{{ $teacher->id }}">{{ $teacher->name }}</option>@endforeach</select></div>
+                    <div class="col-md-6"><label class="form-label fw-medium text-dark">Weekly Periods</label><input class="form-control" type="number" name="weekly_periods" min="0" value="0"></div>
+                    <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
@@ -240,41 +222,51 @@
 
             const classSubjectStoreUrl = '{{ route('admin.academics.class-subjects.store') }}';
             const config = {
-                'academic-year': {modal: '#yearModal', store: '{{ route('admin.academics.academic-years.store') }}', table: tables.years},
-                class: {modal: '#classModal', store: '{{ route('admin.academics.classes.store') }}', table: tables.classes},
-                section: {modal: '#sectionModal', store: '{{ route('admin.academics.sections.store') }}', table: tables.sections},
-                'class-section': {modal: '#classSectionModal', store: '{{ route('admin.academics.class-sections.store') }}', table: tables.classSections},
-                subject: {modal: '#subjectModal', store: '{{ route('admin.academics.subjects.store') }}', table: tables.subjects},
-                'class-subject': {modal: '#classSubjectModal', store: classSubjectStoreUrl, table: tables.classSubjects}
+                'academic-year': {offcanvas: '#yearOffcanvas', formId: 'yearForm', store: '{{ route('admin.academics.academic-years.store') }}', table: tables.years},
+                class: {offcanvas: '#classOffcanvas', formId: 'classForm', store: '{{ route('admin.academics.classes.store') }}', table: tables.classes},
+                section: {offcanvas: '#sectionOffcanvas', formId: 'sectionForm', store: '{{ route('admin.academics.sections.store') }}', table: tables.sections},
+                'class-section': {offcanvas: '#classSectionOffcanvas', formId: 'classSectionForm', store: '{{ route('admin.academics.class-sections.store') }}', table: tables.classSections},
+                subject: {offcanvas: '#subjectOffcanvas', formId: 'subjectForm', store: '{{ route('admin.academics.subjects.store') }}', table: tables.subjects},
+                'class-subject': {offcanvas: '#classSubjectOffcanvas', formId: 'classSubjectForm', store: classSubjectStoreUrl, table: tables.classSubjects}
             };
 
-            $('.open-modal').on('click', function () {
-                const modalId = $(this).data('modal');
-                const form = $(`${modalId} form`);
-                const setup = Object.values(config).find(item => item.modal === modalId);
+            $('.open-offcanvas').on('click', function () {
+                const offcanvasId = $(this).data('offcanvas');
+                const setup = Object.values(config).find(item => item.offcanvas === offcanvasId);
+                const form = $(`#${setup.formId}`);
+                
                 form[0].reset();
                 form.attr('action', setup.store);
                 form.find('[name="_method"]').val('POST');
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
-                bootstrap.Modal.getOrCreateInstance(document.querySelector(modalId)).show();
+                
+                const offcanvas = new bootstrap.Offcanvas(document.querySelector(offcanvasId));
+                form.find('select').trigger('change.select2');
+
+                offcanvas.show();
             });
 
-            $('.academic-form').on('erp:success', function () {
-                bootstrap.Modal.getInstance($(this).closest('.modal')[0]).hide();
+            $('#yearForm, #classForm, #sectionForm, #classSectionForm, #subjectForm, #classSubjectForm').on('erp:success', function () {
+                const setup = Object.values(config).find(item => item.formId === $(this).attr('id'));
+                const offcanvasEl = document.querySelector(setup.offcanvas);
+                const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl) || new bootstrap.Offcanvas(offcanvasEl);
+                offcanvas.hide();
                 Object.values(tables).forEach(table => table.ajax.reload(null, false));
             });
 
             $(document).on('click', '.edit-academic', function () {
                 const type = $(this).data('type');
                 const setup = config[type];
-                const form = $(`${setup.modal} form`);
+                const form = $(`#${setup.formId}`);
+                
                 $.get($(this).data('url'), (response) => {
                     form[0].reset();
                     form.attr('action', $(this).data('update-url'));
                     form.find('[name="_method"]').val('PUT');
                     form.find('.is-invalid').removeClass('is-invalid');
                     form.find('.invalid-feedback.dynamic').remove();
+                    
                     Object.entries(response.data).forEach(([key, value]) => {
                         const field = form.find(`[name="${key}"]`);
                         if (field.attr('type') === 'checkbox') {
@@ -283,7 +275,11 @@
                             field.val(value);
                         }
                     });
-                    bootstrap.Modal.getOrCreateInstance(document.querySelector(setup.modal)).show();
+                    
+                    const offcanvas = new bootstrap.Offcanvas(document.querySelector(setup.offcanvas));
+                    form.find('select').trigger('change.select2');
+
+                    offcanvas.show();
                 });
             });
 

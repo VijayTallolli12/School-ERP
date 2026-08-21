@@ -93,34 +93,13 @@
             </h2>
         </div>
         <div class="exec-suggestions" id="suggestionsGrid">
-            <button type="button" class="exec-suggestion-chip" data-question="How is my school today?">
-                <i class="ti ti-dashboard"></i>
-                <span>How is my school today?</span>
-            </button>
-            <button type="button" class="exec-suggestion-chip" data-question="Today's attendance">
-                <i class="ti ti-users"></i>
-                <span>Today's attendance</span>
-            </button>
-            <button type="button" class="exec-suggestion-chip" data-question="Outstanding fees">
-                <i class="ti ti-cash"></i>
-                <span>Outstanding fees</span>
-            </button>
-            <button type="button" class="exec-suggestion-chip" data-question="Transport status">
-                <i class="ti ti-bus"></i>
-                <span>Transport status</span>
-            </button>
-            <button type="button" class="exec-suggestion-chip" data-question="Exam summary">
-                <i class="ti ti-file-text"></i>
-                <span>Exam summary</span>
-            </button>
-            <button type="button" class="exec-suggestion-chip" data-question="Homework pending">
-                <i class="ti ti-notebook"></i>
-                <span>Homework pending</span>
-            </button>
-            <button type="button" class="exec-suggestion-chip" data-question="Payroll summary">
-                <i class="ti ti-wallet"></i>
-                <span>Payroll summary</span>
-            </button>
+            <button type="button" class="exec-suggestion-chip" data-question="How is my school today?"><span>How is my school today?</span></button>
+            <button type="button" class="exec-suggestion-chip" data-question="Today's attendance"><span>Today's attendance</span></button>
+            <button type="button" class="exec-suggestion-chip" data-question="Outstanding fees"><span>Outstanding fees</span></button>
+            <button type="button" class="exec-suggestion-chip" data-question="Transport status"><span>Transport status</span></button>
+            <button type="button" class="exec-suggestion-chip" data-question="Exam summary"><span>Exam summary</span></button>
+            <button type="button" class="exec-suggestion-chip" data-question="Homework pending"><span>Homework pending</span></button>
+            <button type="button" class="exec-suggestion-chip" data-question="Payroll summary"><span>Payroll summary</span></button>
         </div>
     </div>
 
@@ -131,10 +110,7 @@
                 <i class="ti ti-message"></i>
                 Conversation
             </h2>
-            <button type="button" class="exec-clear-btn" id="clearChat">
-                <i class="ti ti-trash"></i>
-                Clear
-            </button>
+            <button type="button" class="exec-clear-btn" id="clearChat">Clear</button>
         </div>
         <div class="exec-conversation" id="conversation">
             {{-- Chat messages will be inserted here --}}

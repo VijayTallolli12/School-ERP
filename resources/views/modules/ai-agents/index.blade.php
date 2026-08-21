@@ -12,63 +12,49 @@
             <h1>AI Workspace</h1>
             <p>Intelligent agents to automate attendance, fee collection, library management, and payroll processing</p>
         </div>
-        <button type="button" class="btn btn-light px-4" data-bs-toggle="modal" data-bs-target="#askErpModal" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;">
-            <i class="ti ti-message me-1"></i> Ask ERP
-        </button>
+        <button type="button" class="btn btn-light px-4" data-bs-toggle="modal" data-bs-target="#askErpModal" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;">Ask ERP</button>
     </div>
 </div>
 
 {{-- Premium Metrics --}}
 <div class="row g-3 mb-4">
     <div class="col-md-3 col-6">
-        <div class="aiw-metric d-flex align-items-center gap-3">
-            <div class="aiw-metric-icon" style="background:rgba(37,99,235,.1);color:#2563eb;">
-                <i class="ti ti-robot"></i>
-            </div>
-            <div>
-                <div class="aiw-metric-value">{{ count($agents) }}</div>
-                <div class="aiw-metric-label">Agents Available</div>
-                <div class="aiw-metric-sub">{{ $executions->sum('total_records') > 0 ? number_format($executions->sum('total_records')) . ' records processed' : 'Ready to deploy' }}</div>
+        <div class="card mb-0 h-100">
+            <div class="card-body p-3 text-center d-flex flex-column justify-content-center">
+                <h4 class="mb-0 fw-bold text-primary">{{ count($agents) }}</h4>
+                <span class="text-muted small fw-medium mt-1">Agents Available</span>
+                <span class="text-muted" style="font-size: 0.75rem;">{{ $executions->sum('total_records') > 0 ? number_format($executions->sum('total_records')) . ' records processed' : 'Ready to deploy' }}</span>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-6">
-        <div class="aiw-metric d-flex align-items-center gap-3">
-            <div class="aiw-metric-icon" style="background:rgba(14,165,233,.1);color:#0ea5e9;">
-                <i class="ti ti-clock-play"></i>
-            </div>
-            <div>
-                <div class="aiw-metric-value">{{ $executions->sum(function($s) { return $s->success_count + $s->failure_count; }) }}</div>
-                <div class="aiw-metric-label">Executions Today</div>
-                <div class="aiw-metric-sub">{{ $executions->sum('success_count') }} succeeded</div>
+        <div class="card mb-0 h-100">
+            <div class="card-body p-3 text-center d-flex flex-column justify-content-center">
+                <h4 class="mb-0 fw-bold text-info">{{ $executions->sum(function($s) { return $s->success_count + $s->failure_count; }) }}</h4>
+                <span class="text-muted small fw-medium mt-1">Executions Today</span>
+                <span class="text-muted" style="font-size: 0.75rem;">{{ $executions->sum('success_count') }} succeeded</span>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-6">
-        <div class="aiw-metric d-flex align-items-center gap-3">
-            <div class="aiw-metric-icon" style="background:rgba(22,163,74,.1);color:#16a34a;">
-                <i class="ti ti-percentage"></i>
-            </div>
-            <div>
+        <div class="card mb-0 h-100">
+            <div class="card-body p-3 text-center d-flex flex-column justify-content-center">
                 @php
                     $total = $executions->sum(function($s) { return $s->success_count + $s->failure_count; });
                     $rate = $total > 0 ? round(($executions->sum('success_count') / $total) * 100) : 100;
                 @endphp
-                <div class="aiw-metric-value">{{ $rate }}%</div>
-                <div class="aiw-metric-label">Success Rate</div>
-                <div class="aiw-metric-sub">{{ $executions->sum('failure_count') }} failed</div>
+                <h4 class="mb-0 fw-bold text-success">{{ $rate }}%</h4>
+                <span class="text-muted small fw-medium mt-1">Success Rate</span>
+                <span class="text-muted" style="font-size: 0.75rem;">{{ $executions->sum('failure_count') }} failed</span>
             </div>
         </div>
     </div>
     <div class="col-md-3 col-6">
-        <div class="aiw-metric d-flex align-items-center gap-3">
-            <div class="aiw-metric-icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">
-                <i class="ti ti-bell-ringing"></i>
-            </div>
-            <div>
-                <div class="aiw-metric-value">{{ number_format($executions->sum('total_records')) }}</div>
-                <div class="aiw-metric-label">Records Processed</div>
-                <div class="aiw-metric-sub">{{ $executions->count() }} agents active</div>
+        <div class="card mb-0 h-100">
+            <div class="card-body p-3 text-center d-flex flex-column justify-content-center">
+                <h4 class="mb-0 fw-bold text-secondary">{{ number_format($executions->sum('total_records')) }}</h4>
+                <span class="text-muted small fw-medium mt-1">Records Processed</span>
+                <span class="text-muted" style="font-size: 0.75rem;">{{ $executions->where('status', 'running')->count() }} agents active</span>
             </div>
         </div>
     </div>
@@ -165,9 +151,7 @@
                 <div id="agentStepConfig">
                     <p class="text-muted mb-3" style="font-size:0.85rem;" id="agentConfigDescription"></p>
                     <div id="agentConfigFields"></div>
-                    <button type="button" class="btn btn-primary w-100" id="agentPreviewBtn" style="border-radius:0.625rem;">
-                        <i class="ti ti-search me-1"></i> Preview
-                    </button>
+                    <button type="button" class="btn btn-primary w-100" id="agentPreviewBtn" style="border-radius:0.625rem;">Preview</button>
                 </div>
 
                 {{-- Step: Loading --}}
@@ -235,15 +219,9 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light" id="agentModalBack" data-bs-dismiss="modal" style="border:1px solid var(--erp-border-color);">
-                    <i class="ti ti-arrow-left me-1"></i> Back
-                </button>
-                <button type="button" class="btn btn-execute d-none" id="agentRunBtn">
-                    <i class="ti ti-player-play me-1"></i> Execute Agent
-                </button>
-                <button type="button" class="btn btn-success d-none" id="agentDoneBtn" data-bs-dismiss="modal" style="border-radius:0.625rem;">
-                    <i class="ti ti-check me-1"></i> Done
-                </button>
+                <button type="button" class="btn btn-light" id="agentModalBack" data-bs-dismiss="modal" style="border:1px solid var(--erp-border-color);">Back</button>
+                <button type="button" class="btn btn-execute d-none" id="agentRunBtn">Execute Agent</button>
+                <button type="button" class="btn btn-success d-none" id="agentDoneBtn" data-bs-dismiss="modal" style="border-radius:0.625rem;">Done</button>
             </div>
         </div>
     </div>

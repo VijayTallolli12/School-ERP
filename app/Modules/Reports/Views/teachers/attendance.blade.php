@@ -67,7 +67,7 @@
                     </select>
                 </div>
                 <div class="col-md-3 mb-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-outline-secondary w-100"><i class="ti ti-filter me-1"></i> Apply Filters</button>
+                    <button type="submit" class="btn btn-outline-secondary w-100">Apply Filters</button>
                 </div>
             </form>
         </div>

@@ -59,9 +59,7 @@
                         </div>
 
                         <div class="d-flex justify-content-end mt-3">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="ti ti-device-floppy me-1"></i> Save Brand Colors
-                            </button>
+                            <button type="submit" class="btn btn-primary">Save Brand Colors</button>
                         </div>
                     </form>
                 </div>
@@ -76,9 +74,7 @@
 
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <code class="d-inline-block bg-body-tertiary border rounded px-2 py-1" id="brandingEndpoint">/api/v1/branding?school_id={{ $school->id }}</code>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="copyEndpointBtn">
-                            <i class="ti ti-copy me-1"></i> Copy
-                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="copyEndpointBtn">Copy</button>
                         <a href="{{ url('/api/v1/branding?school_id=' . $school->id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                             <i class="ti ti-external-link me-1"></i> Open
                         </a>

@@ -152,7 +152,7 @@
                         <td>{{ $row['class_section'] }}</td>
                         <td>{{ $row['exam_name'] }}</td>
                         <td class="text-center">{{ $row['percentage'] }}%</td>
-                        <td class="text-center"><span class="tag bg-{{ $row['result'] == 'Pass' ? 'success' : 'danger' }}">{{ $row['result'] }}</span></td>
+                        <td class="text-center"><span class="tag bg-{{ $row['result'] == 'Pass' ? 'success-subtle text-success' : 'danger-subtle text-danger' }}">{{ $row['result'] }}</span></td>
                     </tr>
                 @endforeach
             </tbody>

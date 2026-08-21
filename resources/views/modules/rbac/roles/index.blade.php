@@ -13,9 +13,7 @@
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title mb-0"><i class="ti ti-shield text-primary me-2"></i>Role Management</h3>
             @can('roles.create')
-                <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#roleModal" id="createRole">
-                    <i class="ti ti-plus me-1"></i> Add Role
-                </button>
+                <button class="btn btn-primary btn-sm ms-auto" id="createRole">Add Role</button>
             @endcan
         </div>
         <div class="card-body">
@@ -35,49 +33,54 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="roleForm" method="POST" action="{{ route('admin.roles.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="roleMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="roleModalTitle">Add Role</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label required" for="roleName">Role name</label>
+    <x-erp.side-panel 
+        id="roleOffcanvas" 
+        formId="roleForm" 
+        title="Add Role"
+        action="{{ route('admin.roles.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Save Role"
+        :hasTabs="false"
+        :multipart="false"
+    >
+        <input type="hidden" name="_method" value="POST" id="roleMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="basic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Role Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <label class="form-label required fw-medium text-dark" for="roleName">Role name</label>
                         <input id="roleName" class="form-control" type="text" name="name" required maxlength="125">
                     </div>
-                    <div class="row g-3">
-                        @foreach ($permissions as $module => $items)
-                            <div class="col-md-4">
-                                <div class="border rounded p-3 h-100 bg-body">
-                                    <div class="fw-semibold mb-2">{{ str($module)->headline() }}</div>
-                                    @foreach ($items as $permission)
-                                        <div class="form-check">
-                                            <input class="form-check-input permission-check" type="checkbox" name="permissions[]" value="{{ $permission->name }}" id="permission_{{ $permission->id }}">
-                                            <label class="form-check-label" for="permission_{{ $permission->id }}">{{ $permission->name }}</label>
-                                        </div>
-                                    @endforeach
+                    <div class="col-md-12">
+                        <h6 class="fw-bold text-uppercase text-muted mb-3 mt-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">Permissions</h6>
+                        <div class="row g-3">
+                            @foreach ($permissions as $module => $items)
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100 bg-body">
+                                        <div class="fw-semibold mb-2">{{ str($module)->headline() }}</div>
+                                        @foreach ($items as $permission)
+                                            <div class="form-check">
+                                                <input class="form-check-input permission-check" type="checkbox" name="permissions[]" value="{{ $permission->name }}" id="permission_{{ $permission->id }}">
+                                                <label class="form-check-label" for="permission_{{ $permission->id }}">{{ $permission->name }}</label>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Role</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const modal = new bootstrap.Modal('#roleModal');
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('roleOffcanvas'));
             const table = $('#rolesTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -97,7 +100,8 @@
                 $('.permission-check').prop('checked', false);
                 $('#roleForm').attr('action', '{{ route('admin.roles.store') }}');
                 $('#roleMethod').val('POST');
-                $('#roleModalTitle').text('Add Role');
+                $('#roleOffcanvasTitle').text('Add Role');
+                $('#roleForm')offcanvas.show();
             });
 
             $('#rolesTable').on('click', '.edit-role', function () {
@@ -110,8 +114,8 @@
                     role.permissions.forEach((permission) => {
                         $(`.permission-check[value="${permission}"]`).prop('checked', true);
                     });
-                    $('#roleModalTitle').text('Edit Role');
-                    modal.show();
+                    $('#roleOffcanvasTitle').text('Edit Role');
+                    $('#roleForm')offcanvas.show();
                 });
             });
 
@@ -123,7 +127,7 @@
             });
 
             $('#roleForm').on('erp:success', () => {
-                modal.hide();
+                offcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });

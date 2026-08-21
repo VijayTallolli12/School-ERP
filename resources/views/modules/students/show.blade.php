@@ -36,9 +36,7 @@
                 @can('student_lifecycle.alumni')
                     <button type="button" class="btn btn-outline-secondary btn-sm lifecycle-quick-alumni"
                             data-url="{{ route('admin.students.alumni', $student) }}"
-                            data-name="{{ $student->full_name }}">
-                        <i class="ti ti-graduation-cap me-1"></i> Mark Alumni
-                    </button>
+                            data-name="{{ $student->full_name }}"> Mark Alumni</button>
                 @endcan
             </div>
         @endif
@@ -58,7 +56,7 @@
                     @endif
                     <h4 class="mb-1">{{ $student->full_name }}</h4>
                     <p class="text-muted mb-2">{{ $student->admission_no }}</p>
-                    <span class="badge bg-{{ $student->status === 'active' ? 'success' : 'danger' }} mb-3">{{ ucfirst($student->status) }}</span>
+                    <span class="badge bg-{{ $student->status === 'active' ? 'success-subtle text-success' : 'danger-subtle text-danger' }} mb-3">{{ ucfirst($student->status) }}</span>
 
                     @if($session)
                         <div class="mt-2">
@@ -186,7 +184,7 @@
                         <div class="col-md-6">
                             <label class="form-label text-muted small">Status</label>
                             <div class="fw-semibold">
-                                <span class="badge bg-{{ $student->status === 'active' ? 'success' : 'danger' }}">{{ ucfirst($student->status) }}</span>
+                                <span class="badge bg-{{ $student->status === 'active' ? 'success-subtle text-success' : 'danger-subtle text-danger' }}">{{ ucfirst($student->status) }}</span>
                             </div>
                         </div>
                     </div>

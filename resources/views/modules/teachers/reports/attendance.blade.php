@@ -31,7 +31,7 @@
                     <input class="form-control" type="date" name="to_date" value="{{ request('to_date') }}">
                 </div>
                 <div class="col-md-2 align-self-end">
-                    <button class="btn btn-primary py-2 w-100" type="submit"><i class="ti ti-filter me-1"></i> Filter</button>
+                    <button class="btn btn-primary w-100" type="submit">Filter</button>
                 </div>
             </form>
         </div>

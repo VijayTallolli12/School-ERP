@@ -28,8 +28,8 @@
                     </select>
                 </div>
                 <div class="col-auto mb-2">
-                    <button type="button" id="filterBtn" class="btn btn-outline-secondary me-2"><i class="ti ti-filter me-1"></i>Filter</button>
-                    <button type="button" id="resetBtn" class="btn btn-secondary me-2"><i class="ti ti-refresh me-1"></i>Reset</button>
+                    <button type="button" id="filterBtn" class="btn btn-outline-secondary me-2">Filter</button>
+                    <button type="button" id="resetBtn" class="btn btn-secondary me-2">Reset</button>
                     <a id="exportExcel" href="{{ route('reports.exams.export.excel', ['type' => 'class_performance']) }}" class="btn btn-sm btn-outline-success me-2"><i class="ti ti-file-spreadsheet me-1"></i>Export Excel</a>
                     <a id="exportPdf" href="{{ route('reports.exams.export.pdf', ['type' => 'class_performance']) }}" class="btn btn-sm btn-outline-danger me-2"><i class="ti ti-file-type-pdf me-1"></i>Export PDF</a>
                     <a id="exportPrint" href="{{ route('reports.exams.print', ['type' => 'class_performance']) }}" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>

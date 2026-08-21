@@ -60,23 +60,21 @@
                     <input type="date" name="end_date" id="end_date" class="form-control">
                 </div>
                 <div class="col-12 d-flex gap-2">
-                    <button type="button" id="filterBtn" class="btn btn-primary py-2">
+                    <button type="button" id="filterBtn" class="btn btn-primary">
                         <i class="ti ti-filter me-1"></i> Filter
                     </button>
-                    <button type="button" id="resetBtn" class="btn btn-outline-secondary py-2">
+                    <button type="button" id="resetBtn" class="btn btn-outline-secondary">
                         <i class="ti ti-refresh me-1"></i> Reset
                     </button>
-                    <a id="exportExcel" href="{{ route('reports.students.directory.export', ['type' => 'excel']) }}" class="btn btn-secondary py-2">
-                        <i class="ti ti-file-type-xls me-1"></i> Excel
-                    </a>
-                    <a id="exportPdf" href="{{ route('reports.students.directory.export', ['type' => 'pdf']) }}" class="btn btn-secondary py-2">
-                        <i class="ti ti-file-type-pdf me-1"></i> PDF
-                    </a>
-                    <a id="exportPrint" href="{{ route('reports.students.directory.export', ['type' => 'print']) }}" class="btn btn-secondary py-2" target="_blank">
-                        <i class="ti ti-printer me-1"></i> Print
-                    </a>
-                </div>
-            </form>
+                    <x-erp.export-buttons 
+                        excelUrl="{{ route('reports.students.directory.export', ['type' => 'excel']) }}"
+                        pdfUrl="{{ route('reports.students.directory.export', ['type' => 'pdf']) }}"
+                        printUrl="{{ route('reports.students.directory.export', ['type' => 'print']) }}"
+                        excelId="exportExcel"
+                        pdfId="exportPdf"
+                        printId="exportPrint"
+                    />
+                    </form>
         </div>
     </div>
 

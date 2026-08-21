@@ -25,7 +25,7 @@
                         </small>
                     </div>
                     <div class="ms-auto d-flex gap-2">
-                        <span class="badge bg-{{ $exam->is_published ? 'success' : 'secondary' }} fs-6" id="publishBadge">
+                        <span class="badge bg-{{ $exam->is_published ? 'success-subtle text-success' : 'secondary-subtle text-secondary' }} fs-6" id="publishBadge">
                             {{ $exam->is_published ? 'Published' : 'Draft' }}
                         </span>
                     </div>
@@ -94,7 +94,7 @@
                                                     placeholder="Auto" readonly>
                                             </td>
                                             <td class="text-center">
-                                                <span class="status-badge badge bg-secondary">Pending</span>
+                                                <span class="status-badge badge bg-secondary-subtle text-secondary">Pending</span>
                                                 <input type="hidden" name="results[{{ $i }}][status]" value="{{ $existing?->status ?? '' }}">
                                             </td>
                                             <td>
@@ -129,15 +129,9 @@
                                 <span class="text-muted small" id="saveStatus"></span>
                             </div>
                             <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('admin.exams.index') }}'">
-                                    <i class="ti ti-arrow-left me-1"></i> Back
-                                </button>
-                                <button type="submit" class="btn btn-primary" id="saveDraftBtn">
-                                    <i class="ti ti-device-floppy me-1"></i> Save Draft
-                                </button>
-                                <button type="button" class="btn btn-primary" id="savePublishBtn">
-                                    <i class="ti ti-eye me-1"></i> Save &amp; Publish
-                                </button>
+                                <button type="button" class="btn btn-light" onclick="window.location.href='{{ route('admin.exams.index') }}'">Back</button>
+                                <button type="submit" class="btn btn-primary" id="saveDraftBtn">Save Draft</button>
+                                <button type="button" class="btn btn-primary" id="savePublishBtn">Save &amp; Publish</button>
                             </div>
                         </div>
                     </form>

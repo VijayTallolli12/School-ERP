@@ -1,12 +1,16 @@
-<div class="btn-group" role="group">
+<x-erp.table-action-menu>
     @can('hr.update')
-        <button type="button" class="btn btn-sm btn-outline-primary edit-employee" data-url="{{ route('admin.hr.show', $employee) }}" data-update-url="{{ route('admin.hr.update', $employee) }}" title="Edit">
-            <i class="ti ti-pencil"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center edit-employee" data-url="{{ route('admin.hr.show', $employee) }}" data-update-url="{{ route('admin.hr.update', $employee) }}" title="Edit">
+                <i class="ti ti-pencil me-2"></i> Edit
+            </button>
+        </li>
     @endcan
     @can('hr.delete')
-        <button type="button" class="btn btn-sm btn-outline-danger delete-employee" data-url="{{ route('admin.hr.destroy', $employee) }}" title="Delete">
-            <i class="ti ti-trash"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center text-danger delete-employee" data-url="{{ route('admin.hr.destroy', $employee) }}" title="Delete">
+                <i class="ti ti-trash me-2 text-danger"></i> Delete
+            </button>
+        </li>
     @endcan
-</div>
+</x-erp.table-action-menu>

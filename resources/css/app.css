@@ -212,6 +212,17 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     transition: all 0.2s ease;
     background-color: #ffffff;
 }
+
+/* --- FILTER BUTTONS SYNC --- */
+/* Ensure buttons next to form controls exactly match their custom 43px height */
+.filter-item .btn,
+#filterForm .btn,
+form.row .btn,
+.d-flex.align-items-end .btn {
+    padding: 10px 16px !important;
+    min-height: 43px !important;
+}
+
 .form-control:focus, .form-select:focus {
     border-color: var(--erp-primary) !important;
     box-shadow: 0 0 0 4px var(--erp-primary-light) !important;
@@ -4042,4 +4053,25 @@ div.dataTables_wrapper table.dataTable td.dataTables_empty {
     border-top-left-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
     margin-left: -1px;
+}
+
+
+/* --- ACTION MENU TRIGGER --- */
+/* Hide Bootstrap caret from three-dots action menus globally */
+.action-menu-trigger::after,
+.action-menu-trigger.dropdown-toggle::after {
+    display: none !important;
+}
+
+
+/* --- SOFT DANGER BUTTON --- */
+.btn-soft-danger {
+    color: var(--erp-danger, #ef4444);
+    background-color: transparent;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+.btn-soft-danger:hover, .btn-soft-danger:focus {
+    color: #fff;
+    background-color: var(--erp-danger, #ef4444);
+    border-color: var(--erp-danger, #ef4444);
 }

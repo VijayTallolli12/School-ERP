@@ -1,13 +1,19 @@
-<div class="btn-group btn-group-sm">
-    <a href="{{ route('admin.fees.collections.receipt.print', $row) }}" class="btn btn-outline-secondary" target="_blank" title="Print receipt">
-        <i class="ti ti-printer"></i>
-    </a>
-    <a href="{{ route('admin.fees.collections.receipt.pdf', $row) }}" class="btn btn-outline-secondary" title="Download PDF">
-        <i class="ti ti-file-type-pdf"></i>
-    </a>
+<x-erp.table-action-menu>
+    <li>
+        <a href="{{ route('admin.fees.collections.receipt.print', $row) }}" class="dropdown-item d-flex align-items-center" target="_blank" title="Print receipt">
+            <i class="ti ti-printer me-2"></i> Print receipt
+        </a>
+    </li>
+    <li>
+        <a href="{{ route('admin.fees.collections.receipt.pdf', $row) }}" class="dropdown-item d-flex align-items-center" title="Download PDF">
+            <i class="ti ti-file-type-pdf me-2"></i> Download PDF
+        </a>
+    </li>
     @can('fees.update')
-        <button type="button" class="btn btn-outline-warning void-collection" data-url="{{ route('admin.fees.collections.void', $row) }}" title="Void payment">
-            <i class="ti ti-x"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center void-collection" data-url="{{ route('admin.fees.collections.void', $row) }}" title="Void payment">
+                <i class="ti ti-x me-2"></i> Void payment
+            </button>
+        </li>
     @endcan
-</div>
+</x-erp.table-action-menu>

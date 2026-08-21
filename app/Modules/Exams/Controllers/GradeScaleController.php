@@ -26,7 +26,7 @@ class GradeScaleController extends Controller
         return DataTables::of($query)
             ->addColumn('actions', fn (GradeScale $gradeScale) => view('modules.exams.grade-scales._actions', compact('gradeScale'))->render())
             ->editColumn('is_fail', fn (GradeScale $gradeScale) => $gradeScale->is_fail ? '<span class="badge bg-danger">Yes</span>' : '<span class="badge bg-success">No</span>')
-            ->editColumn('status', fn (GradeScale $gradeScale) => '<span class="badge bg-'.($gradeScale->status === 'active' ? 'success' : 'secondary').'">'.e(ucfirst($gradeScale->status)).'</span>')
+            ->editColumn('status', fn (GradeScale $gradeScale) => '<span class="badge bg-'.($gradeScale->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.e(ucfirst($gradeScale->status)).'</span>')
             ->rawColumns(['is_fail', 'status', 'actions'])
             ->toJson();
     }

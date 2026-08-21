@@ -41,17 +41,20 @@
                     <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
                 </div>
                 <div class="col-md-2 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary py-2 flex-fill"><i class="ti ti-filter me-1"></i> Filter</button>
-                    <a href="{{ route('reports.students.gender_wise') }}" class="btn btn-outline-secondary py-2"><i class="ti ti-refresh"></i></a>
+                    <button type="submit" class="btn btn-primary flex-fill"><i class="ti ti-filter me-1"></i> Filter</button>
+                    <x-erp.export-buttons 
+                        excelUrl="{{ route('reports.students.gender_wise.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}"
+                        pdfUrl="{{ route('reports.students.gender_wise.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}"
+                        printUrl="{{ route('reports.students.gender_wise.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}"
+                        excelId="exportExcel"
+                        pdfId="exportPdf"
+                        printId="exportPrint"
+                    />
+                    <a href="{{ route('reports.students.gender_wise') }}" class="btn btn-outline-secondary"><i class="ti ti-refresh"></i></a>
                 </div>
             </form>
             <div class="row mt-3">
-                <div class="col-12">
-                    <a id="exportExcel" href="{{ route('reports.students.gender_wise.export', ['type' => 'excel']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-sm btn-outline-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</a>
-                    <a id="exportPdf" href="{{ route('reports.students.gender_wise.export', ['type' => 'pdf']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-sm btn-outline-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
-                    <a id="exportPrint" href="{{ route('reports.students.gender_wise.export', ['type' => 'print']) }}?{{ http_build_query(request()->all()) }}" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
                 </div>
-            </div>
         </div>
     </div>
 

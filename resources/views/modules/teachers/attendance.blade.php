@@ -14,9 +14,7 @@
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title mb-0"><i class="ti ti-user-check text-primary me-2"></i>Teacher Attendance</h3>
             @can('attendance.create')
-                <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#attendanceModal" id="createAttendance">
-                    <i class="ti ti-plus me-1"></i> Mark Attendance
-                </button>
+                <button class="btn btn-primary btn-sm ms-auto" id="createAttendance">Mark Attendance</button>
             @endcan
         </div>
         <div class="card-body">
@@ -37,57 +35,52 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="attendanceModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="attendanceForm" method="POST" action="{{ route('admin.teachers.attendance.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="attendanceMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="attendanceModalTitle">Mark Attendance</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Teacher</label>
-                            <select class="form-select" name="teacher_id" required>
-                                <option value="">Select</option>
-                                @foreach ($teachers as $teacher)
-                                    <option value="{{ $teacher->id }}">{{ $teacher->full_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Attendance Date</label>
-                            <input class="form-control" type="date" name="attendance_date" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Status</label>
-                            <select class="form-select" name="status" required>
-                                @foreach ($statuses as $status)
-                                    <option value="{{ $status }}">{{ ucfirst(str_replace('_', ' ', $status)) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Remarks</label>
-                            <textarea class="form-control" name="remarks" rows="3"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy me-1"></i>Save Attendance</button>
-                </div>
-            </form>
+    <x-erp.side-panel 
+        id="attendanceOffcanvas" 
+        formId="attendanceForm" 
+        title="Mark Attendance"
+        action="{{ route('admin.teachers.attendance.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Save Attendance"
+    >
+        <input type="hidden" name="_method" value="POST" id="attendanceMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Attendance Details</h6>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Teacher</label>
+                <select class="form-select" name="teacher_id" required>
+                    <option value="">Select</option>
+                    @foreach ($teachers as $teacher)
+                        <option value="{{ $teacher->id }}">{{ $teacher->full_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Attendance Date</label>
+                <input class="form-control" type="date" name="attendance_date" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Status</label>
+                <select class="form-select" name="status" required>
+                    @foreach ($statuses as $status)
+                        <option value="{{ $status }}">{{ ucfirst(str_replace('_', ' ', $status)) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Remarks</label>
+                <textarea class="form-control" name="remarks" rows="3"></textarea>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const modal = new bootstrap.Modal('#attendanceModal');
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('attendanceOffcanvas'));
             const form = $('#attendanceForm');
             const table = $('#attendanceTable').DataTable({
                 processing: true,
@@ -108,9 +101,11 @@
                 form[0].reset();
                 $('#attendanceMethod').val('POST');
                 form.attr('action', '{{ route('admin.teachers.attendance.store') }}');
-                $('#attendanceModalTitle').text('Mark Attendance');
+                $('#attendanceOffcanvasTitle').text('Mark Attendance');
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
+                form.data('is-dirty', false);
+                offcanvas.show();
             });
 
             $('#attendanceTable').on('click', '.edit-attendance', function () {
@@ -120,7 +115,7 @@
                     form.find('.invalid-feedback.dynamic').remove();
                     form.attr('action', $(this).data('update-url'));
                     $('#attendanceMethod').val('PUT');
-                    $('#attendanceModalTitle').text('Edit Attendance');
+                    $('#attendanceOffcanvasTitle').text('Edit Attendance');
 
                     Object.entries(response.data).forEach(([key, value]) => {
                         const field = form.find(`[name="${key}"]`);
@@ -129,7 +124,9 @@
                         }
                     });
 
-                    modal.show();
+                    form.find('select').trigger('change.select2');
+                    form.data('is-dirty', false);
+                    offcanvas.show();
                 });
             });
 
@@ -141,7 +138,7 @@
             });
 
             form.on('erp:success', () => {
-                modal.hide();
+                offcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });

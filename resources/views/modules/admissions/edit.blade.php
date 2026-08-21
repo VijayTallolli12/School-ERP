@@ -169,7 +169,7 @@
         <div class="card">
             <div class="card-body d-flex justify-content-end gap-2">
                 <a href="{{ route('admin.admissions.show', $admission) }}" class="btn btn-light">Cancel</a>
-                <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy me-1"></i> Update Application</button>
+                <button type="submit" class="btn btn-primary">Update Application</button>
             </div>
         </div>
     </form>

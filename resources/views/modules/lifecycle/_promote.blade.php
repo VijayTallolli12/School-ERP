@@ -13,9 +13,7 @@
             @endforeach
         </select>
         <input id="rollNoPrefix" class="form-control form-control-sm" placeholder="Roll no / prefix" style="width: 160px;">
-        <button id="promoteBtn" class="btn btn-primary btn-sm" disabled>
-            <i class="ti ti-arrow-up-circle me-1"></i> Promote Selected
-        </button>
+        <button id="promoteBtn" class="btn btn-primary btn-sm" disabled>Promote Selected</button>
     </div>
     <div class="alert alert-info py-2">
         Select students below, choose a target academic year and class, then click <strong>Promote Selected</strong>.

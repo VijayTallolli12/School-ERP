@@ -13,14 +13,10 @@
         <div class="card-header p-0 border-bottom-0">
             <ul class="nav nav-tabs" id="notificationsTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#listPane" type="button">
-                        <i class="ti ti-list me-1"></i> All Notifications
-                    </button>
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#listPane" type="button">All Notifications</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#dashboardPane" type="button">
-                        <i class="ti ti-chart-pie me-1"></i> Dashboard
-                    </button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#dashboardPane" type="button">Dashboard</button>
                 </li>
             </ul>
         </div>
@@ -44,9 +40,7 @@
                             </select>
                         </div>
                         @can('notifications.create')
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#notificationModal" id="createNotification">
-                                <i class="ti ti-plus me-1"></i> New Notification
-                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" id="createNotification">New Notification</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="notificationsTable">
@@ -110,83 +104,78 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="notificationForm" method="POST" action="{{ route('admin.notifications.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="notificationMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="notificationModalTitle">New Notification</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label required">Title</label>
-                        <input class="form-control" name="title" required maxlength="200">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label required">Type</label>
-                        <select class="form-select" name="type" required>
-                            <option value="">Select</option>
-                            @foreach ($types as $k => $label)
-                                <option value="{{ $k }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label required">Priority</label>
-                        <select class="form-select" name="priority" required>
-                            @foreach ($priorities as $p)
-                                <option value="{{ $p }}" @if($p === 'medium') selected @endif>{{ ucfirst($p) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label required">Message</label>
-                        <textarea class="form-control" name="message" rows="4" required></textarea>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label required">Target</label>
-                        <select class="form-select" name="target_type" required>
-                            @foreach ($targetTypes as $k => $label)
-                                <option value="{{ $k }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label required">Channel</label>
-                        <select class="form-select" name="channel" required>
-                            @foreach ($channels as $k => $label)
-                                <option value="{{ $k }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label required">Status</label>
-                        <select class="form-select" name="status" required>
-                            <option value="draft">Draft</option>
-                            <option value="sent">Send Now</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Schedule Date</label>
-                        <input type="datetime-local" class="form-control" name="scheduled_at">
-                        <small class="text-secondary">Leave empty to send immediately when status is "Send Now".</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save</button>
-                </div>
-            </form>
+    <x-erp.side-panel 
+        id="notificationOffcanvas" 
+        formId="notificationForm" 
+        title="New Notification"
+        action="{{ route('admin.notifications.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="notificationMethod">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Title</label>
+                <input class="form-control" name="title" required maxlength="200">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label required fw-medium text-dark">Type</label>
+                <select class="form-select" name="type" required>
+                    <option value="">Select</option>
+                    @foreach ($types as $k => $label)
+                        <option value="{{ $k }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label required fw-medium text-dark">Priority</label>
+                <select class="form-select" name="priority" required>
+                    @foreach ($priorities as $p)
+                        <option value="{{ $p }}" @if($p === 'medium') selected @endif>{{ ucfirst($p) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Message</label>
+                <textarea class="form-control" name="message" rows="4" required></textarea>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark">Target</label>
+                <select class="form-select" name="target_type" required>
+                    @foreach ($targetTypes as $k => $label)
+                        <option value="{{ $k }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark">Channel</label>
+                <select class="form-select" name="channel" required>
+                    @foreach ($channels as $k => $label)
+                        <option value="{{ $k }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark">Status</label>
+                <select class="form-select" name="status" required>
+                    <option value="draft">Draft</option>
+                    <option value="sent">Send Now</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium text-dark">Schedule Date</label>
+                <input type="datetime-local" class="form-control" name="scheduled_at">
+                <small class="text-secondary">Leave empty to send immediately when status is "Send Now".</small>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', async () => { (async () => { const DataTable = await window.lazyDT();
-            const notificationModal = new bootstrap.Modal('#notificationModal');
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('notificationOffcanvas'));
             const table = $('#notificationsTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -225,9 +214,10 @@
                 form[0].reset();
                 $('#notificationMethod').val('POST');
                 form.attr('action', '{{ route('admin.notifications.store') }}');
-                $('#notificationModalTitle').text('New Notification');
+                $('#notificationOffcanvasTitle').text('New Notification');
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
+                formoffcanvas.show();
             });
 
             // Edit
@@ -237,13 +227,13 @@
                     form[0].reset();
                     form.attr('action', $(this).data('update-url'));
                     $('#notificationMethod').val('PUT');
-                    $('#notificationModalTitle').text('Edit Notification');
+                    $('#notificationOffcanvasTitle').text('Edit Notification');
                     Object.entries(res.data).forEach(([k, v]) => {
                         if (v !== null && v !== undefined) form.find(`[name="${k}"]`).val(v);
                     });
                     form.find('.is-invalid').removeClass('is-invalid');
                     form.find('.invalid-feedback.dynamic').remove();
-                    notificationModal.show();
+                    formoffcanvas.show();
                 });
             });
 
@@ -284,7 +274,7 @@
             // Form success handler
             $('#notificationForm').on('erp:success', () => {
                 try {
-                    notificationModal.hide();
+                    offcanvas.hide();
                 } catch (e) {
                     console.error('[Notif] modal hide error:', e);
                 }

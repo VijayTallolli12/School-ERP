@@ -69,7 +69,7 @@ class PayrollController extends Controller
     public function departmentsData(): JsonResponse
     {
         return DataTables::of($this->payroll->departments())
-            ->editColumn('status', fn (PayrollDepartment $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success' : 'secondary').'">'.$d->status.'</span>')
+            ->editColumn('status', fn (PayrollDepartment $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$d->status.'</span>')
             ->addColumn('actions', fn (PayrollDepartment $d) => view('modules.payroll._actions', ['type' => 'department', 'model' => $d])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -104,7 +104,7 @@ class PayrollController extends Controller
     {
         return DataTables::of($this->payroll->designations())
             ->addColumn('department_name', fn (PayrollDesignation $d) => $d->department?->name ?? '-')
-            ->editColumn('status', fn (PayrollDesignation $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success' : 'secondary').'">'.$d->status.'</span>')
+            ->editColumn('status', fn (PayrollDesignation $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$d->status.'</span>')
             ->addColumn('actions', fn (PayrollDesignation $d) => view('modules.payroll._actions', ['type' => 'designation', 'model' => $d])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -138,10 +138,10 @@ class PayrollController extends Controller
     public function salaryComponentsData(): JsonResponse
     {
         return DataTables::of($this->payroll->salaryComponents())
-            ->editColumn('component_type', fn (SalaryComponent $c) => '<span class="badge bg-'.($c->component_type === 'earning' ? 'success' : 'danger').'">'.$c->component_type.'</span>')
+            ->editColumn('component_type', fn (SalaryComponent $c) => '<span class="badge bg-'.($c->component_type === 'earning' ? 'success-subtle text-success' : 'danger-subtle text-danger').'">'.$c->component_type.'</span>')
             ->editColumn('calculation_type', fn (SalaryComponent $c) => '<span class="badge bg-info">'.$c->calculation_type.'</span>')
             ->editColumn('value', fn (SalaryComponent $c) => '<span class="text-end d-block">'.number_format((float) $c->value, 2).'</span>')
-            ->editColumn('status', fn (SalaryComponent $c) => '<span class="badge bg-'.($c->status === 'active' ? 'success' : 'secondary').'">'.$c->status.'</span>')
+            ->editColumn('status', fn (SalaryComponent $c) => '<span class="badge bg-'.($c->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$c->status.'</span>')
             ->addColumn('actions', fn (SalaryComponent $c) => view('modules.payroll._actions', ['type' => 'salary-component', 'model' => $c])->render())
             ->rawColumns(['component_type', 'calculation_type', 'value', 'status', 'actions'])
             ->toJson();
@@ -177,7 +177,7 @@ class PayrollController extends Controller
         return DataTables::of($this->payroll->payGrades())
             ->editColumn('min_salary', fn (PayGrade $g) => $g->min_salary !== null ? number_format((float) $g->min_salary, 2) : '-')
             ->editColumn('max_salary', fn (PayGrade $g) => $g->max_salary !== null ? number_format((float) $g->max_salary, 2) : '-')
-            ->editColumn('status', fn (PayGrade $g) => '<span class="badge bg-'.($g->status === 'active' ? 'success' : 'secondary').'">'.$g->status.'</span>')
+            ->editColumn('status', fn (PayGrade $g) => '<span class="badge bg-'.($g->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$g->status.'</span>')
             ->addColumn('actions', fn (PayGrade $g) => view('modules.payroll._actions', ['type' => 'pay-grade', 'model' => $g])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -216,7 +216,7 @@ class PayrollController extends Controller
             ->editColumn('total_ctc', fn (EmployeeSalaryStructure $s) => '<span class="text-end d-block">'.number_format((float) $s->total_ctc, 2).'</span>')
             ->editColumn('effective_from', fn (EmployeeSalaryStructure $s) => $s->effective_from?->format('d M Y') ?? '-')
             ->editColumn('effective_to', fn (EmployeeSalaryStructure $s) => $s->effective_to?->format('d M Y') ?? '-')
-            ->editColumn('status', fn (EmployeeSalaryStructure $s) => '<span class="badge bg-'.($s->status === 'active' ? 'success' : 'secondary').'">'.$s->status.'</span>')
+            ->editColumn('status', fn (EmployeeSalaryStructure $s) => '<span class="badge bg-'.($s->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$s->status.'</span>')
             ->addColumn('actions', fn (EmployeeSalaryStructure $s) => view('modules.payroll._actions', ['type' => 'salary-structure', 'model' => $s])->render())
             ->rawColumns(['total_ctc', 'status', 'actions'])
             ->toJson();
@@ -251,7 +251,7 @@ class PayrollController extends Controller
     {
         return DataTables::of($this->payroll->payrollRuns())
             ->addColumn('period', fn (PayrollRun $r) => $r->month_name.' '.$r->year)
-            ->editColumn('status', fn (PayrollRun $r) => '<span class="badge bg-'.($r->status === 'draft' ? 'warning' : 'success').'">'.$r->status.'</span>')
+            ->editColumn('status', fn (PayrollRun $r) => '<span class="badge bg-'.($r->status === 'draft' ? 'warning-subtle text-warning' : 'success-subtle text-success').'">'.$r->status.'</span>')
             ->editColumn('generated_at', fn (PayrollRun $r) => $r->generated_at?->format('d M Y H:i') ?? '-')
             ->addColumn('items_count', fn (PayrollRun $r) => $r->items_count)
             ->addColumn('actions', fn (PayrollRun $r) => view('modules.payroll._run_actions', ['run' => $r])->render())
@@ -303,7 +303,7 @@ class PayrollController extends Controller
             ->editColumn('gross_salary', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->gross_salary, 2).'</span>')
             ->editColumn('total_deductions', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->total_deductions, 2).'</span>')
             ->editColumn('net_salary', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->net_salary, 2).'</span>')
-            ->editColumn('status', fn (PayrollItem $i) => '<span class="badge bg-'.($i->status === 'active' ? 'success' : 'secondary').'">'.$i->status.'</span>')
+            ->editColumn('status', fn (PayrollItem $i) => '<span class="badge bg-'.($i->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$i->status.'</span>')
             ->rawColumns(['gross_salary', 'total_deductions', 'net_salary', 'status'])
             ->toJson();
     }
@@ -450,7 +450,7 @@ class PayrollController extends Controller
         }
 
         return DataTables::of($query)
-            ->editColumn('status', fn (PayrollDepartment $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success' : 'secondary').'">'.$d->status.'</span>')
+            ->editColumn('status', fn (PayrollDepartment $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$d->status.'</span>')
             ->rawColumns(['status'])
             ->toJson();
     }
@@ -468,7 +468,7 @@ class PayrollController extends Controller
 
         return DataTables::of($query)
             ->addColumn('department_name', fn (PayrollDesignation $d) => $d->department?->name ?? '-')
-            ->editColumn('status', fn (PayrollDesignation $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success' : 'secondary').'">'.$d->status.'</span>')
+            ->editColumn('status', fn (PayrollDesignation $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$d->status.'</span>')
             ->rawColumns(['status'])
             ->toJson();
     }
@@ -485,10 +485,10 @@ class PayrollController extends Controller
         }
 
         return DataTables::of($query)
-            ->editColumn('component_type', fn (SalaryComponent $c) => '<span class="badge bg-'.($c->component_type === 'earning' ? 'success' : 'danger').'">'.$c->component_type.'</span>')
+            ->editColumn('component_type', fn (SalaryComponent $c) => '<span class="badge bg-'.($c->component_type === 'earning' ? 'success-subtle text-success' : 'danger-subtle text-danger').'">'.$c->component_type.'</span>')
             ->editColumn('calculation_type', fn (SalaryComponent $c) => '<span class="badge bg-info">'.$c->calculation_type.'</span>')
             ->editColumn('value', fn (SalaryComponent $c) => '<span class="text-end d-block">'.number_format((float) $c->value, 2).'</span>')
-            ->editColumn('status', fn (SalaryComponent $c) => '<span class="badge bg-'.($c->status === 'active' ? 'success' : 'secondary').'">'.$c->status.'</span>')
+            ->editColumn('status', fn (SalaryComponent $c) => '<span class="badge bg-'.($c->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$c->status.'</span>')
             ->rawColumns(['component_type', 'calculation_type', 'value', 'status'])
             ->toJson();
     }
@@ -504,7 +504,7 @@ class PayrollController extends Controller
         return DataTables::of($query)
             ->editColumn('min_salary', fn (PayGrade $g) => $g->min_salary !== null ? number_format((float) $g->min_salary, 2) : '-')
             ->editColumn('max_salary', fn (PayGrade $g) => $g->max_salary !== null ? number_format((float) $g->max_salary, 2) : '-')
-            ->editColumn('status', fn (PayGrade $g) => '<span class="badge bg-'.($g->status === 'active' ? 'success' : 'secondary').'">'.$g->status.'</span>')
+            ->editColumn('status', fn (PayGrade $g) => '<span class="badge bg-'.($g->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$g->status.'</span>')
             ->rawColumns(['status'])
             ->toJson();
     }
@@ -529,7 +529,7 @@ class PayrollController extends Controller
             ->editColumn('total_ctc', fn (EmployeeSalaryStructure $s) => '<span class="text-end d-block">'.number_format((float) $s->total_ctc, 2).'</span>')
             ->editColumn('effective_from', fn (EmployeeSalaryStructure $s) => $s->effective_from?->format('d M Y') ?? '-')
             ->editColumn('effective_to', fn (EmployeeSalaryStructure $s) => $s->effective_to?->format('d M Y') ?? '-')
-            ->editColumn('status', fn (EmployeeSalaryStructure $s) => '<span class="badge bg-'.($s->status === 'active' ? 'success' : 'secondary').'">'.$s->status.'</span>')
+            ->editColumn('status', fn (EmployeeSalaryStructure $s) => '<span class="badge bg-'.($s->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$s->status.'</span>')
             ->rawColumns(['total_ctc', 'status'])
             ->toJson();
     }
@@ -555,7 +555,7 @@ class PayrollController extends Controller
             ->editColumn('total_ctc', fn (EmployeeSalaryStructure $s) => '<span class="text-end d-block">'.number_format((float) $s->total_ctc, 2).'</span>')
             ->editColumn('effective_from', fn (EmployeeSalaryStructure $s) => $s->effective_from?->format('d M Y') ?? '-')
             ->editColumn('effective_to', fn (EmployeeSalaryStructure $s) => $s->effective_to?->format('d M Y') ?? '-')
-            ->editColumn('status', fn (EmployeeSalaryStructure $s) => '<span class="badge bg-'.($s->status === 'active' ? 'success' : 'secondary').'">'.$s->status.'</span>')
+            ->editColumn('status', fn (EmployeeSalaryStructure $s) => '<span class="badge bg-'.($s->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$s->status.'</span>')
             ->rawColumns(['total_ctc', 'status'])
             ->toJson();
     }
@@ -572,7 +572,7 @@ class PayrollController extends Controller
 
         return DataTables::of($query)
             ->addColumn('period', fn (PayrollRun $r) => $r->month_name.' '.$r->year)
-            ->editColumn('status', fn (PayrollRun $r) => '<span class="badge bg-'.($r->status === 'draft' ? 'warning' : 'success').'">'.$r->status.'</span>')
+            ->editColumn('status', fn (PayrollRun $r) => '<span class="badge bg-'.($r->status === 'draft' ? 'warning-subtle text-warning' : 'success-subtle text-success').'">'.$r->status.'</span>')
             ->editColumn('generated_at', fn (PayrollRun $r) => $r->generated_at?->format('d M Y H:i') ?? '-')
             ->addColumn('items_count', fn (PayrollRun $r) => $r->items_count)
             ->rawColumns(['status'])
@@ -599,7 +599,7 @@ class PayrollController extends Controller
             ->editColumn('gross_salary', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->gross_salary, 2).'</span>')
             ->editColumn('total_deductions', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->total_deductions, 2).'</span>')
             ->editColumn('net_salary', fn (PayrollItem $i) => '<span class="text-end d-block">'.number_format((float) $i->net_salary, 2).'</span>')
-            ->editColumn('status', fn (PayrollItem $i) => '<span class="badge bg-'.($i->status === 'active' ? 'success' : 'secondary').'">'.$i->status.'</span>')
+            ->editColumn('status', fn (PayrollItem $i) => '<span class="badge bg-'.($i->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$i->status.'</span>')
             ->rawColumns(['gross_salary', 'total_deductions', 'net_salary', 'status'])
             ->toJson();
     }
@@ -618,7 +618,7 @@ class PayrollController extends Controller
             ->addColumn('total_deductions', fn (PayrollRun $r) => '<span class="text-end d-block">'.number_format((float) $r->items()->sum('total_deductions'), 2).'</span>')
             ->addColumn('total_net', fn (PayrollRun $r) => '<span class="text-end d-block">'.number_format((float) $r->items()->sum('net_salary'), 2).'</span>')
             ->addColumn('items_count', fn (PayrollRun $r) => $r->items_count)
-            ->editColumn('status', fn (PayrollRun $r) => '<span class="badge bg-'.($r->status === 'draft' ? 'warning' : 'success').'">'.$r->status.'</span>')
+            ->editColumn('status', fn (PayrollRun $r) => '<span class="badge bg-'.($r->status === 'draft' ? 'warning-subtle text-warning' : 'success-subtle text-success').'">'.$r->status.'</span>')
             ->rawColumns(['total_gross', 'total_deductions', 'total_net', 'status'])
             ->toJson();
     }

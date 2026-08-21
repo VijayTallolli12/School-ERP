@@ -13,19 +13,19 @@
         <div class="card-header p-0 border-bottom-0">
             <ul class="nav nav-tabs" id="lifecycleTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#promotionPane" type="button"><i class="ti ti-arrow-up-circle me-1"></i>Promotion</button>
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#promotionPane" type="button">Promotion</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#transferPane" type="button"><i class="ti ti-logout me-1"></i>Transfer Student</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#transferPane" type="button">Transfer Student</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tcPane" type="button"><i class="ti ti-file-certificate me-1"></i>Transfer Certificate</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tcPane" type="button">Transfer Certificate</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#alumniPane" type="button"><i class="ti ti-graduation-cap me-1"></i>Alumni</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#alumniPane" type="button">Alumni</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#historyPane" type="button"><i class="ti ti-history me-1"></i>History</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#historyPane" type="button">History</button>
                 </li>
             </ul>
         </div>
@@ -49,9 +49,7 @@
                     <div class="d-flex mb-3 align-items-center">
                         <h3 class="card-title mb-0"><i class="ti ti-logout text-primary me-2"></i>Transfer Student</h3>
                         <div class="ms-auto">
-                            <button type="button" class="btn btn-primary btn-sm" id="toggleTransferFormBtn">
-                                <i class="ti ti-plus me-1"></i> Add Transfer Student
-                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" id="toggleTransferFormBtn">Add Transfer Student</button>
                         </div>
                     </div>
 
@@ -75,9 +73,7 @@
                     <!-- Form View -->
                     <div id="transferFormView" style="display: none;">
                         <div class="d-flex mb-3">
-                            <button type="button" class="btn btn-outline-secondary btn-sm" id="backToTransferListBtn">
-                                <i class="ti ti-arrow-left me-1"></i> Back to List
-                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="backToTransferListBtn">Back to List</button>
                         </div>
                         <div class="row">
                             <div class="col-xl-6 col-lg-8">
@@ -101,9 +97,7 @@
                                         </div>
                                     </div>
                                     <div class="card-footer d-flex gap-2">
-                                        <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.transfer') }}">
-                                            <i class="ti ti-logout me-1"></i> Transfer Student
-                                        </button>
+                                        <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.transfer') }}">Transfer Student</button>
                                     </div>
                                 </div>
                             </div>
@@ -152,9 +146,7 @@
                                     </div>
                                 </div>
                                 <div class="card-footer d-flex gap-2">
-                                    <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.tc') }}">
-                                        <i class="ti ti-file-certificate me-1"></i> Issue TC
-                                    </button>
+                                    <button type="button" class="btn btn-primary lifecycle-submit" data-url="{{ route('admin.lifecycle.tc') }}">Issue TC</button>
                                 </div>
                             </div>
                         </div>
@@ -177,9 +169,7 @@
                                     <p class="text-muted mb-0">The student's active session will be closed and their status will be set to <strong>Alumni</strong>.</p>
                                 </div>
                                 <div class="card-footer d-flex gap-2">
-                                    <button type="button" class="btn btn-secondary lifecycle-alumni-submit">
-                                        <i class="ti ti-graduation-cap me-1"></i> Mark Alumni
-                                    </button>
+                                    <button type="button" class="btn btn-secondary lifecycle-alumni-submit">Mark Alumni</button>
                                 </div>
                             </div>
                         </div>

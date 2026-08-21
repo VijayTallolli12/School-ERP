@@ -69,9 +69,7 @@
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <div class="d-flex gap-2 w-100">
-                        <button type="button" id="filterBtn" class="btn btn-primary py-2 flex-fill">
-                            <i class="ti ti-filter me-1"></i> Filter
-                        </button>
+                        <button type="button" id="filterBtn" class="btn btn-primary py-2 flex-fill">Filter</button>
                         <button type="button" id="resetBtn" class="btn btn-outline-secondary py-2">
                             <i class="ti ti-refresh"></i>
                         </button>

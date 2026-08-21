@@ -18,9 +18,7 @@
                     </h3>
                     @can('leave_management.create')
                         <div class="d-flex align-items-center gap-3">
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#leaveRequestModal" id="createLeaveRequest">
-                                <i class="ti ti-plus me-1"></i> New Leave Request
-                            </button>
+                            <button class="btn btn-primary" id="createLeaveRequest">New Leave Request</button>
                         </div>
                     @endcan
                 </div>
@@ -74,62 +72,57 @@
 @endsection
 
 @push('modals')
-    <!-- Create Leave Request Modal -->
-    <div class="modal fade" id="leaveRequestModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="leaveRequestForm" method="POST" action="{{ route('admin.leave-requests.store') }}" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="leaveRequestMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="leaveRequestModalTitle">New Leave Request</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Student</label>
-                            <select class="form-select" name="student_id" required>
-                                <option value="">Select student</option>
-                                @foreach ($students as $student)
-                                    <option value="{{ $student->id }}">{{ $student->full_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Leave Type</label>
-                            <select class="form-select" name="leave_type_id" required>
-                                <option value="">Select type</option>
-                                @foreach ($leaveTypes as $type)
-                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">From Date</label>
-                            <input class="form-control" type="date" name="from_date" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">To Date</label>
-                            <input class="form-control" type="date" name="to_date" required>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Reason</label>
-                            <textarea class="form-control" name="reason" rows="3" maxlength="2000"></textarea>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Attachment (optional)</label>
-                            <input class="form-control" type="file" name="attachment" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                            <div class="form-text">Allowed: PDF, DOC, DOCX, JPG, PNG (max 5MB)</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Submit Request</button>
-                </div>
-            </form>
+    <!-- Create Leave Request Offcanvas -->
+    <x-erp.side-panel
+        id="leaveRequestOffcanvas"
+        formId="leaveRequestForm"
+        title="New Leave Request"
+        action="{{ route('admin.leave-requests.store') }}"
+        method="POST"
+        width="600px"
+        saveButtonText="Submit Request"
+        :multipart="true"
+    >
+        <input type="hidden" name="_method" value="POST" id="leaveRequestMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Leave Request Details</h6>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Student</label>
+                <select class="form-select" name="student_id" required>
+                    <option value="">Select student</option>
+                    @foreach ($students as $student)
+                        <option value="{{ $student->id }}">{{ $student->full_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Leave Type</label>
+                <select class="form-select" name="leave_type_id" required>
+                    <option value="">Select type</option>
+                    @foreach ($leaveTypes as $type)
+                        <option value="{{ $type->id }}">{{ $type->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">From Date</label>
+                <input class="form-control" type="date" name="from_date" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">To Date</label>
+                <input class="form-control" type="date" name="to_date" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Reason</label>
+                <textarea class="form-control" name="reason" rows="3" maxlength="2000"></textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Attachment (optional)</label>
+                <input class="form-control" type="file" name="attachment" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <div class="form-text">Allowed: PDF, DOC, DOCX, JPG, PNG (max 5MB)</div>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
     <!-- Detail Modal -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
@@ -155,7 +148,7 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const requestModal = new bootstrap.Modal('#leaveRequestModal');
+            const requestOffcanvas = new bootstrap.Offcanvas(document.getElementById('leaveRequestOffcanvas'));
             const detailModal = new bootstrap.Modal('#detailModal');
             const form = $('#leaveRequestForm');
 
@@ -198,9 +191,11 @@
                 form[0].reset();
                 $('#leaveRequestMethod').val('POST');
                 form.attr('action', '{{ route('admin.leave-requests.store') }}');
-                $('#leaveRequestModalTitle').text('New Leave Request');
+                $('#leaveRequestOffcanvasTitle').text('New Leave Request');
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
+
+                requestOffcanvas.show();
             });
 
             $('#leaveRequestsTable').on('click', '.view-leave-request', function () {
@@ -244,7 +239,7 @@
             });
 
             form.on('erp:success', () => {
-                requestModal.hide();
+                requestOffcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });

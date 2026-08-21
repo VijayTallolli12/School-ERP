@@ -112,7 +112,7 @@
     </div>
 
     <div class="d-print-none">
-        <button class="btn btn-primary" onclick="window.print()"><i class="ti ti-printer me-1"></i> Print</button>
+        <button class="btn btn-primary" onclick="window.print()">Print</button>
         <a href="{{ route('admin.admissions.show', $admission) }}" class="btn btn-light">Back</a>
     </div>
 @endsection

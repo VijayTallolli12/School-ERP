@@ -53,7 +53,7 @@ class ParentController extends Controller
             ->addColumn('email', fn (Guardian $parent) => e($parent->email))
             ->addColumn('phone', fn (Guardian $parent) => e($parent->phone ?? '-'))
             ->addColumn('students_count', fn (Guardian $parent) => $parent->students_count)
-            ->addColumn('status_label', fn (Guardian $parent) => '<span class="badge bg-'.($parent->status === 'active' ? 'success' : 'secondary').'">'.e(ucfirst($parent->status)).'</span>')
+            ->addColumn('status_label', fn (Guardian $parent) => '<span class="badge bg-'.($parent->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.e(ucfirst($parent->status)).'</span>')
             ->addColumn('actions', fn (Guardian $parent) => view('modules.parents._actions', compact('parent'))->render())
             ->rawColumns(['status_label', 'actions'])
             ->toJson();

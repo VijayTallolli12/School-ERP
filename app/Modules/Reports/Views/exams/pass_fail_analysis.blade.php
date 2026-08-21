@@ -474,7 +474,7 @@
                 {
                     data: 'result', name: 'result', className: 'text-center',
                     render: function(data) {
-                        let cls = data === 'Pass' ? 'success' : 'danger';
+                        let cls = data === 'Pass' ? 'success-subtle text-success' : 'danger-subtle text-danger';
                         let icon = data === 'Pass' ? 'ti ti-circle-check' : 'ti ti-circle-x';
                         return '<span class="badge bg-' + cls + ' fs-13"><i class="' + icon + ' me-1"></i> ' + data + '</span>';
                     }

@@ -87,7 +87,7 @@ class TransportController extends Controller
         return DataTables::of($this->transport->vehicles())
             ->addColumn('driver_name', fn (Vehicle $v) => $v->driver?->name ?? '-')
             ->editColumn('vehicle_type', fn (Vehicle $v) => str($v->vehicle_type)->replace('_', ' ')->headline())
-            ->editColumn('status', fn (Vehicle $v) => '<span class="badge bg-'.($v->status === 'active' ? 'success' : 'secondary').'">'.$v->status.'</span>')
+            ->editColumn('status', fn (Vehicle $v) => '<span class="badge bg-'.($v->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$v->status.'</span>')
             ->addColumn('actions', fn (Vehicle $v) => view('modules.transport._actions', ['type' => 'vehicle', 'model' => $v])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -122,7 +122,7 @@ class TransportController extends Controller
     {
         return DataTables::of($this->transport->drivers())
             ->editColumn('license_expiry_date', fn (Driver $d) => $d->license_expiry_date?->format('d M Y'))
-            ->editColumn('status', fn (Driver $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success' : 'secondary').'">'.$d->status.'</span>')
+            ->editColumn('status', fn (Driver $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$d->status.'</span>')
             ->addColumn('login', fn (Driver $d) => $d->user
                 ? '<span class="badge bg-success">Login Enabled</span>'
                 : '<span class="badge bg-secondary">No Login</span>')
@@ -179,7 +179,7 @@ class TransportController extends Controller
         return DataTables::of($this->transport->routes())
             ->addColumn('vehicle_name', fn (Route $r) => $r->vehicle?->vehicle_name ?? '-')
             ->addColumn('driver_name', fn (Route $r) => $r->driver?->name ?? '-')
-            ->editColumn('status', fn (Route $r) => '<span class="badge bg-'.($r->status === 'active' ? 'success' : 'secondary').'">'.$r->status.'</span>')
+            ->editColumn('status', fn (Route $r) => '<span class="badge bg-'.($r->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$r->status.'</span>')
             ->addColumn('actions', fn (Route $r) => view('modules.transport._actions', ['type' => 'route', 'model' => $r])->render())
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -270,7 +270,7 @@ class TransportController extends Controller
             ->addColumn('drop_time', fn (TransportAssignment $a) => $a->stop?->drop_time?->format('H:i') ?? '<span class="text-secondary">Not Assigned</span>')
             ->addColumn('vehicle_name', fn (TransportAssignment $a) => $a->vehicle?->vehicle_number ?? '<span class="text-secondary">Not Assigned</span>')
             ->editColumn('monthly_fee', fn (TransportAssignment $a) => '<span class="text-end d-block">'.number_format((float) $a->monthly_fee, 2).'</span>')
-            ->editColumn('status', fn (TransportAssignment $a) => '<span class="badge bg-'.($a->status === 'active' ? 'success' : 'secondary').'">'.$a->status.'</span>')
+            ->editColumn('status', fn (TransportAssignment $a) => '<span class="badge bg-'.($a->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$a->status.'</span>')
             ->addColumn('actions', fn (TransportAssignment $a) => view('modules.transport._actions', ['type' => 'assignment', 'model' => $a])->render())
             ->rawColumns(['student_name', 'route_name', 'stop_name', 'pickup_time', 'drop_time', 'vehicle_name', 'monthly_fee', 'status', 'actions'])
             ->toJson();
@@ -375,7 +375,7 @@ class TransportController extends Controller
             ->addColumn('driver_name', fn (Vehicle $v) => $v->driver?->name ?? '-')
             ->editColumn('vehicle_type', fn (Vehicle $v) => str($v->vehicle_type)->replace('_', ' ')->headline())
             ->addColumn('occupancy', fn (Vehicle $v) => $v->assignments()->where('status', 'active')->count().' / '.$v->capacity)
-            ->editColumn('status', fn (Vehicle $v) => '<span class="badge bg-'.($v->status === 'active' ? 'success' : 'secondary').'">'.$v->status.'</span>')
+            ->editColumn('status', fn (Vehicle $v) => '<span class="badge bg-'.($v->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$v->status.'</span>')
             ->rawColumns(['status'])
             ->toJson();
     }
@@ -392,7 +392,7 @@ class TransportController extends Controller
         return DataTables::of($query)
             ->editColumn('license_expiry_date', fn (Driver $d) => $d->license_expiry_date?->format('d M Y'))
             ->addColumn('assigned_routes', fn (Driver $d) => $d->routes()->count())
-            ->editColumn('status', fn (Driver $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success' : 'secondary').'">'.$d->status.'</span>')
+            ->editColumn('status', fn (Driver $d) => '<span class="badge bg-'.($d->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$d->status.'</span>')
             ->rawColumns(['status'])
             ->toJson();
     }
@@ -409,7 +409,7 @@ class TransportController extends Controller
         return DataTables::of($query)
             ->addColumn('vehicle_name', fn (Route $r) => $r->vehicle?->vehicle_number ?? '-')
             ->addColumn('driver_name', fn (Route $r) => $r->driver?->name ?? '-')
-            ->editColumn('status', fn (Route $r) => '<span class="badge bg-'.($r->status === 'active' ? 'success' : 'secondary').'">'.$r->status.'</span>')
+            ->editColumn('status', fn (Route $r) => '<span class="badge bg-'.($r->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$r->status.'</span>')
             ->addColumn('actions', fn (Route $r) => '<button class="btn btn-sm btn-outline-info view-route-flow" data-url="'.route('admin.transport.routes.detail', $r).'" title="View Route Flow"><i class="ti ti-map-route"></i></button>')
             ->rawColumns(['status', 'actions'])
             ->toJson();
@@ -436,7 +436,7 @@ class TransportController extends Controller
             ->addColumn('drop_time', fn (TransportAssignment $a) => $a->stop?->drop_time?->format('H:i') ?? '<span class="text-secondary">Not Assigned</span>')
             ->addColumn('vehicle_name', fn (TransportAssignment $a) => $a->vehicle?->vehicle_number ?? '<span class="text-secondary">Not Assigned</span>')
             ->editColumn('monthly_fee', fn (TransportAssignment $a) => '<span class="text-end d-block">'.number_format((float) $a->monthly_fee, 2).'</span>')
-            ->editColumn('status', fn (TransportAssignment $a) => '<span class="badge bg-'.($a->status === 'active' ? 'success' : 'secondary').'">'.$a->status.'</span>')
+            ->editColumn('status', fn (TransportAssignment $a) => '<span class="badge bg-'.($a->status === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary').'">'.$a->status.'</span>')
             ->rawColumns(['student_name', 'route_name', 'stop_name', 'pickup_time', 'drop_time', 'vehicle_name', 'monthly_fee', 'status'])
             ->toJson();
     }

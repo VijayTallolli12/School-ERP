@@ -14,22 +14,22 @@
         <div class="card-header p-0 border-bottom-0">
             <ul class="nav nav-tabs" id="reportTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#inventoryPane" type="button"><i class="ti ti-book me-1"></i>Books Inventory</button>
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#inventoryPane" type="button">Books Inventory</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#issuedPane" type="button"><i class="ti ti-arrow-up me-1"></i>Issued Books</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#issuedPane" type="button">Issued Books</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#overduePane" type="button"><i class="ti ti-alert-triangle me-1"></i>Overdue Books</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#overduePane" type="button">Overdue Books</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#finePane" type="button"><i class="ti ti-coin me-1"></i>Fine Collection</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#finePane" type="button">Fine Collection</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#studentHistPane" type="button"><i class="ti ti-users me-1"></i>Student History</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#studentHistPane" type="button">Student History</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#teacherHistPane" type="button"><i class="ti ti-school me-1"></i>Teacher History</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#teacherHistPane" type="button">Teacher History</button>
                 </li>
             </ul>
         </div>
@@ -39,11 +39,9 @@
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="invFilterCategory"><option value="">All Categories</option>@foreach($categories as $cat)<option value="{{ $cat->id }}">{{ $cat->name }}</option>@endforeach</select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="invFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="invFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="invFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.library.reports.export.excel', 'books_inventory') }}" id="invExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.library.reports.export.pdf', 'books_inventory') }}" id="invPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.library.reports.print', 'books_inventory') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.library.reports.export.excel', 'books_inventory') }}" pdfUrl="{{ route('admin.library.reports.export.pdf', 'books_inventory') }}" printUrl="{{ route('admin.library.reports.print', 'books_inventory') }}" excelId="invExcel" pdfId="invPdf" printId="invPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="inventoryTable">
@@ -55,11 +53,9 @@
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="issFilterBook"><option value="">All Books</option>@foreach($books as $b)<option value="{{ $b->id }}">{{ $b->title }}</option>@endforeach</select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="issFilterType"><option value="">All</option><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="issFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="issFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.library.reports.export.excel', 'issued_books') }}" id="issExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.library.reports.export.pdf', 'issued_books') }}" id="issPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.library.reports.print', 'issued_books') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.library.reports.export.excel', 'issued_books') }}" pdfUrl="{{ route('admin.library.reports.export.pdf', 'issued_books') }}" printUrl="{{ route('admin.library.reports.print', 'issued_books') }}" excelId="issExcel" pdfId="issPdf" printId="issPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="issuedTable">
@@ -70,11 +66,9 @@
                 <div class="tab-pane fade" id="overduePane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="ovFilterBook"><option value="">All Books</option>@foreach($books as $b)<option value="{{ $b->id }}">{{ $b->title }}</option>@endforeach</select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="ovFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="ovFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.library.reports.export.excel', 'overdue_books') }}" id="ovExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.library.reports.export.pdf', 'overdue_books') }}" id="ovPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.library.reports.print', 'overdue_books') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.library.reports.export.excel', 'overdue_books') }}" pdfUrl="{{ route('admin.library.reports.export.pdf', 'overdue_books') }}" printUrl="{{ route('admin.library.reports.print', 'overdue_books') }}" excelId="ovExcel" pdfId="ovPdf" printId="ovPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="overdueTable">
@@ -86,11 +80,9 @@
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><input class="form-control form-control-sm" type="date" id="fineFromDate"></div>
                         <div class="col-auto"><input class="form-control form-control-sm" type="date" id="fineToDate"></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="fineFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="fineFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.library.reports.export.excel', 'fine_collection') }}" id="fineExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.library.reports.export.pdf', 'fine_collection') }}" id="finePdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.library.reports.print', 'fine_collection') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.library.reports.export.excel', 'fine_collection') }}" pdfUrl="{{ route('admin.library.reports.export.pdf', 'fine_collection') }}" printUrl="{{ route('admin.library.reports.print', 'fine_collection') }}" excelId="fineExcel" pdfId="finePdf" printId="finePrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="fineTable">
@@ -101,11 +93,9 @@
                 <div class="tab-pane fade" id="studentHistPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="shFilterStudent"><option value="">All Students</option>@foreach($students as $s)<option value="{{ $s->id }}">{{ $s->full_name }} ({{ $s->admission_no }})</option>@endforeach</select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="shFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="shFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.library.reports.export.excel', 'student_history') }}" id="shExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.library.reports.export.pdf', 'student_history') }}" id="shPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.library.reports.print', 'student_history') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.library.reports.export.excel', 'student_history') }}" pdfUrl="{{ route('admin.library.reports.export.pdf', 'student_history') }}" printUrl="{{ route('admin.library.reports.print', 'student_history') }}" excelId="shExcel" pdfId="shPdf" printId="shPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="studentHistTable">
@@ -116,11 +106,9 @@
                 <div class="tab-pane fade" id="teacherHistPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="thFilterTeacher"><option value="">All Teachers</option>@foreach($teachers as $t)<option value="{{ $t->id }}">{{ $t->full_name }}</option>@endforeach</select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="thFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="thFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.library.reports.export.excel', 'teacher_history') }}" id="thExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.library.reports.export.pdf', 'teacher_history') }}" id="thPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.library.reports.print', 'teacher_history') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.library.reports.export.excel', 'teacher_history') }}" pdfUrl="{{ route('admin.library.reports.export.pdf', 'teacher_history') }}" printUrl="{{ route('admin.library.reports.print', 'teacher_history') }}" excelId="thExcel" pdfId="thPdf" printId="thPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="teacherHistTable">

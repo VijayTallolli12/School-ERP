@@ -64,28 +64,25 @@
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <div class="d-flex gap-2 w-100">
-                        <button type="submit" class="btn btn-primary py-2 flex-fill">
+                        <button type="submit" class="btn btn-primary flex-fill">
                             <i class="ti ti-filter me-1"></i> Filter
                         </button>
-                        <button type="button" id="resetBtn" class="btn btn-outline-secondary py-2">
+                        <button type="button" id="resetBtn" class="btn btn-outline-secondary">
                             <i class="ti ti-refresh me-1"></i>
                         </button>
+                    <x-erp.export-buttons 
+                        excelUrl="{{ route('reports.attendance.absent_students.export.excel', request()->query()) }}"
+                        pdfUrl="{{ route('reports.attendance.absent_students.export.pdf', request()->query()) }}"
+                        printUrl="{{ route('reports.attendance.absent_students.print', request()->query()) }}"
+                        excelId="exportExcel"
+                        pdfId="exportPdf"
+                        printId="exportPrint"
+                    />
                     </div>
                 </div>
             </form>
             <div class="row mt-3">
-                <div class="col-12">
-                    <a id="exportExcel" href="{{ route('reports.attendance.absent_students.export.excel', request()->query()) }}" class="btn btn-sm btn-outline-success me-2">
-                        <i class="ti ti-file-type-xls me-1"></i> Export Excel
-                    </a>
-                    <a id="exportPdf" href="{{ route('reports.attendance.absent_students.export.pdf', request()->query()) }}" class="btn btn-sm btn-outline-danger me-2">
-                        <i class="ti ti-file-type-pdf me-1"></i> Export PDF
-                    </a>
-                    <a id="exportPrint" href="{{ route('reports.attendance.absent_students.print', request()->query()) }}" class="btn btn-sm btn-outline-secondary" target="_blank">
-                        <i class="ti ti-printer me-1"></i> Print
-                    </a>
                 </div>
-            </div>
         </div>
     </div>
 

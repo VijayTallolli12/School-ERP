@@ -15,20 +15,14 @@
                 <div class="card-header d-flex flex-wrap align-items-center gap-3">
                     <ul class="nav nav-tabs card-header-tabs flex-grow-1 mb-0" id="calendarTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#listView" type="button" role="tab">
-                                <i class="ti ti-list me-1"></i> List View
-                            </button>
+                            <button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#listView" type="button" role="tab">List View</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendarView" type="button" role="tab">
-                                <i class="ti ti-calendar me-1"></i> Calendar View
-                            </button>
+                            <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendarView" type="button" role="tab">Calendar View</button>
                         </li>
                     </ul>
                     @can('academic_calendar.create')
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#eventModal" id="createEvent">
-                            <i class="ti ti-plus me-1"></i> Add Event
-                        </button>
+                        <button class="btn btn-primary btn-sm" id="createEvent">Add Event</button>
                     @endcan
                 </div>
                 <div class="card-body">
@@ -104,73 +98,66 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="eventForm" method="POST" action="{{ route('admin.calendar.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="eventMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="eventModalTitle">Add Event</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Title</label>
-                            <input class="form-control" name="title" required maxlength="255">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Event Type</label>
-                            <select class="form-select" name="event_type" required>
-                                <option value="">Select</option>
-                                @foreach ($eventTypes as $type)
-                                    <option value="{{ $type }}">{{ ucwords(str_replace('_', ' ', $type)) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Academic Year</label>
-                            <select class="form-select" name="academic_year_id" required>
-                                <option value="">Select</option>
-                                @foreach ($academicYears as $year)
-                                    <option value="{{ $year->id }}">{{ $year->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Audience</label>
-                            <select class="form-select" name="audience" required>
-                                <option value="">Select</option>
-                                @foreach ($audiences as $audience)
-                                    <option value="{{ $audience }}">{{ ucfirst($audience) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Start Date</label>
-                            <input class="form-control" type="date" name="start_date" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">End Date</label>
-                            <input class="form-control" type="date" name="end_date">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Location</label>
-                            <input class="form-control" name="location" maxlength="255">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="4" maxlength="5000"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Event</button>
-                </div>
-            </form>
+    <x-erp.side-panel 
+        id="eventOffcanvas" 
+        formId="eventForm" 
+        title="Add Event"
+        action="{{ route('admin.calendar.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Save Event"
+    >
+        <input type="hidden" name="_method" value="POST" id="eventMethod">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Title</label>
+                <input class="form-control" name="title" required maxlength="255">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Event Type</label>
+                <select class="form-select" name="event_type" required>
+                    <option value="">Select</option>
+                    @foreach ($eventTypes as $type)
+                        <option value="{{ $type }}">{{ ucwords(str_replace('_', ' ', $type)) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Academic Year</label>
+                <select class="form-select" name="academic_year_id" required>
+                    <option value="">Select</option>
+                    @foreach ($academicYears as $year)
+                        <option value="{{ $year->id }}">{{ $year->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Audience</label>
+                <select class="form-select" name="audience" required>
+                    <option value="">Select</option>
+                    @foreach ($audiences as $audience)
+                        <option value="{{ $audience }}">{{ ucfirst($audience) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Start Date</label>
+                <input class="form-control" type="date" name="start_date" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-medium text-dark">End Date</label>
+                <input class="form-control" type="date" name="end_date">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-medium text-dark">Location</label>
+                <input class="form-control" name="location" maxlength="255">
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Description</label>
+                <textarea class="form-control" name="description" rows="4" maxlength="5000"></textarea>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
     <div class="modal fade" id="eventDetailModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -191,7 +178,7 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', async () => { (async () => { const DataTable = await window.lazyDT();
-            const eventModal = new bootstrap.Modal('#eventModal');
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('eventOffcanvas'));
             const eventDetailModal = new bootstrap.Modal('#eventDetailModal');
             const eventForm = $('#eventForm');
 
@@ -227,9 +214,10 @@
                 eventForm[0].reset();
                 $('#eventMethod').val('POST');
                 eventForm.attr('action', '{{ route('admin.calendar.store') }}');
-                $('#eventModalTitle').text('Add Event');
+                $('#eventOffcanvasTitle').text('Add Event');
                 eventForm.find('.is-invalid').removeClass('is-invalid');
                 eventForm.find('.invalid-feedback.dynamic').remove();
+                eventFormoffcanvas.show();
             });
 
             $('#eventsTable').on('click', '.edit-event', function () {
@@ -240,7 +228,7 @@
                     eventForm.find('.invalid-feedback.dynamic').remove();
                     eventForm.attr('action', '{{ url('admin/calendar') }}/' + id);
                     $('#eventMethod').val('PUT');
-                    $('#eventModalTitle').text('Edit Event');
+                    $('#eventOffcanvasTitle').text('Edit Event');
 
                     Object.entries(response.event).forEach(([key, value]) => {
                         const input = eventForm.find(`[name="${key}"]`);
@@ -249,7 +237,7 @@
                         }
                     });
 
-                    eventModal.show();
+                    eventFormoffcanvas.show();
                 });
             });
 
@@ -292,7 +280,7 @@
             });
 
             eventForm.on('erp:success', () => {
-                eventModal.hide();
+                offcanvas.hide();
                 eventsTable.ajax.reload(null, false);
                 if ($('#calendar-tab').hasClass('active')) {
                     loadCalendarEvents(currentYear, currentMonth);

@@ -25,8 +25,8 @@
                         @endforeach
                     </select>
                 </div>
-                <button type="button" id="filterBtn" class="btn btn-outline-secondary"><i class="ti ti-filter me-1"></i> Filter</button>
-                <button type="button" id="resetBtn" class="btn btn-secondary ms-2"><i class="ti ti-refresh me-1"></i> Reset</button>
+                <button type="button" id="filterBtn" class="btn btn-outline-secondary">Filter</button>
+                <button type="button" id="resetBtn" class="btn btn-secondary ms-2">Reset</button>
                 <a id="exportExcel" href="{{ route('reports.students.gender_wise.export', ['type' => 'excel']) }}" class="btn btn-success ms-2"><i class="ti ti-file-spreadsheet me-1"></i> Export Excel</a>
                 <a id="exportPdf" href="{{ route('reports.students.gender_wise.export', ['type' => 'pdf']) }}" class="btn btn-danger ms-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</a>
                 <a id="exportPrint" href="{{ route('reports.students.gender_wise.export', ['type' => 'print']) }}" class="btn btn-warning ms-2" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>

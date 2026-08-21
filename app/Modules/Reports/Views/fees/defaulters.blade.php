@@ -69,9 +69,7 @@
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <div class="d-flex gap-2 w-100">
-                        <button type="button" id="filterBtn" class="btn btn-primary py-2 flex-fill">
-                            <i class="ti ti-filter me-1"></i> Filter
-                        </button>
+                        <button type="button" id="filterBtn" class="btn btn-primary py-2 flex-fill">Filter</button>
                         <button type="button" id="resetBtn" class="btn btn-outline-secondary py-2">
                             <i class="ti ti-refresh"></i>
                         </button>
@@ -80,15 +78,9 @@
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <button type="button" id="exportExcel" class="btn btn-sm btn-outline-success me-2">
-                        <i class="ti ti-file-type-xls me-1"></i> Export Excel
-                    </button>
-                    <button type="button" id="exportPdf" class="btn btn-sm btn-outline-danger me-2">
-                        <i class="ti ti-file-type-pdf me-1"></i> Export PDF
-                    </button>
-                    <button type="button" id="exportPrint" class="btn btn-sm btn-outline-secondary">
-                        <i class="ti ti-printer me-1"></i> Print
-                    </button>
+                    <button type="button" id="exportExcel" class="btn btn-sm btn-outline-success me-2">Export Excel</button>
+                    <button type="button" id="exportPdf" class="btn btn-sm btn-outline-danger me-2">Export PDF</button>
+                    <button type="button" id="exportPrint" class="btn btn-sm btn-outline-secondary">Print</button>
                 </div>
             </div>
         </div>
@@ -505,9 +497,9 @@
                                 {
                                     data: null, className: 'text-center', orderable: false, searchable: false,
                                     render: function(row) {
-                                        return '<div class="dropdown">' +
-                                            '<button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></button>' +
-                                            '<ul class="dropdown-menu dropdown-menu-end">' +
+                                        return '<div class="dropdown table-actions">' +
+                                            '<button class="btn btn-sm btn-outline-secondary action-menu-trigger" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></button>' +
+                                            '<ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1">' +
                                             '<li><a class="dropdown-item" href="' + (row.parent_id ? '{{ route("admin.parents.show", "__ID__") }}'.replace('__ID__', row.parent_id) : '#') + '"><i class="ti ti-user me-2"></i>View Parent</a></li>' +
                                             '<li><a class="dropdown-item" href="{{ route("admin.students.show", "__ID__") }}'.replace('__ID__', row.student_id) + '"><i class="ti ti-receipt me-2"></i>Fee History</a></li>' +
                                             '</ul></div>';

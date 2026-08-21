@@ -12,9 +12,7 @@
     <div class="card">
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title mb-0"><i class="ti ti-calendar-off text-primary me-2"></i>My Leave Requests</h3>
-            <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#myLeaveModal">
-                <i class="ti ti-plus me-1"></i> New Leave Request
-            </button>
+            <button class="btn btn-primary btn-sm ms-auto" id="createMyLeave">New Leave Request</button>
         </div>
         <div class="card-body">
             <table class="table table-striped table-bordered w-100" id="myLeaveTable">
@@ -34,51 +32,50 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="myLeaveModal" tabindex="-1" aria-hidden="true">
-        <form class="modal-content ajax-form" method="POST" action="{{ route('admin.teachers.my-leaves.store') }}">
-            @csrf
-            <div class="modal-header">
-                <h5 class="modal-title">New Leave Request</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <x-erp.side-panel 
+        id="myLeaveOffcanvas" 
+        formId="myLeaveForm" 
+        title="New Leave Request"
+        action="{{ route('admin.teachers.my-leaves.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Submit Request"
+    >
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Leave Details</h6>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Leave Type</label>
+                <select class="form-select" name="leave_type" required>
+                    <option value="">Select</option>
+                    <option value="sick">Sick</option>
+                    <option value="casual">Casual</option>
+                    <option value="personal">Personal</option>
+                    <option value="maternity">Maternity</option>
+                    <option value="other">Other</option>
+                </select>
             </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label required">Leave Type</label>
-                        <select class="form-select" name="leave_type" required>
-                            <option value="">Select</option>
-                            <option value="sick">Sick</option>
-                            <option value="casual">Casual</option>
-                            <option value="personal">Personal</option>
-                            <option value="maternity">Maternity</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label required">Start Date</label>
-                        <input class="form-control" type="date" name="start_date" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label required">End Date</label>
-                        <input class="form-control" type="date" name="end_date" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Reason</label>
-                        <textarea class="form-control" name="reason" rows="3"></textarea>
-                    </div>
-                </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Start Date</label>
+                <input class="form-control" type="date" name="start_date" required>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy me-1"></i>Submit Request</button>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">End Date</label>
+                <input class="form-control" type="date" name="end_date" required>
             </div>
-        </form>
-    </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Reason</label>
+                <textarea class="form-control" name="reason" rows="3"></textarea>
+            </div>
+        </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('myLeaveOffcanvas'));
+            const form = $('#myLeaveForm');
             const table = $('#myLeaveTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -94,8 +91,16 @@
                 ],
             });
 
-            $('#myLeaveTable').on('erp:success', () => {
-                $('#myLeaveModal').modal('hide');
+            $('#createMyLeave').on('click', () => {
+                form[0].reset();
+                form.find('.is-invalid').removeClass('is-invalid');
+                form.find('.invalid-feedback.dynamic').remove();
+                form.data('is-dirty', false);
+                offcanvas.show();
+            });
+
+            form.on('erp:success', () => {
+                offcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });

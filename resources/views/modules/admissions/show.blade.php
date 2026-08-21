@@ -37,24 +37,16 @@
                     </a>
                 @endif
                 @if ($admission->status !== 'converted' && $admission->status !== 'rejected' && auth()->user()->can('admissions.verify'))
-                    <button type="button" class="btn btn-outline-primary btn-sm workflow-action" data-url="{{ route('admin.admissions.verify', $admission) }}" data-message="Verify this application?">
-                        <i class="ti ti-shield-check me-1"></i> Verify
-                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm workflow-action" data-url="{{ route('admin.admissions.verify', $admission) }}" data-message="Verify this application?">Verify</button>
                 @endif
                 @if (in_array($admission->status, ['verified', 'application', 'enquiry'], true) && auth()->user()->can('admissions.approve'))
-                    <button type="button" class="btn btn-success btn-sm workflow-action" data-url="{{ route('admin.admissions.approve', $admission) }}" data-message="Approve this application? An admission number will be generated.">
-                        <i class="ti ti-circle-check me-1"></i> Approve
-                    </button>
+                    <button type="button" class="btn btn-success btn-sm workflow-action" data-url="{{ route('admin.admissions.approve', $admission) }}" data-message="Approve this application? An admission number will be generated.">Approve</button>
                 @endif
                 @if ($admission->status !== 'converted' && $admission->status !== 'rejected' && auth()->user()->can('admissions.reject'))
-                    <button type="button" class="btn btn-outline-danger btn-sm reject-admission" data-url="{{ route('admin.admissions.reject', $admission) }}">
-                        <i class="ti ti-x me-1"></i> Reject
-                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm reject-admission" data-url="{{ route('admin.admissions.reject', $admission) }}">Reject</button>
                 @endif
                 @if ($canConvert && auth()->user()->can('admissions.convert'))
-                    <button type="button" class="btn btn-primary btn-sm convert-admission" data-url="{{ route('admin.admissions.convert', $admission) }}">
-                        <i class="ti ti-user-check me-1"></i> Convert to Student
-                    </button>
+                    <button type="button" class="btn btn-primary btn-sm convert-admission" data-url="{{ route('admin.admissions.convert', $admission) }}">Convert to Student</button>
                 @endif
             </div>
         </div>
@@ -139,9 +131,7 @@
             <div class="card-header">
                 <h3 class="card-title mb-0"><i class="ti ti-file-text text-primary me-2"></i>Documents</h3>
                 @if ($admission->status !== 'converted' && auth()->user()->can('admissions.update'))
-                    <button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#documentModal">
-                        <i class="ti ti-plus me-1"></i> Upload Document
-                    </button>
+                    <button class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#documentModal">Upload Document</button>
                 @endif
             </div>
             <div class="card-body">
@@ -164,9 +154,9 @@
                                 <td>{{ $document->document_name }}</td>
                                 <td>
                                     @if ($document->verified)
-                                        <span class="badge bg-success">Verified</span>
+                                        <span class="badge bg-success-subtle text-success">Verified</span>
                                     @else
-                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        <span class="badge bg-warning-subtle text-warning">Pending</span>
                                     @endif
                                 </td>
                                 <td>

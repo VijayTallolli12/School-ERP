@@ -14,9 +14,7 @@
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title mb-0"><i class="ti ti-calendar-off text-primary me-2"></i>Teacher Leave Requests</h3>
             @can('leave_management.create')
-                <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#leaveModal" id="createLeave">
-                    <i class="ti ti-plus me-1"></i> New Leave Request
-                </button>
+                <button class="btn btn-primary btn-sm ms-auto" id="createLeave">New Leave Request</button>
             @endcan
         </div>
         <div class="card-body">
@@ -38,76 +36,71 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="leaveForm" method="POST" action="{{ route('admin.teachers.leaves.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="leaveMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="leaveModalTitle">Create Leave Request</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Teacher</label>
-                            <select class="form-select" name="teacher_id" required>
-                                <option value="">Select</option>
-                                @foreach ($teachers as $teacher)
-                                    <option value="{{ $teacher->id }}">{{ $teacher->full_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Leave Type</label>
-                            <select class="form-select" name="leave_type" required>
-                                <option value="">Select</option>
-                                <option value="sick">Sick</option>
-                                <option value="casual">Casual</option>
-                                <option value="personal">Personal</option>
-                                <option value="maternity">Maternity</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Start Date</label>
-                            <input class="form-control" type="date" name="start_date" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">End Date</label>
-                            <input class="form-control" type="date" name="end_date" required>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Reason</label>
-                            <textarea class="form-control" name="reason" rows="3"></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <select class="form-select" name="status">
-                                @foreach ($statuses as $status)
-                                    <option value="{{ $status }}">{{ ucfirst($status) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Remarks</label>
-                            <textarea class="form-control" name="remarks" rows="3"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy me-1"></i>Save Leave Request</button>
-                </div>
-            </form>
+    <x-erp.side-panel 
+        id="leaveOffcanvas" 
+        formId="leaveForm" 
+        title="Create Leave Request"
+        action="{{ route('admin.teachers.leaves.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Save Leave Request"
+    >
+        <input type="hidden" name="_method" value="POST" id="leaveMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Leave Details</h6>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Teacher</label>
+                <select class="form-select" name="teacher_id" required>
+                    <option value="">Select</option>
+                    @foreach ($teachers as $teacher)
+                        <option value="{{ $teacher->id }}">{{ $teacher->full_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Leave Type</label>
+                <select class="form-select" name="leave_type" required>
+                    <option value="">Select</option>
+                    <option value="sick">Sick</option>
+                    <option value="casual">Casual</option>
+                    <option value="personal">Personal</option>
+                    <option value="maternity">Maternity</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Start Date</label>
+                <input class="form-control" type="date" name="start_date" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">End Date</label>
+                <input class="form-control" type="date" name="end_date" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Reason</label>
+                <textarea class="form-control" name="reason" rows="3"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-medium text-dark">Status</label>
+                <select class="form-select" name="status">
+                    @foreach ($statuses as $status)
+                        <option value="{{ $status }}">{{ ucfirst($status) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Remarks</label>
+                <textarea class="form-control" name="remarks" rows="3"></textarea>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const modal = new bootstrap.Modal('#leaveModal');
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('leaveOffcanvas'));
             const form = $('#leaveForm');
             const table = $('#leaveTable').DataTable({
                 processing: true,
@@ -129,9 +122,11 @@
                 form[0].reset();
                 $('#leaveMethod').val('POST');
                 form.attr('action', '{{ route('admin.teachers.leaves.store') }}');
-                $('#leaveModalTitle').text('Create Leave Request');
+                $('#leaveOffcanvasTitle').text('Create Leave Request');
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
+                form.data('is-dirty', false);
+                offcanvas.show();
             });
 
             $('#leaveTable').on('click', '.edit-leave', function () {
@@ -141,7 +136,7 @@
                     form.find('.invalid-feedback.dynamic').remove();
                     form.attr('action', $(this).data('update-url'));
                     $('#leaveMethod').val('PUT');
-                    $('#leaveModalTitle').text('Edit Leave Request');
+                    $('#leaveOffcanvasTitle').text('Edit Leave Request');
 
                     Object.entries(response.data).forEach(([key, value]) => {
                         const field = form.find(`[name="${key}"]`);
@@ -150,7 +145,9 @@
                         }
                     });
 
-                    modal.show();
+                    form.find('select').trigger('change.select2');
+                    form.data('is-dirty', false);
+                    offcanvas.show();
                 });
             });
 
@@ -162,7 +159,7 @@
             });
 
             form.on('erp:success', () => {
-                modal.hide();
+                offcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });

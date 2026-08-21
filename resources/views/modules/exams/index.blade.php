@@ -15,9 +15,7 @@
                 <div class="card-header d-flex align-items-center">
                     <h3 class="card-title fw-semibold mb-0"><i class="ti ti-calendar-event text-primary me-2"></i>Exam Schedules</h3>
                     @can('exams.create')
-                        <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#examModal" id="createExam">
-                            <i class="ti ti-plus me-1"></i> Add Exam
-                        </button>
+                        <button class="btn btn-primary btn-sm ms-auto" id="createExam">Add Exam</button>
                     @endcan
                 </div>
                 <div class="card-body">
@@ -50,11 +48,9 @@
                     @can('exams.update')
                         <div class="d-flex align-items-center gap-2 exam-results-toolbar ms-auto">
                             <a class="btn btn-sm btn-primary" id="bulkEntryButton" disabled>
-                                <i class="ti ti-table me-1"></i> Bulk Entry
+                                Bulk Entry
                             </a>
-                            <button class="btn btn-sm btn-outline-primary" id="addResultButton" disabled>
-                                <i class="ti ti-plus me-1"></i> Add Result
-                            </button>
+                            <button class="btn btn-sm btn-outline-primary" id="addResultButton" disabled>Add Result</button>
                         </div>
                     @endcan
                 </div>
@@ -96,142 +92,138 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="examModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="examForm" method="POST" action="{{ route('admin.exams.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="examMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="examModalTitle">Add Exam</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Exam Name</label>
-                            <input class="form-control" name="exam_name" required maxlength="150">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Type</label>
-                            <select class="form-select" name="exam_type" required>
-                                <option value="">Select</option>
-                                @foreach ($examTypes as $examType)
-                                    <option value="{{ $examType }}">{{ $examType }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Academic Year</label>
-                            <select class="form-select" name="academic_year_id" required>
-                                <option value="">Select</option>
-                                @foreach ($academicYears as $academicYear)
-                                    <option value="{{ $academicYear->id }}">{{ $academicYear->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Class Section</label>
-                            <select class="form-select" name="class_section_id" required>
-                                <option value="">Select</option>
-                                @foreach ($classSections as $classSection)
-                                    <option value="{{ $classSection->id }}">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Subject</label>
-                            <select class="form-select" name="subject_id" required>
-                                <option value="">Select</option>
-                                @foreach ($subjects as $subject)
-                                    <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Exam Date</label>
-                            <input class="form-control" type="date" name="exam_date" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Maximum Marks</label>
-                            <input class="form-control" type="number" min="1" name="maximum_marks" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Pass Marks</label>
-                            <input class="form-control" type="number" min="0" name="pass_marks" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Status</label>
-                            <select class="form-select" name="status" required>
-                                <option value="">Select</option>
-                                @foreach ($statuses as $status)
-                                    <option value="{{ $status }}">{{ ucfirst($status) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Publish</label>
-                            <div class="form-check form-switch mt-2">
-                                <input type="hidden" name="is_published" value="0">
-                                <input class="form-check-input" type="checkbox" name="is_published" value="1" id="examPublishedSwitch">
-                                <label class="form-check-label" for="examPublishedSwitch">Publish exam results immediately</label>
-                            </div>
+    <x-erp.side-panel 
+        id="examOffcanvas" 
+        formId="examForm" 
+        title="Add Exam"
+        action="{{ route('admin.exams.store') }}" 
+        method="POST" 
+        width="800px" 
+        saveButtonText="Save Exam"
+    >
+        <input type="hidden" name="_method" value="POST" id="examMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="basic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Exam Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label required fw-medium text-dark">Exam Name</label>
+                        <input class="form-control" name="exam_name" required maxlength="150">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label required fw-medium text-dark">Type</label>
+                        <select class="form-select" name="exam_type" required>
+                            <option value="">Select</option>
+                            @foreach ($examTypes as $examType)
+                                <option value="{{ $examType }}">{{ $examType }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Academic Year</label>
+                        <select class="form-select" name="academic_year_id" required>
+                            <option value="">Select</option>
+                            @foreach ($academicYears as $academicYear)
+                                <option value="{{ $academicYear->id }}">{{ $academicYear->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Class Section</label>
+                        <select class="form-select" name="class_section_id" required>
+                            <option value="">Select</option>
+                            @foreach ($classSections as $classSection)
+                                <option value="{{ $classSection->id }}">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Subject</label>
+                        <select class="form-select" name="subject_id" required>
+                            <option value="">Select</option>
+                            @foreach ($subjects as $subject)
+                                <option value="{{ $subject->id }}">{{ $subject->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Exam Date</label>
+                        <input class="form-control" type="date" name="exam_date" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Maximum Marks</label>
+                        <input class="form-control" type="number" min="1" name="maximum_marks" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Pass Marks</label>
+                        <input class="form-control" type="number" min="0" name="pass_marks" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label required fw-medium text-dark">Status</label>
+                        <select class="form-select" name="status" required>
+                            <option value="">Select</option>
+                            @foreach ($statuses as $status)
+                                <option value="{{ $status }}">{{ ucfirst($status) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium text-dark">Publish</label>
+                        <div class="form-check form-switch mt-2">
+                            <input type="hidden" name="is_published" value="0">
+                            <input class="form-check-input" type="checkbox" name="is_published" value="1" id="examPublishedSwitch">
+                            <label class="form-check-label" for="examPublishedSwitch">Publish exam results immediately</label>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Exam</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="resultForm" method="POST" action="{{ route('admin.exams.results.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="resultMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="resultModalTitle">Add Exam Result</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="exam_id" id="resultExamId">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Student</label>
-                            <select class="form-select" name="student_id" id="resultStudentId" required>
-                                <option value="">Select student</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label required">Marks Obtained</label>
-                            <input class="form-control" type="number" min="0" name="marks_obtained" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Grade</label>
-                            <input class="form-control" type="text" name="grade" maxlength="50">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Remarks</label>
-                            <textarea class="form-control" name="remarks" rows="3"></textarea>
-                        </div>
+    <x-erp.side-panel 
+        id="resultOffcanvas" 
+        formId="resultForm" 
+        title="Add Exam Result"
+        action="{{ route('admin.exams.results.store') }}" 
+        method="POST" 
+        width="600px" 
+        saveButtonText="Save Result"
+    >
+        <input type="hidden" name="_method" value="POST" id="resultMethod">
+        <input type="hidden" name="exam_id" id="resultExamId">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="basic-result">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Result Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label required fw-medium text-dark">Student</label>
+                        <select class="form-select" name="student_id" id="resultStudentId" required>
+                            <option value="">Select student</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label required fw-medium text-dark">Marks Obtained</label>
+                        <input class="form-control" type="number" min="0" name="marks_obtained" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium text-dark">Grade</label>
+                        <input class="form-control" type="text" name="grade" maxlength="50">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium text-dark">Remarks</label>
+                        <textarea class="form-control" name="remarks" rows="3"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Result</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', async () => { (async () => { const DataTable = await window.lazyDT();
-            const examModal = new bootstrap.Modal('#examModal');
-            const resultModal = new bootstrap.Modal('#resultModal');
+            const examOffcanvas = new bootstrap.Offcanvas(document.getElementById('examOffcanvas'));
+            const resultOffcanvas = new bootstrap.Offcanvas(document.getElementById('resultOffcanvas'));
             const examForm = $('#examForm');
             const resultForm = $('#resultForm');
             const selectedExam = $('#selectedExam');
@@ -327,9 +319,11 @@
                 examForm[0].reset();
                 $('#examMethod').val('POST');
                 examForm.attr('action', '{{ route('admin.exams.store') }}');
-                $('#examModalTitle').text('Add Exam');
+                $('#examOffcanvasTitle').text('Add Exam');
                 examForm.find('.is-invalid').removeClass('is-invalid');
                 examForm.find('.invalid-feedback.dynamic').remove();
+
+                examOffcanvas.show();
             });
 
             $('#examsTable').on('click', '.edit-exam', function () {
@@ -342,7 +336,7 @@
                     examForm.find('.invalid-feedback.dynamic').remove();
                     examForm.attr('action', updateUrl);
                     $('#examMethod').val('PUT');
-                    $('#examModalTitle').text('Edit Exam');
+                    $('#examOffcanvasTitle').text('Edit Exam');
 
                     Object.entries(response.data).forEach(([key, value]) => {
                         if (key === 'is_published') return;
@@ -353,7 +347,9 @@
                     });
 
                     $('#examPublishedSwitch').prop('checked', response.data.is_published);
-                    examModal.show();
+                    examForm.find('select').trigger('change.select2');
+
+                    examOffcanvas.show();
                 });
             });
 
@@ -398,8 +394,9 @@
                 resultForm.find('.invalid-feedback.dynamic').remove();
                 resultForm.attr('action', '{{ route('admin.exams.results.store') }}');
                 $('#resultMethod').val('POST');
-                $('#resultModalTitle').text('Add Exam Result');
-                resultModal.show();
+                $('#resultOffcanvasTitle').text('Add Exam Result');
+
+                resultOffcanvas.show();
             });
 
             $('#resultsTable').on('click', '.edit-result', function () {
@@ -409,7 +406,7 @@
                     resultForm.find('.invalid-feedback.dynamic').remove();
                     resultForm.attr('action', $(this).data('update-url'));
                     $('#resultMethod').val('PUT');
-                    $('#resultModalTitle').text('Edit Exam Result');
+                    $('#resultOffcanvasTitle').text('Edit Exam Result');
 
                     Object.entries(response.data).forEach(([key, value]) => {
                         const input = resultForm.find(`[name="${key}"]`);
@@ -418,7 +415,9 @@
                         }
                     });
 
-                    resultModal.show();
+                    resultForm.find('select').trigger('change.select2');
+
+                    resultOffcanvas.show();
                 });
             });
 
@@ -430,12 +429,12 @@
             });
 
             resultForm.on('erp:success', () => {
-                resultModal.hide();
+                resultOffcanvas.hide();
                 resultsTable.ajax.reload(null, false);
             });
 
             examForm.on('erp:success', () => {
-                examModal.hide();
+                examOffcanvas.hide();
                 examsTable.ajax.reload(null, false);
                 selectedExamSummary.html('');
                 selectedExam.val('');

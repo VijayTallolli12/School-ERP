@@ -22,7 +22,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-3">Subjects</h5>
                     @forelse ($teacher->subjects as $subject)
-                        <span class="badge bg-info me-1">{{ $subject->name }}</span>
+                        <span class="badge bg-info-subtle text-info me-1">{{ $subject->name }}</span>
                     @empty
                         <span class="text-muted">No subjects assigned.</span>
                     @endforelse
@@ -32,7 +32,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-3">Class Sections</h5>
                     @forelse ($teacher->classSections as $classSection)
-                        <span class="badge bg-success me-1 mb-1">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</span>
+                        <span class="badge bg-success-subtle text-success me-1 mb-1">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</span>
                     @empty
                         <span class="text-muted">No class sections assigned.</span>
                     @endforelse
@@ -63,7 +63,7 @@
                             </div>
                         </div>
                         <div class="mt-3">
-                            <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy me-1"></i>Save Changes</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
                         </div>
                     </form>
                 </div>

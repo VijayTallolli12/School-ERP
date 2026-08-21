@@ -33,19 +33,13 @@
                                     <i class="ti ti-download me-1"></i> Download APK
                                 </a>
                             @else
-                                <button type="button" class="btn btn-primary btn-sm disabled" disabled style="border-radius:var(--erp-btn-radius);">
-                                    <i class="ti ti-download me-1"></i> Coming Soon
-                                </button>
+                                <button type="button" class="btn btn-primary btn-sm disabled" disabled style="border-radius:var(--erp-btn-radius);">Coming Soon</button>
                             @endif
 
                             @if (!empty($app['video_url']))
-                                <button type="button" class="btn btn-light btn-sm watch-tutorial" data-title="{{ $app['name'] }}" data-video="{{ $app['video_url'] }}" style="border:1px solid var(--erp-border-color);border-radius:var(--erp-btn-radius);">
-                                    <i class="ti ti-video me-1"></i> Watch Tutorial
-                                </button>
+                                <button type="button" class="btn btn-light btn-sm watch-tutorial" data-title="{{ $app['name'] }}" data-video="{{ $app['video_url'] }}" style="border:1px solid var(--erp-border-color);border-radius:var(--erp-btn-radius);">Watch Tutorial</button>
                             @else
-                                <button type="button" class="btn btn-light btn-sm disabled" disabled style="border:1px solid var(--erp-border-color);border-radius:var(--erp-btn-radius);">
-                                    <i class="ti ti-video me-1"></i> Tutorial Coming Soon
-                                </button>
+                                <button type="button" class="btn btn-light btn-sm disabled" disabled style="border:1px solid var(--erp-border-color);border-radius:var(--erp-btn-radius);">Tutorial Coming Soon</button>
                             @endif
                         </div>
                     </div>
@@ -83,9 +77,7 @@
                                 </td>
                                 <td class="text-end">
                                     @if (!empty($app['video_url']))
-                                        <button type="button" class="btn btn-outline-primary btn-sm watch-tutorial" data-title="{{ $app['name'] }}" data-video="{{ $app['video_url'] }}" style="border-radius:var(--erp-btn-radius);">
-                                            <i class="ti ti-video me-1"></i> How to Use
-                                        </button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm watch-tutorial" data-title="{{ $app['name'] }}" data-video="{{ $app['video_url'] }}" style="border-radius:var(--erp-btn-radius);">How to Use</button>
                                     @else
                                         <span class="badge bg-light text-secondary">Tutorial Coming Soon</span>
                                     @endif

@@ -243,8 +243,8 @@ window.App = {
                 },
             };
 
-            // If inside a modal, render dropdown inside the modal to fix z-index
-            const $modal = $select.closest('.modal');
+            // If inside a modal or offcanvas, render dropdown inside it to fix z-index
+            const $modal = $select.closest('.modal, .offcanvas');
             if ($modal.length) {
                 config.dropdownParent = $modal;
             }
@@ -401,4 +401,91 @@ $(function () {
     App.initSearchableSelects();
 });
 
+// ─── Offcanvas Unsaved Changes Protection ────────────────────────────────────
+$(document).on('change input', '.erp-side-panel form', function(e) {
+    if (e.originalEvent !== undefined) {
+        $(this).data('is-dirty', true);
+    }
+});
+$(document).on('select2:select select2:unselect', '.erp-side-panel form', function() {
+    $(this).data('is-dirty', true);
+});
+
+// Clear dirty flag when programmatically resetting form
+const originalReset = HTMLFormElement.prototype.reset;
+HTMLFormElement.prototype.reset = function() {
+    originalReset.call(this);
+    $(this).data('is-dirty', false);
+};
+
+let _offcanvasAllowClose = false;
+$(document).on('hide.bs.offcanvas', '.erp-side-panel', function(e) {
+    if (_offcanvasAllowClose) {
+        _offcanvasAllowClose = false;
+        return;
+    }
+    
+    const $panel = $(this);
+    const $form = $panel.find('form');
+    
+    if ($form.length && $form.data('is-dirty')) {
+        e.preventDefault(); // Stop closing
+        
+        window.lazySwal().then(Swal => {
+            Swal.fire({
+                title: 'Discard Changes?',
+                text: 'You have unsaved changes. Do you want to discard them?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Discard',
+                cancelButtonText: 'Keep Editing',
+                confirmButtonColor: '#dc3545',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $form.data('is-dirty', false);
+                    _offcanvasAllowClose = true;
+                    bootstrap.Offcanvas.getInstance($panel[0]).hide();
+                }
+            });
+        });
+    }
+});
+
+// Centralized Offcanvas Lifecycle
+$(document).on('show.bs.offcanvas', '.erp-side-panel', function() {
+    const $panel = $(this);
+    
+    // Auto-initialize uninitialized Select2 elements dynamically
+    App.initSearchableSelects($panel);
+    
+    // Defer clearing dirty flag to allow programmatic setup to complete
+    setTimeout(() => {
+        $panel.find('form').data('is-dirty', false);
+    }, 50);
+});
+
+$(document).on('hidden.bs.offcanvas', '.erp-side-panel', function() {
+    const $panel = $(this);
+    // Reset the form structure to clean state on full hide
+    const $form = $panel.find('form');
+    if ($form.length) {
+        $form[0].reset();
+        App.clearValidation($form);
+        $form.find('select').trigger('change.select2');
+        $form.data('is-dirty', false);
+        
+        // Reset to first tab if present
+        const firstTab = $panel.find('.nav-tabs .nav-link').first();
+        if (firstTab.length) {
+            bootstrap.Tab.getOrCreateInstance(firstTab[0]).show();
+        }
+    }
+});
+
+// Clear dirty flag on success
+$(document).on('erp:success', '.erp-side-panel form', function() {
+    $(this).data('is-dirty', false);
+});
+
 document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('erp-theme') || 'light');
+

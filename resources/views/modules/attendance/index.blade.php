@@ -14,30 +14,19 @@
             <h3 class="card-title mb-0"><i class="ti ti-filter text-primary me-2"></i>Filters</h3>
             <div class="ms-auto d-flex flex-wrap gap-2">
                 @can('attendance.create')
-                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#attendanceModal" id="btnOpenMark">
-                        <i class="ti ti-plus me-1"></i> Mark Attendance
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#bulkMarkModal" id="btnOpenBulk">
-                        <i class="ti ti-users me-1"></i> Bulk Mark
-                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" id="btnOpenMark">Mark Attendance</button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btnOpenBulk">Bulk Mark</button>
                 @endcan
                 @can('attendance.view')
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#monthlyReportModal">
-                        <i class="ti ti-calendar-days me-1"></i> Monthly Summary
-                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnOpenMonthly">Monthly Summary</button>
                 @endcan
                 @can('attendance.reports')
-                    <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-success" id="btnExportExcel" title="Export Excel">
-                            <i class="ti ti-file-type-xls me-1"></i> Excel
-                        </button>
-                        <button type="button" class="btn btn-outline-danger" id="btnExportPdf" title="Export PDF">
-                            <i class="ti ti-file-type-pdf me-1"></i> PDF
-                        </button>
-                        <button type="button" class="btn btn-outline-primary" id="btnPrint" title="Print">
-                            <i class="ti ti-printer me-1"></i> Print
-                        </button>
-                    </div>
+                    <x-erp.export-buttons 
+                        size="btn-sm"
+                        excelId="btnExportExcel"
+                        pdfId="btnExportPdf"
+                        printId="btnPrint"
+                    />
                 @endcan
             </div>
         </div>
@@ -79,11 +68,11 @@
                     </select>
                 </div>
                 <div class="col-md-auto d-flex align-items-end gap-1">
-                    <button type="button" class="btn btn-primary btn-sm w-100" id="btnApplyFilters" style="white-space: nowrap;"><i class="ti ti-check me-1"></i>Apply</button>
+                    <button type="button" class="btn btn-primary w-100" id="btnApplyFilters" style="white-space: nowrap;">Apply</button>
                 </div>
             </div>
             <div class="mt-2">
-                <button type="button" class="btn btn-link btn-sm px-0" id="btnResetFilters"><i class="ti ti-refresh me-1"></i>Reset filters</button>
+                <button type="button" class="btn btn-link btn-sm px-0" id="btnResetFilters">Reset filters</button>
             </div>
         </div>
     </div>
@@ -138,168 +127,164 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="attendanceModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="markAttendanceForm" method="POST" action="{{ route('admin.attendance.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="markMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="markModalTitle">Mark Attendance</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="attendanceClassSectionId" class="form-label">Class Section <span class="text-danger">*</span></label>
-                        <select id="attendanceClassSectionId" name="class_section_id" class="form-select" required>
-                            <option value="">Select class section</option>
-                            @foreach($classSections as $cs)
-                                <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="attendanceStudentId" class="form-label">Student <span class="text-danger">*</span></label>
-                        <select id="attendanceStudentId" name="student_id" class="form-select searchable-select" required disabled data-placeholder="Select class section first">
-                            <option value="">Select class section first</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="attendanceAcademicYearId" class="form-label">Academic Year <span class="text-danger">*</span></label>
-                        <select id="attendanceAcademicYearId" name="academic_year_id" class="form-select" required>
-                            <option value="">Select academic year</option>
-                            @foreach($academicYears as $year)
-                                <option value="{{ $year->id }}" @selected((($year->status ?? '') === 'active') || $year->is_active)>{{ $year->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="attendanceDate" class="form-label">Date <span class="text-danger">*</span></label>
-                        <input type="date" id="attendanceDate" name="attendance_date" class="form-control" required value="{{ now()->toDateString() }}">
-                    </div>
-                    <div class="mb-3">
-                        <label for="attendanceStatus" class="form-label">Status <span class="text-danger">*</span></label>
-                        <select id="attendanceStatus" name="status" class="form-select" required>
-                            @foreach($statuses as $key => $label)
-                                <option value="{{ $key }}" @selected($key === 'present')>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="attendanceRemarks" class="form-label">Remarks</label>
-                        <textarea id="attendanceRemarks" name="remarks" class="form-control" rows="2" maxlength="500"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save</button>
-                </div>
-            </form>
+    <x-erp.side-panel 
+        id="attendanceOffcanvas" 
+        formId="markAttendanceForm" 
+        title="Mark Attendance"
+        action="{{ route('admin.attendance.store') }}" 
+        method="POST" 
+        width="600px" 
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="markMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Attendance Details</h6>
+        
+        <div class="row g-4">
+            <div class="col-md-12">
+                <label for="attendanceClassSectionId" class="form-label required fw-medium text-dark">Class Section</label>
+                <select id="attendanceClassSectionId" name="class_section_id" class="form-select" required>
+                    <option value="">Select class section</option>
+                    @foreach($classSections as $cs)
+                        <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-12">
+                <label for="attendanceStudentId" class="form-label required fw-medium text-dark">Student</label>
+                <select id="attendanceStudentId" name="student_id" class="form-select searchable-select" required disabled data-placeholder="Select class section first">
+                    <option value="">Select class section first</option>
+                </select>
+            </div>
+            <div class="col-md-12">
+                <label for="attendanceAcademicYearId" class="form-label required fw-medium text-dark">Academic Year</label>
+                <select id="attendanceAcademicYearId" name="academic_year_id" class="form-select" required>
+                    <option value="">Select academic year</option>
+                    @foreach($academicYears as $year)
+                        <option value="{{ $year->id }}" @selected((($year->status ?? '') === 'active') || $year->is_active)>{{ $year->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-12">
+                <label for="attendanceDate" class="form-label required fw-medium text-dark">Date</label>
+                <input type="date" id="attendanceDate" name="attendance_date" class="form-control" required value="{{ now()->toDateString() }}">
+            </div>
+            <div class="col-md-12">
+                <label for="attendanceStatus" class="form-label required fw-medium text-dark">Status</label>
+                <select id="attendanceStatus" name="status" class="form-select" required>
+                    @foreach($statuses as $key => $label)
+                        <option value="{{ $key }}" @selected($key === 'present')>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-12">
+                <label for="attendanceRemarks" class="form-label fw-medium text-dark">Remarks</label>
+                <textarea id="attendanceRemarks" name="remarks" class="form-control" rows="2" maxlength="500"></textarea>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="bulkMarkModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="bulkMarkAttendanceForm" method="POST" action="{{ route('admin.attendance.bulk-mark') }}">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Bulk Mark Attendance</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label for="bulkClassSectionId" class="form-label">Class Section <span class="text-danger">*</span></label>
-                            <select id="bulkClassSectionId" name="class_section_id" class="form-select" required>
-                                <option value="">Select class section</option>
-                                @foreach($classSections as $cs)
-                                    <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="bulkAttendanceDate" class="form-label">Date <span class="text-danger">*</span></label>
-                            <input type="date" id="bulkAttendanceDate" name="attendance_date" class="form-control" required value="{{ now()->toDateString() }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="bulkAcademicYearId" class="form-label">Academic Year <span class="text-danger">*</span></label>
-                            <select id="bulkAcademicYearId" name="academic_year_id" class="form-select" required>
-                                @foreach($academicYears as $year)
-                                    <option value="{{ $year->id }}" @selected((($year->status ?? '') === 'active') || $year->is_active)>{{ $year->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Students</label>
-                        <div id="bulkStudentsList" class="border rounded p-3 bg-body" style="max-height: 420px; overflow-y: auto;">
-                            <p class="text-muted text-center mb-0">Select a class section to load students.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal"><i class="ti ti-x me-1"></i>Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save attendance</button>
-                </div>
-            </form>
+    <x-erp.side-panel 
+        id="bulkMarkOffcanvas" 
+        formId="bulkMarkAttendanceForm" 
+        title="Bulk Mark Attendance"
+        action="{{ route('admin.attendance.bulk-mark') }}" 
+        method="POST" 
+        width="900px" 
+        saveButtonText="Save attendance"
+    >
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Bulk Settings</h6>
+        
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <label for="bulkClassSectionId" class="form-label required fw-medium text-dark">Class Section</label>
+                <select id="bulkClassSectionId" name="class_section_id" class="form-select" required>
+                    <option value="">Select class section</option>
+                    @foreach($classSections as $cs)
+                        <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="bulkAttendanceDate" class="form-label required fw-medium text-dark">Date</label>
+                <input type="date" id="bulkAttendanceDate" name="attendance_date" class="form-control" required value="{{ now()->toDateString() }}">
+            </div>
+            <div class="col-md-3">
+                <label for="bulkAcademicYearId" class="form-label required fw-medium text-dark">Academic Year</label>
+                <select id="bulkAcademicYearId" name="academic_year_id" class="form-select" required>
+                    @foreach($academicYears as $year)
+                        <option value="{{ $year->id }}" @selected((($year->status ?? '') === 'active') || $year->is_active)>{{ $year->name }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
-    </div>
-
-    <div class="modal fade" id="monthlyReportModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Monthly Attendance Summary</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                            <label for="monthlyClassSectionId" class="form-label">Class Section</label>
-                            <select id="monthlyClassSectionId" class="form-select">
-                                <option value="">Select</option>
-                                @foreach($classSections as $cs)
-                                    <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="monthlyMonth" class="form-label">Month</label>
-                            <select id="monthlyMonth" class="form-select">
-                                @for($m = 1; $m <= 12; $m++)
-                                    <option value="{{ $m }}" @selected((int) now()->month === $m)>{{ date('F', mktime(0, 0, 0, $m, 1)) }}</option>
-                                @endfor
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="monthlyYear" class="form-label">Year</label>
-                            <input type="number" class="form-control" id="monthlyYear" value="{{ now()->year }}" min="2000" max="2100">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="button" class="btn btn-primary w-100" id="btnLoadMonthly"><i class="ti ti-download me-1"></i>Load</button>
-                        </div>
-                    </div>
-                    <div id="monthlySummaryBadges" class="mb-3"></div>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered" id="monthlyStudentTable">
-                            <thead>
-                                <tr>
-                                    <th>Roll</th>
-                                    <th>Student</th>
-                                    @foreach($statuses as $key => $label)
-                                        <th class="text-center">{{ $label }}</th>
-                                    @endforeach
-                                    <th class="text-center">Days marked</th>
-                                </tr>
-                            </thead>
-                            <tbody id="monthlyStudentTbody">
-                                <tr><td colspan="{{ 3 + count($statuses) }}" class="text-muted text-center">Choose class section and load.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+        <div class="row g-4">
+            <div class="col-md-12">
+                <label class="form-label fw-medium text-dark">Students</label>
+                <div id="bulkStudentsList" class="border rounded p-3 bg-body" style="max-height: 420px; overflow-y: auto;">
+                    <p class="text-muted text-center mb-0">Select a class section to load students.</p>
                 </div>
             </div>
         </div>
-    </div>
+    </x-erp.side-panel>
+
+    <x-erp.side-panel 
+        id="monthlyReportOffcanvas" 
+        formId="monthlyReportForm"
+        action="javascript:void(0);"
+        method="GET"
+        title="Monthly Attendance Summary"
+        width="1000px" 
+        saveButtonText="Close"
+    >
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <label for="monthlyClassSectionId" class="form-label fw-medium text-dark">Class Section</label>
+                <select id="monthlyClassSectionId" class="form-select">
+                    <option value="">Select</option>
+                    @foreach($classSections as $cs)
+                        <option value="{{ $cs->id }}">{{ $cs->schoolClass->name }} - {{ $cs->section->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="monthlyMonth" class="form-label fw-medium text-dark">Month</label>
+                <select id="monthlyMonth" class="form-select">
+                    @for($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" @selected((int) now()->month === $m)>{{ date('F', mktime(0, 0, 0, $m, 1)) }}</option>
+                    @endfor
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="monthlyYear" class="form-label fw-medium text-dark">Year</label>
+                <input type="number" class="form-control" id="monthlyYear" value="{{ now()->year }}" min="2000" max="2100">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary w-100" id="btnLoadMonthly">Load</button>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-12">
+                <div id="monthlySummaryBadges" class="mb-3"></div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered" id="monthlyStudentTable">
+                        <thead>
+                            <tr>
+                                <th>Roll</th>
+                                <th>Student</th>
+                                @foreach($statuses as $key => $label)
+                                    <th class="text-center">{{ $label }}</th>
+                                @endforeach
+                                <th class="text-center">Days marked</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthlyStudentTbody">
+                            <tr><td colspan="{{ 3 + count($statuses) }}" class="text-muted text-center">Choose class section and load.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
@@ -435,7 +420,7 @@
                 form.reset();
                 document.getElementById('markMethod').value = 'POST';
                 $(form).attr('action', routes.store);
-                document.getElementById('markModalTitle').textContent = 'Mark Attendance';
+                document.getElementById('attendanceOffcanvasTitle').textContent = 'Mark Attendance';
                 document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
                 document.getElementById('attendanceStatus').value = 'present';
                 const $as = $('#attendanceStudentId');
@@ -529,7 +514,7 @@
                         if (!data.success) return;
                         const d = data.data;
                         const form = document.getElementById('markAttendanceForm');
-                        document.getElementById('markModalTitle').textContent = 'Edit Attendance';
+                        document.getElementById('attendanceOffcanvasTitle').textContent = 'Edit Attendance';
                         document.getElementById('markMethod').value = 'PUT';
                         $(form).attr('action', attendanceItemUrl(attendanceId));
                         document.getElementById('attendanceClassSectionId').value = d.class_section_id;
@@ -542,8 +527,11 @@
                             setMarkFieldsDisabled(true);
                             document.getElementById('attendanceStatus').disabled = false;
                             document.getElementById('attendanceRemarks').disabled = false;
-                            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('attendanceModal'));
-                            modal.show();
+                            const $form = $(form);
+                            $form.find('select').trigger('change.select2');
+
+                            const offcanvas = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('attendanceOffcanvas'));
+                            offcanvas.show();
                         });
                     });
             };
@@ -566,8 +554,8 @@
             });
 
             $('#markAttendanceForm, #bulkMarkAttendanceForm').on('erp:success', function () {
-                bootstrap.Modal.getInstance(document.getElementById('attendanceModal'))?.hide();
-                bootstrap.Modal.getInstance(document.getElementById('bulkMarkModal'))?.hide();
+                bootstrap.Offcanvas.getInstance(document.getElementById('attendanceOffcanvas'))?.hide();
+                bootstrap.Offcanvas.getInstance(document.getElementById('bulkMarkOffcanvas'))?.hide();
                 attendanceTable.ajax.reload(null, false);
                 refreshStatistics();
             });
@@ -582,8 +570,26 @@
                 });
             });
 
-            $('#btnOpenMark').on('click', () => resetMarkForm());
-            $('#btnOpenBulk').on('click', () => resetBulkMarkForm());
+            $('#btnOpenMark').on('click', () => {
+                resetMarkForm();
+                const form = $('#markAttendanceForm');
+                form.find('select').trigger('change.select2');
+
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('attendanceOffcanvas')).show();
+            });
+            $('#btnOpenBulk').on('click', () => {
+                resetBulkMarkForm();
+                const form = $('#bulkMarkAttendanceForm');
+                form.find('select').trigger('change.select2');
+
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('bulkMarkOffcanvas')).show();
+            });
+            $('#btnOpenMonthly').on('click', () => {
+                const form = $('#monthlyReportForm');
+                form.find('select').trigger('change.select2');
+
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('monthlyReportOffcanvas')).show();
+            });
 
             $('#attendanceClassSectionId').on('change', function () {
                 loadMarkStudents($(this).val());
@@ -611,7 +617,7 @@
                         const statusLabels = @json($statuses);
                         let badges = '';
                         statusKeys.forEach((k) => {
-                            badges += '<span class="badge bg-secondary me-1">' + (statusLabels[k] || k) + ': ' + (d.summary[k] || 0) + '</span>';
+                            badges += '<span class="badge bg-secondary-subtle text-secondary me-1">' + (statusLabels[k] || k) + ': ' + (d.summary[k] || 0) + '</span>';
                         });
                         document.getElementById('monthlySummaryBadges').innerHTML = '<div class="fw-semibold mb-1">' + d.class_section + '</div>' + badges;
                         const tbody = document.getElementById('monthlyStudentTbody');
@@ -631,15 +637,18 @@
             });
 
             @can('attendance.reports')
-            $('#btnExportExcel').on('click', () => {
+            $('#btnExportExcel').on('click', (e) => {
+                e.preventDefault();
                 const qs = reportExportQueryString();
                 window.location = routes.exportExcel + (qs ? '?' + qs : '');
             });
-            $('#btnExportPdf').on('click', () => {
+            $('#btnExportPdf').on('click', (e) => {
+                e.preventDefault();
                 const qs = reportExportQueryString();
                 window.location = routes.exportPdf + (qs ? '?' + qs : '');
             });
-            $('#btnPrint').on('click', () => {
+            $('#btnPrint').on('click', (e) => {
+                e.preventDefault();
                 const qs = reportExportQueryString();
                 window.open(routes.print + (qs ? '?' + qs : ''), '_blank', 'noopener');
             });

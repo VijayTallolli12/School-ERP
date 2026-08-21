@@ -18,9 +18,7 @@
                     <i class="ti ti-arrow-left me-1"></i> Back to Students
                 </a>
                 @can('student_documents.create')
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#documentModal" id="createDocument">
-                        <i class="ti ti-plus me-1"></i> Upload Document
-                    </button>
+                    <button class="btn btn-primary btn-sm" id="createDocument">Upload Document</button>
                 @endcan
             </div>
         </div>
@@ -78,77 +76,73 @@
 @endsection
 
 @push('modals')
-    <!-- Create/Edit Document Modal -->
-    <div class="modal fade" id="documentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="documentForm" method="POST" action="{{ route('admin.documents.store') }}" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="documentMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="documentModalTitle">Upload Document</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Student</label>
-                            <select class="form-select" name="student_id" id="docStudentId" required>
-                                <option value="">Select Student</option>
-                            </select>
-                            <div class="form-text">Search by student name, admission no, or class.</div>
-                            <div id="docStudentInfo" class="d-none mt-2 p-2 rounded" style="background:#f1f5f9;border:1px solid var(--erp-border-color);">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="ti ti-user-check text-primary"></i>
-                                    <div>
-                                        <div id="docStudentInfoName" class="fw-semibold small"></div>
-                                        <div id="docStudentInfoClass" class="text-secondary small"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Document Type</label>
-                            <select class="form-select" name="document_type" id="docDocumentType" required>
-                                <option value="">Select Type</option>
-                                @foreach ($documentCategories as $category => $types)
-                                    <optgroup label="{{ ucfirst($category) }}">
-                                        @foreach ($types as $type)
-                                            <option value="{{ $type }}">{{ $documentTypes[$type] }}</option>
-                                        @endforeach
-                                    </optgroup>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label required">Title</label>
-                            <input class="form-control" name="title" id="docTitle" required maxlength="255" placeholder="Document title">
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label required">File</label>
-                            <input class="form-control" type="file" name="file" id="docFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                            <div class="form-text">Allowed: PDF, JPG, PNG, DOC, DOCX. Max 10 MB.</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Issue Date</label>
-                            <input class="form-control" type="date" name="issue_date" id="docIssueDate">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Expiry Date</label>
-                            <input class="form-control" type="date" name="expiry_date" id="docExpiryDate">
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Remarks</label>
-                            <textarea class="form-control" name="remarks" id="docRemarks" rows="3" maxlength="1000" placeholder="Optional remarks"></textarea>
+    <!-- Create/Edit Document Offcanvas -->
+    <x-erp.side-panel 
+        id="documentOffcanvas" 
+        formId="documentForm" 
+        title="Upload Document"
+        action="{{ route('admin.documents.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Upload"
+        :hasTabs="false"
+        :multipart="true"
+    >
+        <input type="hidden" name="_method" value="POST" id="documentMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Document Details</h6>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Student</label>
+                <select class="form-select" name="student_id" id="docStudentId" required>
+                    <option value="">Select Student</option>
+                </select>
+                <div class="form-text">Search by student name, admission no, or class.</div>
+                <div id="docStudentInfo" class="d-none mt-2 p-2 rounded" style="background:#f1f5f9;border:1px solid var(--erp-border-color);">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="ti ti-user-check text-primary"></i>
+                        <div>
+                            <div id="docStudentInfoName" class="fw-semibold small"></div>
+                            <div id="docStudentInfoClass" class="text-secondary small"></div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="documentSubmit"><i class="ti ti-upload me-1"></i>Upload</button>
-                </div>
-            </form>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Document Type</label>
+                <select class="form-select" name="document_type" id="docDocumentType" required>
+                    <option value="">Select Type</option>
+                    @foreach ($documentCategories as $category => $types)
+                        <optgroup label="{{ ucfirst($category) }}">
+                            @foreach ($types as $type)
+                                <option value="{{ $type }}">{{ $documentTypes[$type] }}</option>
+                            @endforeach
+                        </optgroup>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label required fw-medium text-dark">Title</label>
+                <input class="form-control" name="title" id="docTitle" required maxlength="255" placeholder="Document title">
+            </div>
+            <div class="col-md-12">
+                <label class="form-label required fw-medium text-dark">File</label>
+                <input class="form-control" type="file" name="file" id="docFile" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                <div class="form-text">Allowed: PDF, JPG, PNG, DOC, DOCX. Max 10 MB.</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-medium text-dark">Issue Date</label>
+                <input class="form-control" type="date" name="issue_date" id="docIssueDate">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-medium text-dark">Expiry Date</label>
+                <input class="form-control" type="date" name="expiry_date" id="docExpiryDate">
+            </div>
+            <div class="col-md-12">
+                <label class="form-label fw-medium text-dark">Remarks</label>
+                <textarea class="form-control" name="remarks" id="docRemarks" rows="3" maxlength="1000" placeholder="Optional remarks"></textarea>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
     <!-- View Document Modal -->
     <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-hidden="true">
@@ -230,7 +224,7 @@
                     width: '100%',
                     placeholder: isModal ? 'Search student by name, admission no, or class...' : 'All Students',
                     allowClear: !isModal,
-                    dropdownParent: isModal ? $('#documentModal') : null,
+                    dropdownParent: isModal ? $('#documentOffcanvas') : null,
                     minimumInputLength: 0,
                     ajax: {
                         url: '{{ route('admin.documents.students.search') }}',
@@ -315,14 +309,20 @@
 
             // Create button
             document.getElementById('createDocument')?.addEventListener('click', () => {
+                const form = $('#documentForm');
                 document.getElementById('documentForm').reset();
                 document.getElementById('documentMethod').value = 'POST';
                 document.getElementById('documentForm').action = '{{ route('admin.documents.store') }}';
-                document.getElementById('documentModalTitle').textContent = 'Upload Document';
-                document.getElementById('documentSubmit').textContent = 'Upload';
+                document.getElementById('documentOffcanvasTitle').textContent = 'Upload Document';
+                const submitBtn = document.querySelector('#documentForm button[type="submit"]');
+                if (submitBtn) submitBtn.textContent = 'Upload';
                 document.getElementById('docFile').required = true;
                 $('#docStudentId').val(null).trigger('change');
                 hideStudentInfo();
+                
+                const offcanvas = new bootstrap.Offcanvas(document.getElementById('documentOffcanvas'));
+
+                offcanvas.show();
             });
 
             // Edit button (via event delegation)
@@ -335,8 +335,9 @@
                         const doc = data.document;
                         document.getElementById('documentMethod').value = 'POST';
                         document.getElementById('documentForm').action = '{{ url('admin/documents') }}/' + id;
-                        document.getElementById('documentModalTitle').textContent = 'Edit Document';
-                        document.getElementById('documentSubmit').textContent = 'Update';
+                        document.getElementById('documentOffcanvasTitle').textContent = 'Edit Document';
+                        const submitBtn = document.querySelector('#documentForm button[type="submit"]');
+                        if (submitBtn) submitBtn.textContent = 'Update';
                         document.getElementById('docFile').required = false;
                         
                         if (doc.student_id && doc.student_option_label) {
@@ -357,8 +358,12 @@
                         document.getElementById('docIssueDate').value = doc.issue_date || '';
                         document.getElementById('docExpiryDate').value = doc.expiry_date || '';
                         document.getElementById('docRemarks').value = doc.remarks || '';
-                        const modal = new bootstrap.Modal(document.getElementById('documentModal'));
-                        modal.show();
+                        
+                        const form = $('#documentForm');
+                        form.find('select').trigger('change.select2');
+                        const offcanvas = new bootstrap.Offcanvas(document.getElementById('documentOffcanvas'));
+
+                        offcanvas.show();
                     });
             });
 
@@ -371,7 +376,7 @@
                         if (!data.success) return App.toast?.('error', data.message);
                         const doc = data.document;
                         document.getElementById('viewStudent').textContent = doc.student_name;
-                        document.getElementById('viewDocumentType').innerHTML = '<span class="badge bg-secondary">' + doc.document_type_label + '</span>';
+                        document.getElementById('viewDocumentType').innerHTML = '<span class="badge bg-secondary-subtle text-secondary">' + doc.document_type_label + '</span>';
                         document.getElementById('viewTitle').textContent = doc.title;
                         document.getElementById('viewFileName').textContent = doc.file_name;
                         document.getElementById('viewFileSize').textContent = doc.file_size;
@@ -379,8 +384,8 @@
                         document.getElementById('viewIssueDate').textContent = doc.issue_date || '-';
                         document.getElementById('viewExpiryDate').textContent = doc.expiry_date || '-';
                         document.getElementById('viewVerified').innerHTML = doc.is_verified
-                            ? '<span class="badge bg-success">Verified</span>'
-                            : '<span class="badge bg-warning text-dark">Pending</span>';
+                            ? '<span class="badge bg-success-subtle text-success">Verified</span>'
+                            : '<span class="badge bg-warning-subtle text-warning">Pending</span>';
                         document.getElementById('viewRemarks').textContent = doc.remarks || '-';
                         document.getElementById('viewUploadedBy').textContent = doc.uploader_name || '-';
                         document.getElementById('viewCreatedAt').textContent = doc.created_at;

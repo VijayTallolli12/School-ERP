@@ -17,9 +17,7 @@
                         <i class="ti ti-books text-primary me-1"></i> Homework List
                     </h3>
                     @can('homework.create')
-                        <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#homeworkModal" id="createHomework">
-                            <i class="ti ti-plus me-1"></i> Add Homework
-                        </button>
+                        <button class="btn btn-primary btn-sm ms-auto" id="createHomework">Add Homework</button>
                     @endcan
                 </div>
                 <div class="card-body">
@@ -73,95 +71,92 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="homeworkModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="homeworkForm" method="POST" action="{{ route('admin.homework.store') }}" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="homeworkMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="homeworkModalTitle">Add Homework</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Academic Year</label>
-                            <select class="form-select" name="academic_year_id" id="hwAcademicYear" required>
-                                <option value="">Select</option>
-                                @foreach ($academicYears as $academicYear)
-                                    <option value="{{ $academicYear->id }}">{{ $academicYear->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Class Section</label>
-                            <select class="form-select" name="class_section_id" id="hwClassSection" required>
-                                <option value="">Select</option>
-                                @foreach ($classSections as $classSection)
-                                    <option value="{{ $classSection->id }}">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Subject</label>
-                            <select class="form-select" name="subject_id" id="hwSubject" required>
-                                <option value="">Select class first</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Status</label>
-                            <select class="form-select" name="status" required>
-                                <option value="">Select</option>
-                                @foreach ($statuses as $status)
-                                    <option value="{{ $status }}">{{ ucfirst($status) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label required">Homework Title</label>
-                            <input class="form-control" name="title" required maxlength="255">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="4" maxlength="5000"></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Assigned Date</label>
-                            <input class="form-control" type="date" name="assigned_date" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Due Date</label>
-                            <input class="form-control" type="date" name="due_date" required>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Attachment (optional)</label>
-                            <input class="form-control" type="file" name="attachment" id="hwAttachment" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip">
-                            <div class="form-text">Allowed: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG, ZIP (max 10MB)</div>
-                            <div id="currentAttachment" class="mt-2 d-none">
-                                <a href="#" target="_blank" class="btn btn-sm btn-outline-primary" id="attachmentLink">
-                                    <i class="ti ti-download me-1"></i> View Current Attachment
-                                </a>
-                                <div class="form-check mt-1">
-                                    <input class="form-check-input" type="checkbox" name="remove_attachment" value="1" id="removeAttachment">
-                                    <label class="form-check-label text-danger" for="removeAttachment">Remove attachment</label>
-                                </div>
-                            </div>
-                        </div>
+    <x-erp.side-panel 
+        id="homeworkOffcanvas" 
+        formId="homeworkForm" 
+        title="Add Homework"
+        action="{{ route('admin.homework.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Save Homework"
+        :multipart="true"
+    >
+        <input type="hidden" name="_method" value="POST" id="homeworkMethod">
+        
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Homework Details</h6>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Academic Year</label>
+                <select class="form-select" name="academic_year_id" id="hwAcademicYear" required>
+                    <option value="">Select</option>
+                    @foreach ($academicYears as $academicYear)
+                        <option value="{{ $academicYear->id }}">{{ $academicYear->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Class Section</label>
+                <select class="form-select" name="class_section_id" id="hwClassSection" required>
+                    <option value="">Select</option>
+                    @foreach ($classSections as $classSection)
+                        <option value="{{ $classSection->id }}">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Subject</label>
+                <select class="form-select" name="subject_id" id="hwSubject" required>
+                    <option value="">Select class first</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Status</label>
+                <select class="form-select" name="status" required>
+                    <option value="">Select</option>
+                    @foreach ($statuses as $status)
+                        <option value="{{ $status }}">{{ ucfirst($status) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label required fw-medium text-dark">Homework Title</label>
+                <input class="form-control" name="title" required maxlength="255">
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Description</label>
+                <textarea class="form-control" name="description" rows="4" maxlength="5000"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Assigned Date</label>
+                <input class="form-control" type="date" name="assigned_date" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Due Date</label>
+                <input class="form-control" type="date" name="due_date" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium text-dark">Attachment (optional)</label>
+                <input class="form-control" type="file" name="attachment" id="hwAttachment" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip">
+                <div class="form-text">Allowed: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG, ZIP (max 10MB)</div>
+                <div id="currentAttachment" class="mt-2 d-none">
+                    <a href="#" target="_blank" class="btn btn-sm btn-outline-primary" id="attachmentLink">
+                        <i class="ti ti-download me-1"></i> View Current Attachment
+                    </a>
+                    <div class="form-check mt-1">
+                        <input class="form-check-input" type="checkbox" name="remove_attachment" value="1" id="removeAttachment">
+                        <label class="form-check-label text-danger" for="removeAttachment">Remove attachment</label>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Homework</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const homeworkModal = new bootstrap.Modal('#homeworkModal');
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('homeworkOffcanvas'));
             const homeworkForm = $('#homeworkForm');
 
             const filterClass = $('#filterClass');
@@ -236,11 +231,13 @@
                 homeworkForm[0].reset();
                 $('#homeworkMethod').val('POST');
                 homeworkForm.attr('action', '{{ route('admin.homework.store') }}');
-                $('#homeworkModalTitle').text('Add Homework');
+                $('#homeworkOffcanvasTitle').text('Add Homework');
                 homeworkForm.find('.is-invalid').removeClass('is-invalid');
                 homeworkForm.find('.invalid-feedback.dynamic').remove();
                 $('#currentAttachment').addClass('d-none');
                 hwSubject.html('<option value="">Select class first</option>').prop('disabled', true);
+                
+                homeworkFormoffcanvas.show();
             });
 
             $('#homeworkTable').on('click', '.edit-homework', function () {
@@ -254,7 +251,7 @@
                     homeworkForm.find('.invalid-feedback.dynamic').remove();
                     homeworkForm.attr('action', updateUrl);
                     $('#homeworkMethod').val('POST');
-                    $('#homeworkModalTitle').text('Edit Homework');
+                    $('#homeworkOffcanvasTitle').text('Edit Homework');
 
                     $('#hwAcademicYear').val(data.academic_year_id);
                     $('#hwClassSection').val(data.class_section_id);
@@ -274,7 +271,7 @@
                         $('#currentAttachment').addClass('d-none');
                     }
 
-                    homeworkModal.show();
+                    homeworkFormoffcanvas.show();
                 });
             });
 
@@ -286,7 +283,7 @@
             });
 
             homeworkForm.on('erp:success', () => {
-                homeworkModal.hide();
+                offcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });

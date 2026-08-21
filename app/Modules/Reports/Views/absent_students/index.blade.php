@@ -50,16 +50,16 @@
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <div class="d-flex gap-2 w-100">
-                        <button type="button" id="filterBtn" class="btn btn-outline-secondary py-2 flex-fill"><i class="ti ti-filter me-1"></i> Filter</button>
+                        <button type="button" id="filterBtn" class="btn btn-outline-secondary py-2 flex-fill">Filter</button>
                         <button type="button" id="resetBtn" class="btn btn-outline-secondary py-2"><i class="ti ti-refresh"></i></button>
                     </div>
                 </div>
             </form>
             <div class="row mt-3">
                 <div class="col-12">
-                    <button type="button" id="exportExcel" class="btn btn-sm btn-outline-success me-2"><i class="ti ti-file-type-xls me-1"></i> Export Excel</button>
-                    <button type="button" id="exportPdf" class="btn btn-sm btn-outline-danger me-2"><i class="ti ti-file-type-pdf me-1"></i> Export PDF</button>
-                    <button type="button" id="exportPrint" class="btn btn-sm btn-outline-secondary"><i class="ti ti-printer me-1"></i> Print</button>
+                    <button type="button" id="exportExcel" class="btn btn-sm btn-outline-success me-2">Export Excel</button>
+                    <button type="button" id="exportPdf" class="btn btn-sm btn-outline-danger me-2">Export PDF</button>
+                    <button type="button" id="exportPrint" class="btn btn-sm btn-outline-secondary">Print</button>
                 </div>
             </div>
         </div>

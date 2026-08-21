@@ -13,22 +13,22 @@
         <div class="card-header p-0 border-bottom-0">
             <ul class="nav nav-tabs" id="libraryTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#booksPane" type="button"><i class="ti ti-book me-1"></i>Books</button>
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#booksPane" type="button">Books</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#issuesPane" type="button"><i class="ti ti-arrow-up-down me-1"></i>Issue / Return</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#issuesPane" type="button">Issue / Return</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#categoriesPane" type="button"><i class="ti ti-tags me-1"></i>Categories</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#categoriesPane" type="button">Categories</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#authorsPane" type="button"><i class="ti ti-users me-1"></i>Authors</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#authorsPane" type="button">Authors</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#publishersPane" type="button"><i class="ti ti-building me-1"></i>Publishers</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#publishersPane" type="button">Publishers</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#fineSettingsPane" type="button"><i class="ti ti-coin me-1"></i>Fine Settings</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#fineSettingsPane" type="button">Fine Settings</button>
                 </li>
             </ul>
         </div>
@@ -37,9 +37,7 @@
                 <div class="tab-pane fade show active" id="booksPane">
                     <div class="d-flex mb-3">
                         @can('library.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#bookModal">
-                                <i class="ti ti-plus me-1"></i> Add Book
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#bookOffcanvas">Add Book</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="booksTable">
@@ -50,9 +48,7 @@
                 <div class="tab-pane fade" id="issuesPane">
                     <div class="d-flex mb-3">
                         @can('library.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#issueModal">
-                                <i class="ti ti-plus me-1"></i> Issue Book
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#issueOffcanvas">Issue Book</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="issuesTable">
@@ -63,9 +59,7 @@
                 <div class="tab-pane fade" id="categoriesPane">
                     <div class="d-flex mb-3">
                         @can('library.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#categoryModal">
-                                <i class="ti ti-plus me-1"></i> Add Category
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#categoryOffcanvas">Add Category</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="categoriesTable">
@@ -76,9 +70,7 @@
                 <div class="tab-pane fade" id="authorsPane">
                     <div class="d-flex mb-3">
                         @can('library.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#authorModal">
-                                <i class="ti ti-plus me-1"></i> Add Author
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#authorOffcanvas">Add Author</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="authorsTable">
@@ -89,9 +81,7 @@
                 <div class="tab-pane fade" id="publishersPane">
                     <div class="d-flex mb-3">
                         @can('library.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#publisherModal">
-                                <i class="ti ti-plus me-1"></i> Add Publisher
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#publisherOffcanvas">Add Publisher</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="publishersTable">
@@ -102,9 +92,7 @@
                 <div class="tab-pane fade" id="fineSettingsPane">
                     <div class="d-flex mb-3">
                         @can('library.create')
-                            <button class="btn btn-primary btn-sm ms-auto open-modal" data-modal="#fineSettingModal">
-                                <i class="ti ti-plus me-1"></i> Add Fine Configuration
-                            </button>
+                            <button class="btn btn-primary btn-sm ms-auto open-offcanvas" data-offcanvas="#fineSettingOffcanvas">Add Fine Configuration</button>
                         @endcan
                     </div>
                     <table class="table table-striped table-bordered w-100" id="fineSettingsTable">
@@ -117,132 +105,153 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <form class="modal-content ajax-form library-form" method="POST" action="{{ route('admin.library.books.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Book</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6"><label class="form-label">ISBN</label><input class="form-control" name="isbn"></div>
-                    <div class="col-md-6"><label class="form-label required">Title</label><input class="form-control" name="title" required></div>
-                    <div class="col-md-4"><label class="form-label">Category</label><select class="form-select searchable-select" name="category_id"><option value="">Select</option>@foreach($categories as $cat)<option value="{{ $cat->id }}">{{ $cat->name }}</option>@endforeach</select></div>
-                    <div class="col-md-4"><label class="form-label">Author</label><select class="form-select searchable-select" name="author_id"><option value="">Select</option>@foreach($authors as $a)<option value="{{ $a->id }}">{{ $a->name }}</option>@endforeach</select></div>
-                    <div class="col-md-4"><label class="form-label">Publisher</label><select class="form-select searchable-select" name="publisher_id"><option value="">Select</option>@foreach($publishers as $p)<option value="{{ $p->id }}">{{ $p->name }}</option>@endforeach</select></div>
-                    <div class="col-md-4"><label class="form-label">Edition</label><input class="form-control" name="edition"></div>
-                    <div class="col-md-4"><label class="form-label">Language</label><input class="form-control" name="language" value="English"></div>
-                    <div class="col-md-4"><label class="form-label">Rack Number</label><input class="form-control" name="rack_number"></div>
-                    <div class="col-md-6"><label class="form-label required">Quantity</label><input class="form-control" type="number" name="quantity" min="1" value="1" required></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                    <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+    <x-erp.side-panel
+        id="bookOffcanvas"
+        formId="bookForm"
+        title="Book"
+        action="{{ route('admin.library.books.store') }}"
+        method="POST"
+        width="800px"
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="bookMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Book Details</h6>
+        <div class="row g-4">
+            <div class="col-md-6"><label class="form-label fw-medium text-dark">ISBN</label><input class="form-control" name="isbn"></div>
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Title</label><input class="form-control" name="title" required></div>
+            <div class="col-md-4"><label class="form-label fw-medium text-dark">Category</label><select class="form-select searchable-select" name="category_id"><option value="">Select</option>@foreach($categories as $cat)<option value="{{ $cat->id }}">{{ $cat->name }}</option>@endforeach</select></div>
+            <div class="col-md-4"><label class="form-label fw-medium text-dark">Author</label><select class="form-select searchable-select" name="author_id"><option value="">Select</option>@foreach($authors as $a)<option value="{{ $a->id }}">{{ $a->name }}</option>@endforeach</select></div>
+            <div class="col-md-4"><label class="form-label fw-medium text-dark">Publisher</label><select class="form-select searchable-select" name="publisher_id"><option value="">Select</option>@foreach($publishers as $p)<option value="{{ $p->id }}">{{ $p->name }}</option>@endforeach</select></div>
+            <div class="col-md-4"><label class="form-label fw-medium text-dark">Edition</label><input class="form-control" name="edition"></div>
+            <div class="col-md-4"><label class="form-label fw-medium text-dark">Language</label><input class="form-control" name="language" value="English"></div>
+            <div class="col-md-4"><label class="form-label fw-medium text-dark">Rack Number</label><input class="form-control" name="rack_number"></div>
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Quantity</label><input class="form-control" type="number" name="quantity" min="1" value="1" required></div>
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+            <div class="col-12"><label class="form-label fw-medium text-dark">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form library-form" method="POST" action="{{ route('admin.library.categories.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Category</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-12"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
-                    <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
-                    <div class="col-md-6"><label class="form-label">Sort Order</label><input class="form-control" type="number" name="sort_order" min="0" value="0"></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+    <x-erp.side-panel
+        id="categoryOffcanvas"
+        formId="categoryForm"
+        title="Category"
+        action="{{ route('admin.library.categories.store') }}"
+        method="POST"
+        width="600px"
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="categoryMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Category Details</h6>
+        <div class="row g-4">
+            <div class="col-12"><label class="form-label required fw-medium text-dark">Name</label><input class="form-control" name="name" required></div>
+            <div class="col-12"><label class="form-label fw-medium text-dark">Description</label><textarea class="form-control" name="description" rows="2"></textarea></div>
+            <div class="col-md-6"><label class="form-label fw-medium text-dark">Sort Order</label><input class="form-control" type="number" name="sort_order" min="0" value="0"></div>
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="authorModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form library-form" method="POST" action="{{ route('admin.library.authors.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Author</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-12"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
-                    <div class="col-12"><label class="form-label">Biography</label><textarea class="form-control" name="biography" rows="3"></textarea></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+    <x-erp.side-panel
+        id="authorOffcanvas"
+        formId="authorForm"
+        title="Author"
+        action="{{ route('admin.library.authors.store') }}"
+        method="POST"
+        width="600px"
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="authorMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Author Details</h6>
+        <div class="row g-4">
+            <div class="col-12"><label class="form-label required fw-medium text-dark">Name</label><input class="form-control" name="name" required></div>
+            <div class="col-12"><label class="form-label fw-medium text-dark">Biography</label><textarea class="form-control" name="biography" rows="3"></textarea></div>
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="publisherModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form library-form" method="POST" action="{{ route('admin.library.publishers.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Publisher</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-12"><label class="form-label required">Name</label><input class="form-control" name="name" required></div>
-                    <div class="col-md-6"><label class="form-label">Contact</label><input class="form-control" name="contact"></div>
-                    <div class="col-12"><label class="form-label">Address</label><textarea class="form-control" name="address" rows="2"></textarea></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+    <x-erp.side-panel
+        id="publisherOffcanvas"
+        formId="publisherForm"
+        title="Publisher"
+        action="{{ route('admin.library.publishers.store') }}"
+        method="POST"
+        width="600px"
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="publisherMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Publisher Details</h6>
+        <div class="row g-4">
+            <div class="col-12"><label class="form-label required fw-medium text-dark">Name</label><input class="form-control" name="name" required></div>
+            <div class="col-md-6"><label class="form-label fw-medium text-dark">Contact</label><input class="form-control" name="contact"></div>
+            <div class="col-12"><label class="form-label fw-medium text-dark">Address</label><textarea class="form-control" name="address" rows="2"></textarea></div>
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="issueModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <form class="modal-content ajax-form library-form" method="POST" action="{{ route('admin.library.issues.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Issue Book</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6"><label class="form-label required">Book</label><select class="form-select searchable-select" name="book_id" required data-placeholder="Search book..."><option value="">Select</option>@foreach($books as $b)<option value="{{ $b->id }}" data-available="{{ $b->available_copies }}">{{ $b->title }} @if($b->isbn)({{ $b->isbn }})@endif (Available: {{ $b->available_copies }})</option>@endforeach</select></div>
-                    <div class="col-md-6"><label class="form-label required">Borrower Type</label><select class="form-select" name="issueable_type" id="borrowerType" required><option value="">Select</option><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
-                    <div class="col-md-12"><label class="form-label required">Borrower</label>
-                        <input type="hidden" name="issueable_id" id="borrowerSelect" required>
-                        <div id="studentSearchWrap" style="display:none"><select class="form-select searchable-select borrower-search" data-ajax-url="{{ route('admin.library.search.students') }}" data-placeholder="Search student..." id="studentSearch"><option value=""></option></select></div>
-                        <div id="teacherSearchWrap" style="display:none"><select class="form-select searchable-select borrower-search" data-ajax-url="{{ route('admin.library.search.teachers') }}" data-placeholder="Search teacher..." id="teacherSearch"><option value=""></option></select></div>
-                    </div>
-                    <div class="col-md-6"><label class="form-label">Issue Date</label><input class="form-control" type="date" name="issue_date" id="issueDate"></div>
-                    <div class="col-md-6"><label class="form-label">Due Date</label><input class="form-control" type="date" name="due_date" id="dueDate"></div>
-                    <div class="col-12"><label class="form-label">Notes</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Issue Book</button></div>
-            </form>
+    <x-erp.side-panel
+        id="issueOffcanvas"
+        formId="issueForm"
+        title="Issue Book"
+        action="{{ route('admin.library.issues.store') }}"
+        method="POST"
+        width="700px"
+        saveButtonText="Issue Book"
+    >
+        <input type="hidden" name="_method" value="POST" id="issueMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Issue Details</h6>
+        <div class="row g-4">
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Book</label><select class="form-select searchable-select" name="book_id" required data-placeholder="Search book..."><option value="">Select</option>@foreach($books as $b)<option value="{{ $b->id }}" data-available="{{ $b->available_copies }}">{{ $b->title }} @if($b->isbn)({{ $b->isbn }})@endif (Available: {{ $b->available_copies }})</option>@endforeach</select></div>
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Borrower Type</label><select class="form-select" name="issueable_type" id="borrowerType" required><option value="">Select</option><option value="student">Student</option><option value="teacher">Teacher</option></select></div>
+            <div class="col-md-12"><label class="form-label required fw-medium text-dark">Borrower</label>
+                <input type="hidden" name="issueable_id" id="borrowerSelect" required>
+                <div id="studentSearchWrap" style="display:none"><select class="form-select searchable-select borrower-search" data-ajax-url="{{ route('admin.library.search.students') }}" data-placeholder="Search student..." id="studentSearch"><option value=""></option></select></div>
+                <div id="teacherSearchWrap" style="display:none"><select class="form-select searchable-select borrower-search" data-ajax-url="{{ route('admin.library.search.teachers') }}" data-placeholder="Search teacher..." id="teacherSearch"><option value=""></option></select></div>
+            </div>
+            <div class="col-md-6"><label class="form-label fw-medium text-dark">Issue Date</label><input class="form-control" type="date" name="issue_date" id="issueDate"></div>
+            <div class="col-md-6"><label class="form-label fw-medium text-dark">Due Date</label><input class="form-control" type="date" name="due_date" id="dueDate"></div>
+            <div class="col-12"><label class="form-label fw-medium text-dark">Notes</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="returnModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form library-form" method="POST" id="returnForm">
-                @csrf <input type="hidden" name="_method" value="PUT">
-                <div class="modal-header"><h5 class="modal-title">Return Book</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6"><label class="form-label">Return Date</label><input class="form-control" type="date" name="return_date"></div>
-                    <div class="col-12"><label class="form-label">Notes</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
-                    <div class="col-12" id="finePreview" style="display:none">
-                        <div class="alert alert-info mb-0">
-                            <strong>Fine Amount:</strong> <span id="fineAmount">₹ 0.00</span>
-                        </div>
-                    </div>
+    <x-erp.side-panel
+        id="returnOffcanvas"
+        formId="returnForm"
+        title="Return Book"
+        action=""
+        method="POST"
+        width="600px"
+        saveButtonText="Return Book"
+    >
+        <input type="hidden" name="_method" value="PUT" id="returnMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Return Details</h6>
+        <div class="row g-4">
+            <div class="col-md-6"><label class="form-label fw-medium text-dark">Return Date</label><input class="form-control" type="date" name="return_date"></div>
+            <div class="col-12"><label class="form-label fw-medium text-dark">Notes</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
+            <div class="col-12" id="finePreview" style="display:none">
+                <div class="alert alert-info mb-0">
+                    <strong>Fine Amount:</strong> <span id="fineAmount">₹ 0.00</span>
                 </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-arrow-back-up me-1"></i> Return Book</button></div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
-    <div class="modal fade" id="fineSettingModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form library-form" method="POST" action="{{ route('admin.library.fine-settings.store') }}">
-                @csrf <input type="hidden" name="_method" value="POST">
-                <div class="modal-header"><h5 class="modal-title">Fine Configuration</h5><button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
-                <div class="modal-body row g-3">
-                    <div class="col-md-6"><label class="form-label required">Fine Per Day (₹)</label><input class="form-control" type="number" name="fine_per_day" step="0.01" min="0" value="1" required></div>
-                    <div class="col-md-6"><label class="form-label">Max Fine (₹)</label><input class="form-control" type="number" name="max_fine" step="0.01" min="0"></div>
-                    <div class="col-md-6"><label class="form-label">Grace Period (Days)</label><input class="form-control" type="number" name="grace_period_days" min="0" value="0"></div>
-                    <div class="col-md-6"><label class="form-label required">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i> Save</button></div>
-            </form>
+    <x-erp.side-panel
+        id="fineSettingOffcanvas"
+        formId="fineSettingForm"
+        title="Fine Configuration"
+        action="{{ route('admin.library.fine-settings.store') }}"
+        method="POST"
+        width="600px"
+        saveButtonText="Save"
+    >
+        <input type="hidden" name="_method" value="POST" id="fineSettingMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Fine Settings Details</h6>
+        <div class="row g-4">
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Fine Per Day (₹)</label><input class="form-control" type="number" name="fine_per_day" step="0.01" min="0" value="1" required></div>
+            <div class="col-md-6"><label class="form-label fw-medium text-dark">Max Fine (₹)</label><input class="form-control" type="number" name="max_fine" step="0.01" min="0"></div>
+            <div class="col-md-6"><label class="form-label fw-medium text-dark">Grace Period (Days)</label><input class="form-control" type="number" name="grace_period_days" min="0" value="0"></div>
+            <div class="col-md-6"><label class="form-label required fw-medium text-dark">Status</label><select class="form-select" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
@@ -271,24 +280,24 @@
             initTabPersistence('#libraryTabs');
 
             const config = {
-                book: {modal: '#bookModal', store: '{{ route('admin.library.books.store') }}', table: tables.books},
-                category: {modal: '#categoryModal', store: '{{ route('admin.library.categories.store') }}', table: tables.categories},
-                author: {modal: '#authorModal', store: '{{ route('admin.library.authors.store') }}', table: tables.authors},
-                publisher: {modal: '#publisherModal', store: '{{ route('admin.library.publishers.store') }}', table: tables.publishers},
-                'fine-setting': {modal: '#fineSettingModal', store: '{{ route('admin.library.fine-settings.store') }}', table: tables.fineSettings},
-                issue: {modal: '#issueModal', store: '{{ route('admin.library.issues.store') }}', table: tables.issues}
+                book: {offcanvas: '#bookOffcanvas', store: '{{ route('admin.library.books.store') }}', table: tables.books},
+                category: {offcanvas: '#categoryOffcanvas', store: '{{ route('admin.library.categories.store') }}', table: tables.categories},
+                author: {offcanvas: '#authorOffcanvas', store: '{{ route('admin.library.authors.store') }}', table: tables.authors},
+                publisher: {offcanvas: '#publisherOffcanvas', store: '{{ route('admin.library.publishers.store') }}', table: tables.publishers},
+                'fine-setting': {offcanvas: '#fineSettingOffcanvas', store: '{{ route('admin.library.fine-settings.store') }}', table: tables.fineSettings},
+                issue: {offcanvas: '#issueOffcanvas', store: '{{ route('admin.library.issues.store') }}', table: tables.issues}
             };
 
-            $('.open-modal').on('click', function () {
-                const modalId = $(this).data('modal');
-                const form = $(`${modalId} form`);
-                const setup = Object.values(config).find(item => item.modal === modalId);
+            $('.open-offcanvas').on('click', function () {
+                const offcanvasId = $(this).data('offcanvas');
+                const form = $(`${offcanvasId} form`);
+                const setup = Object.values(config).find(item => item.offcanvas === offcanvasId);
                 form[0].reset();
                 form.attr('action', setup.store);
                 form.find('[name="_method"]').val('POST');
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
-                if (modalId === '#issueModal') {
+                if (offcanvasId === '#issueOffcanvas') {
                     const today = new Date().toISOString().split('T')[0];
                     const due = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
                     $('#issueDate').val(today);
@@ -296,18 +305,25 @@
                     resetBorrowerFields();
                     $('#borrowerType').val('');
                 }
-                bootstrap.Modal.getOrCreateInstance(document.querySelector(modalId)).show();
+                const typeName = form.attr('id').replace('Form', '');
+                $('#' + offcanvasId.substring(1) + 'Title').text('Add ' + typeName.charAt(0).toUpperCase() + typeName.slice(1));
+                form.find('select').trigger('change.select2');
+
+                bootstrap.Offcanvas.getOrCreateInstance(document.querySelector(offcanvasId)).show();
             });
 
-            $('.library-form').on('erp:success', function () {
-                bootstrap.Modal.getInstance($(this).closest('.modal')[0]).hide();
+            $('.ajax-form').on('erp:success', function () {
+                const offcanvasEl = $(this).closest('.offcanvas')[0];
+                if (offcanvasEl) {
+                    bootstrap.Offcanvas.getInstance(offcanvasEl).hide();
+                }
                 Object.values(tables).forEach(table => table.ajax.reload(null, false));
             });
 
             $(document).on('click', '.edit-library', function () {
                 const type = $(this).data('type');
                 const setup = config[type];
-                const form = $(`${setup.modal} form`);
+                const form = $(`${setup.offcanvas} form`);
                 $.get($(this).data('url'), (response) => {
                     form[0].reset();
                     form.attr('action', $(this).data('update-url'));
@@ -322,7 +338,13 @@
                             field.val(value);
                         }
                     });
-                    bootstrap.Modal.getOrCreateInstance(document.querySelector(setup.modal)).show();
+                    
+                    let titleName = type;
+                    if (titleName === 'fine-setting') titleName = 'Fine Setting';
+                    $('#' + setup.offcanvas.substring(1) + 'Title').text('Edit ' + titleName.charAt(0).toUpperCase() + titleName.slice(1));
+                    form.find('select').trigger('change.select2');
+
+                    bootstrap.Offcanvas.getOrCreateInstance(document.querySelector(setup.offcanvas)).show();
                 });
             });
 
@@ -342,7 +364,11 @@
                 form.find('[name="return_date"]').val(today);
                 form.find('[name="notes"]').val('');
                 $('#finePreview').hide();
-                bootstrap.Modal.getOrCreateInstance(document.getElementById('returnModal')).show();
+                
+                $('#returnOffcanvasTitle').text('Return Book');
+                form.find('select').trigger('change.select2');
+
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('returnOffcanvas')).show();
             });
 
             function resetBorrowerFields() {

@@ -50,25 +50,22 @@
                 <div class="col-md-3">
                     <label class="form-label">&nbsp;</label>
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary py-2 flex-fill">
+                        <button type="submit" class="btn btn-primary flex-fill">
                             <i class="ti ti-filter me-1"></i> Filter
                         </button>
+                    <x-erp.export-buttons 
+                        excelUrl="{{ route('reports.attendance.daily.export.excel') }}"
+                        pdfUrl="{{ route('reports.attendance.daily.export.pdf') }}"
+                        printUrl="{{ route('reports.attendance.daily.print') }}"
+                        excelId="exportExcel"
+                        pdfId="exportPdf"
+                        printId="exportPrint"
+                    />
                     </div>
                 </div>
             </form>
             <div class="row mt-3">
-                <div class="col-12">
-                    <a id="exportExcel" href="{{ route('reports.attendance.daily.export.excel') }}" class="btn btn-sm btn-outline-success me-2">
-                        <i class="ti ti-file-type-xls me-1"></i> Export Excel
-                    </a>
-                    <a id="exportPdf" href="{{ route('reports.attendance.daily.export.pdf') }}" class="btn btn-sm btn-outline-danger me-2">
-                        <i class="ti ti-file-type-pdf me-1"></i> Export PDF
-                    </a>
-                    <a id="exportPrint" href="{{ route('reports.attendance.daily.print') }}" class="btn btn-sm btn-outline-secondary" target="_blank">
-                        <i class="ti ti-printer me-1"></i> Print
-                    </a>
                 </div>
-            </div>
         </div>
     </div>
 

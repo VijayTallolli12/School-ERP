@@ -16,7 +16,7 @@
                         @endforeach
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary"><i class="ti ti-report me-1"></i>Generate Report</button>
+                <button type="submit" class="btn btn-primary">Generate Report</button>
                 <a href="{{ route('reports.students.class_wise.export', ['type' => 'excel']) . '?' . http_build_query(request()->all()) }}" class="btn btn-success ms-2"><i class="ti ti-file-spreadsheet me-1"></i>Export Excel</a>
                 <a href="{{ route('reports.students.class_wise.export', ['type' => 'pdf']) . '?' . http_build_query(request()->all()) }}" class="btn btn-danger ms-2"><i class="ti ti-file-type-pdf me-1"></i>Export PDF</a>
                 <a href="{{ route('reports.students.class_wise.export', ['type' => 'print']) . '?' . http_build_query(request()->all()) }}" class="btn btn-warning ms-2" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>

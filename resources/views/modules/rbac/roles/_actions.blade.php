@@ -1,14 +1,18 @@
-<div class="table-actions">
+<x-erp.table-action-menu>
     @can('roles.update')
-        <button type="button" class="btn btn-sm btn-outline-primary edit-role"
-                data-url="{{ route('admin.roles.show', $role) }}"
-                data-update-url="{{ route('admin.roles.update', $role) }}">
-            <i class="ti ti-pencil"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center edit-role"
+                    data-url="{{ route('admin.roles.show', $role) }}"
+                    data-update-url="{{ route('admin.roles.update', $role) }}">
+                <i class="ti ti-pencil me-2"></i> Edit
+            </button>
+        </li>
     @endcan
     @can('roles.delete')
-        <button type="button" class="btn btn-sm btn-outline-danger delete-role" data-url="{{ route('admin.roles.destroy', $role) }}">
-            <i class="ti ti-trash"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center text-danger delete-role" data-url="{{ route('admin.roles.destroy', $role) }}">
+                <i class="ti ti-trash me-2 text-danger"></i> Delete
+            </button>
+        </li>
     @endcan
-</div>
+</x-erp.table-action-menu>

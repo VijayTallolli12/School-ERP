@@ -14,34 +14,34 @@
         <div class="card-header p-0 border-bottom-0">
             <ul class="nav nav-tabs" id="reportTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#departmentsPane" type="button"><i class="ti ti-building me-1"></i>Departments</button>
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#departmentsPane" type="button">Departments</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#designationsPane" type="button"><i class="ti ti-badge me-1"></i>Designations</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#designationsPane" type="button">Designations</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#salaryComponentsPane" type="button"><i class="ti ti-calculator me-1"></i>Salary Components</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#salaryComponentsPane" type="button">Salary Components</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payGradesPane" type="button"><i class="ti ti-stairs me-1"></i>Pay Grades</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payGradesPane" type="button">Pay Grades</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#salaryStructuresPane" type="button"><i class="ti ti-report-money me-1"></i>Salary Structures</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#salaryStructuresPane" type="button">Salary Structures</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#employeeListPane" type="button"><i class="ti ti-users me-1"></i>Employee List</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#employeeListPane" type="button">Employee List</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#runSummaryPane" type="button"><i class="ti ti-summary me-1"></i>Run Summary</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#runSummaryPane" type="button">Run Summary</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#employeePayrollPane" type="button"><i class="ti ti-users me-1"></i>Employee Payroll</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#employeePayrollPane" type="button">Employee Payroll</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#grossVsNetPane" type="button"><i class="ti ti-chart-bar me-1"></i>Gross vs Net</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#grossVsNetPane" type="button">Gross vs Net</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payslipHistoryPane" type="button"><i class="ti ti-receipt me-1"></i>Payslip History</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payslipHistoryPane" type="button">Payslip History</button>
                 </li>
             </ul>
         </div>
@@ -50,11 +50,9 @@
                 <div class="tab-pane fade show active" id="departmentsPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="deptFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="deptFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="deptFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'departments') }}" id="deptExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'departments') }}" id="deptPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'departments') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.payroll.reports.export.excel', 'departments') }}" pdfUrl="{{ route('admin.payroll.reports.export.pdf', 'departments') }}" printUrl="{{ route('admin.payroll.reports.print', 'departments') }}" excelId="deptExcel" pdfId="deptPdf" printId="deptPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="departmentsTable">
@@ -66,11 +64,9 @@
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="desFilterDepartment"><option value="">All Departments</option>@foreach($departments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach</select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="desFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="desFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="desFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'designations') }}" id="desExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'designations') }}" id="desPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'designations') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.payroll.reports.export.excel', 'designations') }}" pdfUrl="{{ route('admin.payroll.reports.export.pdf', 'designations') }}" printUrl="{{ route('admin.payroll.reports.print', 'designations') }}" excelId="desExcel" pdfId="desPdf" printId="desPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="designationsTable">
@@ -82,11 +78,9 @@
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="scFilterType"><option value="">All Types</option><option value="earning">Earning</option><option value="deduction">Deduction</option></select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="scFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="scFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="scFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'salary_components') }}" id="scExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'salary_components') }}" id="scPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'salary_components') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.payroll.reports.export.excel', 'salary_components') }}" pdfUrl="{{ route('admin.payroll.reports.export.pdf', 'salary_components') }}" printUrl="{{ route('admin.payroll.reports.print', 'salary_components') }}" excelId="scExcel" pdfId="scPdf" printId="scPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="salaryComponentsTable">
@@ -97,11 +91,9 @@
                 <div class="tab-pane fade" id="payGradesPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="pgFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="pgFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="pgFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'pay_grades') }}" id="pgExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'pay_grades') }}" id="pgPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'pay_grades') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.payroll.reports.export.excel', 'pay_grades') }}" pdfUrl="{{ route('admin.payroll.reports.export.pdf', 'pay_grades') }}" printUrl="{{ route('admin.payroll.reports.print', 'pay_grades') }}" excelId="pgExcel" pdfId="pgPdf" printId="pgPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="payGradesTable">
@@ -114,11 +106,9 @@
                         <div class="col-auto"><select class="form-select form-select-sm" id="ssFilterPayGrade"><option value="">All Pay Grades</option>@foreach($payGrades as $g)<option value="{{ $g->id }}">{{ $g->name }}</option>@endforeach</select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="ssFilterType"><option value="">All Types</option><option value="teacher">Teacher</option><option value="staff">Staff</option></select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="ssFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="ssFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="ssFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'salary_structures') }}" id="ssExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'salary_structures') }}" id="ssPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'salary_structures') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.payroll.reports.export.excel', 'salary_structures') }}" pdfUrl="{{ route('admin.payroll.reports.export.pdf', 'salary_structures') }}" printUrl="{{ route('admin.payroll.reports.print', 'salary_structures') }}" excelId="ssExcel" pdfId="ssPdf" printId="ssPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="salaryStructuresTable">
@@ -131,11 +121,9 @@
                         <div class="col-auto"><select class="form-select form-select-sm" id="elFilterPayGrade"><option value="">All Pay Grades</option>@foreach($payGrades as $g)<option value="{{ $g->id }}">{{ $g->name }}</option>@endforeach</select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="elFilterType"><option value="">All Types</option><option value="teacher">Teacher</option><option value="staff">Staff</option></select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="elFilterStatus"><option value="">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="elFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="elFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'employee_list') }}" id="elExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'employee_list') }}" id="elPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'employee_list') }}" target="_blank"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.payroll.reports.export.excel', 'employee_list') }}" pdfUrl="{{ route('admin.payroll.reports.export.pdf', 'employee_list') }}" printUrl="{{ route('admin.payroll.reports.print', 'employee_list') }}" excelId="elExcel" pdfId="elPdf" printId="elPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="employeeListTable">
@@ -146,11 +134,9 @@
                 <div class="tab-pane fade" id="runSummaryPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="rsFilterStatus"><option value="">All Status</option><option value="draft">Draft</option><option value="locked">Locked</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="rsFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="rsFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'run_summary') }}" id="rsExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'run_summary') }}" id="rsPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'run_summary') }}" target="_blank" id="rsPrint"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.payroll.reports.export.excel', 'run_summary') }}" pdfUrl="{{ route('admin.payroll.reports.export.pdf', 'run_summary') }}" printUrl="{{ route('admin.payroll.reports.print', 'run_summary') }}" excelId="rsExcel" pdfId="rsPdf" printId="rsPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="runSummaryTable">
@@ -163,11 +149,9 @@
                         <div class="col-auto"><select class="form-select form-select-sm" id="epFilterRun"><option value="">All Runs</option>@foreach($payrollRuns as $r)<option value="{{ $r->id }}">{{ $r->month_name }} {{ $r->year }} ({{ $r->status }})</option>@endforeach</select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="epFilterType"><option value="">All Types</option><option value="teacher">Teacher</option><option value="staff">Staff</option></select></div>
                         <div class="col-auto"><select class="form-select form-select-sm" id="epFilterStatus"><option value="">All Status</option><option value="active">Active</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="epFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="epFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'employee_payroll') }}" id="epExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'employee_payroll') }}" id="epPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'employee_payroll') }}" target="_blank" id="epPrint"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.payroll.reports.export.excel', 'employee_payroll') }}" pdfUrl="{{ route('admin.payroll.reports.export.pdf', 'employee_payroll') }}" printUrl="{{ route('admin.payroll.reports.print', 'employee_payroll') }}" excelId="epExcel" pdfId="epPdf" printId="epPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="employeePayrollTable">
@@ -178,11 +162,9 @@
                 <div class="tab-pane fade" id="grossVsNetPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><select class="form-select form-select-sm" id="gvFilterStatus"><option value="">All Status</option><option value="draft">Draft</option><option value="locked">Locked</option></select></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="gvFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="gvFilterBtn">Filter</button></div>
                         <div class="col-auto ms-auto">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.payroll.reports.export.excel', 'gross_vs_net') }}" id="gvExcel"><i class="ti ti-file-spreadsheet me-1"></i>Excel</a>
-                            <a class="btn btn-sm btn-outline-danger" href="{{ route('admin.payroll.reports.export.pdf', 'gross_vs_net') }}" id="gvPdf"><i class="ti ti-file-pdf me-1"></i>PDF</a>
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.payroll.reports.print', 'gross_vs_net') }}" target="_blank" id="gvPrint"><i class="ti ti-printer me-1"></i>Print</a>
+                            <x-erp.export-buttons excelUrl="{{ route('admin.payroll.reports.export.excel', 'gross_vs_net') }}" pdfUrl="{{ route('admin.payroll.reports.export.pdf', 'gross_vs_net') }}" printUrl="{{ route('admin.payroll.reports.print', 'gross_vs_net') }}" excelId="gvExcel" pdfId="gvPdf" printId="gvPrint" />
                         </div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="grossVsNetTable">
@@ -193,7 +175,7 @@
                 <div class="tab-pane fade" id="payslipHistoryPane">
                     <div class="row g-2 mb-3">
                         <div class="col-auto"><input class="form-control form-control-sm" type="text" id="phSearch" placeholder="Search employee or payslip #" style="min-width:250px;"></div>
-                        <div class="col-auto"><button class="btn btn-sm btn-outline-primary" id="phFilterBtn"><i class="ti ti-filter me-1"></i>Filter</button></div>
+                        <div class="col-auto"><button class="btn  btn-outline-primary h-100" id="phFilterBtn">Filter</button></div>
                     </div>
                     <table class="table table-striped table-bordered w-100" id="payslipHistoryTable">
                         <thead><tr><th>Payslip #</th><th>Employee</th><th>Period</th><th>Gross</th><th>Deductions</th><th>Net</th><th>Generated At</th><th width="130">Actions</th></tr></thead>

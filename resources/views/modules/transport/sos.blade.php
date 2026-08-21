@@ -111,7 +111,7 @@
                         </div>
                         <div class="modal-footer px-0 pb-0">
                             <button class="btn btn-light" data-bs-dismiss="modal" type="button">Cancel</button>
-                            <button class="btn btn-primary py-2" type="submit"><i class="ti ti-device-floppy me-1"></i>Save Action</button>
+                            <button class="btn btn-primary" type="submit">Save Action</button>
                         </div>
                     </form>
                 </div>

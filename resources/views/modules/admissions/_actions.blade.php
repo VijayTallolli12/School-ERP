@@ -1,17 +1,23 @@
-<div class="table-actions d-flex gap-1">
-    <a href="{{ route('admin.admissions.show', $a) }}" class="btn btn-sm btn-outline-primary" title="View">
-        <i class="ti ti-eye"></i>
-    </a>
+<x-erp.table-action-menu>
+    <li>
+        <a href="{{ route('admin.admissions.show', $a) }}" class="dropdown-item d-flex align-items-center" title="View">
+            <i class="ti ti-eye me-2"></i> View
+        </a>
+    </li>
     @if (in_array($a->status, ['approved', 'verified'], true) && auth()->user()->can('admissions.convert'))
-        <button type="button" class="btn btn-sm btn-outline-success convert-admission" title="Convert to Student"
-                data-url="{{ route('admin.admissions.convert', $a) }}">
-            <i class="ti ti-user-check"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center convert-admission" title="Convert to Student"
+                    data-url="{{ route('admin.admissions.convert', $a) }}">
+                <i class="ti ti-user-check me-2"></i> Convert to Student
+            </button>
+        </li>
     @endif
     @if (auth()->user()->can('admissions.delete'))
-        <button type="button" class="btn btn-sm btn-outline-danger delete-admission" title="Delete"
-                data-url="{{ route('admin.admissions.destroy', $a) }}">
-            <i class="ti ti-trash"></i>
-        </button>
+        <li>
+            <button type="button" class="dropdown-item d-flex align-items-center text-danger delete-admission" title="Delete"
+                    data-url="{{ route('admin.admissions.destroy', $a) }}">
+                <i class="ti ti-trash me-2"></i> Delete
+            </button>
+        </li>
     @endif
-</div>
+</x-erp.table-action-menu>

@@ -39,7 +39,7 @@
                     </select>
                 </div>
                 <div class="col-md-3 mb-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-report me-1"></i> Generate Report</button>
+                    <button type="submit" class="btn btn-primary w-100">Generate Report</button>
                 </div>
             </form>
         </div>

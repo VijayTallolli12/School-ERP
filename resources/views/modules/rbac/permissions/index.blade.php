@@ -13,9 +13,7 @@
         <div class="card-header d-flex align-items-center">
             <h3 class="card-title mb-0"><i class="ti ti-lock text-primary me-2"></i>Permission Registry</h3>
             @can('permissions.create')
-                <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#permissionModal" id="createPermission">
-                    <i class="ti ti-plus me-1"></i> Add Permission
-                </button>
+                <button class="btn btn-primary btn-sm ms-auto" id="createPermission">Add Permission</button>
             @endcan
         </div>
         <div class="card-body">
@@ -35,32 +33,36 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="permissionModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content ajax-form" id="permissionForm" method="POST" action="{{ route('admin.permissions.store') }}">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="permissionMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="permissionModalTitle">Add Permission</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <x-erp.side-panel 
+        id="permissionOffcanvas" 
+        formId="permissionForm" 
+        title="Add Permission"
+        action="{{ route('admin.permissions.store') }}" 
+        method="POST" 
+        width="700px" 
+        saveButtonText="Save Permission"
+        :hasTabs="false"
+        :multipart="false"
+    >
+        <input type="hidden" name="_method" value="POST" id="permissionMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="basic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Permission Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <label class="form-label required fw-medium text-dark" for="permissionName">Permission name</label>
+                        <input id="permissionName" class="form-control" type="text" name="name" placeholder="module.action" required maxlength="125">
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <label class="form-label required" for="permissionName">Permission name</label>
-                    <input id="permissionName" class="form-control" type="text" name="name" placeholder="module.action" required maxlength="125">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Permission</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const modal = new bootstrap.Modal('#permissionModal');
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('permissionOffcanvas'));
             const table = $('#permissionsTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -79,7 +81,8 @@
                 $('#permissionForm')[0].reset();
                 $('#permissionForm').attr('action', '{{ route('admin.permissions.store') }}');
                 $('#permissionMethod').val('POST');
-                $('#permissionModalTitle').text('Add Permission');
+                $('#permissionOffcanvasTitle').text('Add Permission');
+                $('#permissionForm')offcanvas.show();
             });
 
             $('#permissionsTable').on('click', '.edit-permission', function () {
@@ -87,8 +90,8 @@
                     $('#permissionForm').attr('action', $(this).data('update-url'));
                     $('#permissionMethod').val('PUT');
                     $('#permissionName').val(response.data.name);
-                    $('#permissionModalTitle').text('Edit Permission');
-                    modal.show();
+                    $('#permissionOffcanvasTitle').text('Edit Permission');
+                    $('#permissionForm')offcanvas.show();
                 });
             });
 
@@ -100,7 +103,7 @@
             });
 
             $('#permissionForm').on('erp:success', () => {
-                modal.hide();
+                offcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });

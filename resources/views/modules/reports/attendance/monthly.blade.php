@@ -48,25 +48,19 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary py-2 w-100">
+                    <button type="submit" class="btn btn-primary w-100">
                         <i class="ti ti-filter me-1"></i> Generate Report
                     </button>
+                    <x-erp.export-buttons 
+                        excelUrl="{{ route('reports.attendance.monthly.export.excel', request()->query()) }}"
+                        pdfUrl="{{ route('reports.attendance.monthly.export.pdf', request()->query()) }}"
+                        printUrl="{{ route('reports.attendance.monthly.print', request()->query()) }}"
+                    />
                 </div>
             </form>
             @if (!empty($report))
                 <div class="row mt-3">
-                    <div class="col-12">
-                        <a href="{{ route('reports.attendance.monthly.export.excel', request()->query()) }}" class="btn btn-sm btn-outline-success me-2">
-                            <i class="ti ti-file-type-xls me-1"></i> Export Excel
-                        </a>
-                        <a href="{{ route('reports.attendance.monthly.export.pdf', request()->query()) }}" class="btn btn-sm btn-outline-danger me-2">
-                            <i class="ti ti-file-type-pdf me-1"></i> Export PDF
-                        </a>
-                        <a href="{{ route('reports.attendance.monthly.print', request()->query()) }}" class="btn btn-sm btn-outline-secondary" target="_blank">
-                            <i class="ti ti-printer me-1"></i> Print
-                        </a>
                     </div>
-                </div>
             @endif
         </div>
     </div>

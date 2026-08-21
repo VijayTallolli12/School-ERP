@@ -72,7 +72,7 @@
                 </select>
                 @can('admissions.create')
                     <a href="{{ route('admin.admissions.create') }}" class="btn btn-primary btn-sm">
-                        <i class="ti ti-plus me-1"></i> New Application
+                        New Application
                     </a>
                 @endcan
             </div>

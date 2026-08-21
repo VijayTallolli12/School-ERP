@@ -95,7 +95,7 @@
             </div>
         </div>
         <div class="card-footer text-center">
-            <button class="btn btn-primary" onclick="window.print()"><i class="ti ti-printer me-1"></i> Print</button>
+            <button class="btn btn-primary" onclick="window.print()">Print</button>
             <a class="btn btn-outline-secondary" href="{{ route('admin.payroll.payslips.pdf', $payslip->id) }}"><i class="ti ti-file-pdf me-1"></i> Download PDF</a>
             <a class="btn btn-light" href="{{ route('admin.payroll.index') }}">Back</a>
         </div>

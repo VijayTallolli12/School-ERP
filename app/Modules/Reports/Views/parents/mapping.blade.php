@@ -28,8 +28,8 @@
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="button" id="filterBtn" class="btn btn-outline-secondary"><i class="ti ti-filter me-1"></i> Filter</button>
-                    <button type="button" id="resetBtn" class="btn btn-outline-secondary"><i class="ti ti-refresh"></i> Reset</button>
+                    <button type="button" id="filterBtn" class="btn btn-outline-secondary">Filter</button>
+                    <button type="button" id="resetBtn" class="btn btn-outline-secondary">Reset</button>
                 </div>
             </form>
             <div class="mt-3">
@@ -95,7 +95,7 @@
                     return d ? '<span class="badge bg-primary">Yes</span>' : '<span class="badge bg-secondary">No</span>';
                 }},
                 {data: "status", name: "status", className: "text-center", render: function(d) {
-                    return '<span class="badge bg-' + (d === 'active' ? 'success' : 'secondary') + '">' + d + '</span>';
+                    return '<span class="badge bg-' + (d === 'active' ? 'success-subtle text-success' : 'secondary-subtle text-secondary') + '">' + d + '</span>';
                 }},
             ],
             order: [[1, 'asc']],

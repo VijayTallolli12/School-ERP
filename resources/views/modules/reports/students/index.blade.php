@@ -34,15 +34,16 @@
         <div class="filter-item d-flex gap-2 align-items-end pb-1">
             <button type="button" id="filterBtn" class="btn btn-primary"><i class="ti ti-filter me-1"></i> Filter</button>
             <button type="button" id="resetBtn" class="btn btn-outline-secondary"><i class="ti ti-refresh me-1"></i> Reset</button>
+                    <x-erp.export-buttons 
+                        excelUrl="{{ route('reports.students.list.export', ['type' => 'excel']) }}"
+                        pdfUrl="{{ route('reports.students.list.export', ['type' => 'pdf']) }}"
+                        printUrl="{{ route('reports.students.list.export', ['type' => 'print']) }}"
+                        excelId="exportExcel"
+                        pdfId="exportPdf"
+                        printId="exportPrint"
+                    />
         </div>
     </form>
-
-    <!-- Export Buttons -->
-    <div class="d-flex gap-2 mb-3">
-        <a id="exportExcel" href="{{ route('reports.students.list.export', ['type' => 'excel']) }}" class="btn btn-secondary btn-sm"><i class="ti ti-file-type-xls me-1"></i> Excel</a>
-        <a id="exportPdf" href="{{ route('reports.students.list.export', ['type' => 'pdf']) }}" class="btn btn-secondary btn-sm"><i class="ti ti-file-type-pdf me-1"></i> PDF</a>
-        <a id="exportPrint" href="{{ route('reports.students.list.export', ['type' => 'print']) }}" class="btn btn-secondary btn-sm" target="_blank"><i class="ti ti-printer me-1"></i> Print</a>
-    </div>
 
     <!-- Table Card -->
     <div class="card">

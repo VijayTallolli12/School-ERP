@@ -35,9 +35,6 @@
                 data-agent="{{ $name }}"
                 data-label="{{ $agent['config']['label'] ?? ucwords(str_replace('_', ' ', $name)) }}"
                 data-description="{{ $agent['description'] }}"
-                data-config='@json($agent['config'])'>
-            <i class="ti ti-player-play me-1" style="color:{{ $agent['config']['color'] === 'success' ? '#16a34a' : ($agent['config']['color'] === 'warning' ? '#d97706' : ($agent['config']['color'] === 'danger' ? '#dc2626' : '#2563eb')) }};"></i>
-            Run Agent
-        </button>
+                data-config='@json($agent['config'])'>Run Agent</button>
     </div>
 </div>

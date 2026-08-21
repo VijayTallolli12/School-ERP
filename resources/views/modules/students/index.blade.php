@@ -19,9 +19,7 @@
                     </a>
                 @endcan
                 @can('students.create')
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#studentModal" id="createStudent">
-                        <i class="ti ti-plus me-1"></i> Admit Student
-                    </button>
+                    <button class="btn btn-primary btn-sm" id="createStudent">Admit Student</button>
                 @endcan
             </div>
         </div>
@@ -44,232 +42,233 @@
 @endsection
 
 @push('modals')
-    <div class="modal fade" id="studentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="studentForm" method="POST" action="{{ route('admin.students.store') }}" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="studentMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="studentModalTitle">Admit Student</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <x-erp.side-panel 
+        id="studentOffcanvas" 
+        formId="studentForm" 
+        title="Admit Student"
+        subtitle="Manage student admission and academic details"
+        action="{{ route('admin.students.store') }}" 
+        method="POST" 
+        width="900px" 
+        saveButtonText="Save Student"
+        :multipart="true"
+        :hasTabs="true"
+    >
+        <x-slot name="tabs">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-medium px-4" data-bs-toggle="tab" data-bs-target="#studentBasic" type="button">Student</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-medium px-4" data-bs-toggle="tab" data-bs-target="#studentAcademic" type="button">Academic</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-medium px-4" data-bs-toggle="tab" data-bs-target="#studentGuardian" type="button">Guardian</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-medium px-4" data-bs-toggle="tab" data-bs-target="#studentAccount" type="button">Account</button>
+                </li>
+            </ul>
+        </x-slot>
+
+        <input type="hidden" name="_method" value="POST" id="studentMethod">
+        <div class="tab-content pt-2">
+            <div class="tab-pane fade show active" id="studentBasic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Student Information</h6>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Admission No</label>
+                        <input class="form-control" name="admission_no" required maxlength="50" placeholder="e.g. ADM-2024-001">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Admission Date</label>
+                        <input class="form-control" type="date" name="admission_date">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Status</label>
+                        <select class="form-select" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="alumni">Alumni</option>
+                            <option value="transferred">Transferred</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">First Name</label>
+                        <input class="form-control" name="first_name" required maxlength="100" placeholder="First name">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Middle Name</label>
+                        <input class="form-control" name="middle_name" maxlength="100" placeholder="Middle name">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Last Name</label>
+                        <input class="form-control" name="last_name" maxlength="100" placeholder="Last name">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Date of Birth</label>
+                        <input class="form-control" type="date" name="date_of_birth">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Gender</label>
+                        <select class="form-select" name="gender" required>
+                            <option value="">Select</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Blood Group</label>
+                        <input class="form-control" name="blood_group" maxlength="10" placeholder="e.g. A+">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Religion</label>
+                        <input class="form-control" name="religion" maxlength="80" placeholder="Religion">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Category</label>
+                        <input class="form-control" name="category" maxlength="80" placeholder="Category">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Aadhar No</label>
+                        <input class="form-control" name="aadhar_no" maxlength="20" placeholder="Aadhar number">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Nationality</label>
+                        <input class="form-control" name="nationality" value="Indian" maxlength="80">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Mother Tongue</label>
+                        <input class="form-control" name="mother_tongue" maxlength="80" placeholder="Mother tongue">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Photo</label>
+                        <input class="form-control" type="file" name="photo" accept="image/png,image/jpeg,image/webp">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium text-dark">Current Address</label>
+                        <textarea class="form-control" name="current_address" rows="3" placeholder="Current address"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium text-dark">Permanent Address</label>
+                        <textarea class="form-control" name="permanent_address" rows="3" placeholder="Permanent address"></textarea>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <ul class="nav nav-tabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#studentBasic" type="button">Student</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#studentAcademic" type="button">Academic</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#studentGuardian" type="button">Guardian</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#studentAccount" type="button">Account</button>
-                        </li>
-                    </ul>
+            </div>
 
-                    <div class="tab-content pt-3">
-                        <div class="tab-pane fade show active" id="studentBasic">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label required">Admission No</label>
-                                    <input class="form-control" name="admission_no" required maxlength="50" placeholder="e.g. ADM-2024-001">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Admission Date</label>
-                                    <input class="form-control" type="date" name="admission_date">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label required">Status</label>
-                                    <select class="form-select" name="status" required>
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                        <option value="alumni">Alumni</option>
-                                        <option value="transferred">Transferred</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label required">First Name</label>
-                                    <input class="form-control" name="first_name" required maxlength="100" placeholder="First name">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Middle Name</label>
-                                    <input class="form-control" name="middle_name" maxlength="100" placeholder="Middle name">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Last Name</label>
-                                    <input class="form-control" name="last_name" maxlength="100" placeholder="Last name">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Date of Birth</label>
-                                    <input class="form-control" type="date" name="date_of_birth">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label required">Gender</label>
-                                    <select class="form-select" name="gender" required>
-                                        <option value="">Select</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Blood Group</label>
-                                    <input class="form-control" name="blood_group" maxlength="10" placeholder="e.g. A+">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Religion</label>
-                                    <input class="form-control" name="religion" maxlength="80" placeholder="Religion">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Category</label>
-                                    <input class="form-control" name="category" maxlength="80" placeholder="Category">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Aadhar No</label>
-                                    <input class="form-control" name="aadhar_no" maxlength="20" placeholder="Aadhar number">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Nationality</label>
-                                    <input class="form-control" name="nationality" value="Indian" maxlength="80">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Mother Tongue</label>
-                                    <input class="form-control" name="mother_tongue" maxlength="80" placeholder="Mother tongue">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Photo</label>
-                                    <input class="form-control" type="file" name="photo" accept="image/png,image/jpeg,image/webp">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Current Address</label>
-                                    <textarea class="form-control" name="current_address" rows="3" placeholder="Current address"></textarea>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Permanent Address</label>
-                                    <textarea class="form-control" name="permanent_address" rows="3" placeholder="Permanent address"></textarea>
-                                </div>
-                            </div>
-                        </div>
+            <div class="tab-pane fade" id="studentAcademic">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Academic Details</h6>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Academic Year</label>
+                        <select class="form-select" name="academic_year_id" required>
+                            <option value="">Select</option>
+                            @foreach ($academicYears as $academicYear)
+                                <option value="{{ $academicYear->id }}" @selected($academicYear->is_active)>{{ $academicYear->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required fw-medium text-dark">Class & Section</label>
+                        <select class="form-select" name="class_section_id" required>
+                            <option value="">Select</option>
+                            @foreach ($classSections as $classSection)
+                                <option value="{{ $classSection->id }}">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Roll No</label>
+                        <input class="form-control" name="roll_no" maxlength="30" placeholder="Roll number">
+                    </div>
+                </div>
+            </div>
 
-                        <div class="tab-pane fade" id="studentAcademic">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label required">Academic Year</label>
-                                    <select class="form-select" name="academic_year_id" required>
-                                        <option value="">Select</option>
-                                        @foreach ($academicYears as $academicYear)
-                                            <option value="{{ $academicYear->id }}" @selected($academicYear->is_active)>{{ $academicYear->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label required">Class & Section</label>
-                                    <select class="form-select" name="class_section_id" required>
-                                        <option value="">Select</option>
-                                        @foreach ($classSections as $classSection)
-                                            <option value="{{ $classSection->id }}">{{ $classSection->schoolClass->name }} - {{ $classSection->section->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Roll No</label>
-                                    <input class="form-control" name="roll_no" maxlength="30" placeholder="Roll number">
-                                </div>
-                            </div>
-                        </div>
+            <div class="tab-pane fade" id="studentGuardian">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Guardian Details</h6>
+                <!-- Toggle: Existing Parent vs New Guardian -->
+                <div class="mb-4">
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="guardian_mode" id="modeExisting" value="existing" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="modeExisting">
+                            <i class="ti ti-user-check me-1"></i> Link Existing Parent
+                        </label>
+                        <input type="radio" class="btn-check" name="guardian_mode" id="modeNew" value="new" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="modeNew">
+                            <i class="ti ti-user-plus me-1"></i> Create New Guardian
+                        </label>
+                    </div>
+                </div>
 
-                        <div class="tab-pane fade" id="studentGuardian">
-                            <!-- Toggle: Existing Parent vs New Guardian -->
-                            <div class="mb-4">
-                                <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="guardian_mode" id="modeExisting" value="existing" autocomplete="off">
-                                    <label class="btn btn-outline-primary" for="modeExisting">
-                                        <i class="ti ti-user-check me-1"></i> Link Existing Parent
-                                    </label>
-                                    <input type="radio" class="btn-check" name="guardian_mode" id="modeNew" value="new" autocomplete="off" checked>
-                                    <label class="btn btn-outline-primary" for="modeNew">
-                                        <i class="ti ti-user-plus me-1"></i> Create New Guardian
-                                    </label>
-                                </div>
+                <!-- Existing Parent Selection -->
+                <div id="existingParentSection" class="d-none">
+                    <div class="border rounded p-4 bg-body">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label class="form-label required fw-medium text-dark">Select Parent</label>
+                                <select class="form-select" name="parent_id" id="parentSelect">
+                                    <option value="">— Select Parent —</option>
+                                    @foreach($parents as $parent)
+                                        <option value="{{ $parent->id }}">{{ $parent->full_name }} ({{ $parent->email }})</option>
+                                    @endforeach
+                                </select>
+                                <div class="form-text">Link this student to an existing parent account. Guardian details will be taken from the parent record.</div>
                             </div>
-
-                            <!-- Existing Parent Selection -->
-                            <div id="existingParentSection" class="d-none">
-                                <div class="border rounded p-3 bg-body">
-                                    <div class="row g-3">
-                                        <div class="col-12">
-                                            <label class="form-label required">Select Parent</label>
-                                            <select class="form-select" name="parent_id" id="parentSelect">
-                                                <option value="">— Select Parent —</option>
-                                                @foreach($parents as $parent)
-                                                    <option value="{{ $parent->id }}">{{ $parent->full_name }} ({{ $parent->email }})</option>
-                                                @endforeach
-                                            </select>
-                                            <div class="form-text">Link this student to an existing parent account. Guardian details will be taken from the parent record.</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Relationship to Student</label>
-                                            <select class="form-select" name="relationship">
-                                                <option value="father">Father</option>
-                                                <option value="mother">Mother</option>
-                                                <option value="guardian">Guardian</option>
-                                                <option value="other">Other</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- New Guardian Creation -->
-                            <div id="newGuardianSection">
-                                <div class="d-flex align-items-center mb-3">
-                                    <h6 class="mb-0 fw-semibold">Guardians</h6>
-                                    <button type="button" class="btn btn-outline-primary btn-sm ms-auto" id="addGuardian">
-                                        <i class="ti ti-plus me-1"></i> Add Guardian
-                                    </button>
-                                </div>
-                                <div id="guardianRows" class="vstack gap-3">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="tab-pane fade" id="studentAccount">
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" value="1" name="create_user" id="createUserSwitch">
-                                <label class="form-check-label" for="createUserSwitch">Create login account for student</label>
-                            </div>
-                            <div class="row g-3 student-account-fields">
-                                <div class="col-md-4">
-                                    <label class="form-label">Email</label>
-                                    <input class="form-control" type="email" name="email" maxlength="255" placeholder="student@school.com">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Password</label>
-                                    <input class="form-control" type="password" name="password" placeholder="Min. 8 characters">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Confirm Password</label>
-                                    <input class="form-control" type="password" name="password_confirmation" placeholder="Re-enter password">
-                                </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium text-dark">Relationship to Student</label>
+                                <select class="form-select" name="relationship">
+                                    <option value="father">Father</option>
+                                    <option value="mother">Mother</option>
+                                    <option value="guardian">Guardian</option>
+                                    <option value="other">Other</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save Student</button>
+
+                <!-- New Guardian Creation -->
+                <div id="newGuardianSection">
+                    <div class="d-flex align-items-center mb-3">
+                        <h6 class="mb-0 fw-semibold">Guardians</h6>
+                        <button type="button" class="btn btn-outline-primary btn-sm ms-auto" id="addGuardian">Add Guardian</button>
+                    </div>
+                    <div id="guardianRows" class="vstack gap-3">
+                    </div>
                 </div>
-            </form>
+            </div>
+
+            <div class="tab-pane fade" id="studentAccount">
+                <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">Account Settings</h6>
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" value="1" name="create_user" id="createUserSwitch">
+                    <label class="form-check-label fw-medium text-dark" for="createUserSwitch">Create login account for student</label>
+                </div>
+                <div class="row g-4 student-account-fields">
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Email</label>
+                        <input class="form-control" type="email" name="email" maxlength="255" placeholder="student@school.com">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Password</label>
+                        <input class="form-control" type="password" name="password" placeholder="Min. 8 characters">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium text-dark">Confirm Password</label>
+                        <input class="form-control" type="password" name="password_confirmation" placeholder="Re-enter password">
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const modal = new bootstrap.Modal('#studentModal');
+            const studentOffcanvasElement = document.getElementById('studentOffcanvas');
+            const offcanvas = new bootstrap.Offcanvas(studentOffcanvasElement);
             const form = $('#studentForm');
             const guardianRows = $('#guardianRows');
             const table = $('#studentsTable').DataTable({
@@ -338,9 +337,7 @@
                             </div>
                         </div>
                         <div class="col-md-6 text-md-end">
-                            <button type="button" class="btn btn-outline-danger btn-sm remove-guardian" ${total <= 1 ? 'disabled' : ''}>
-                                <i class="ti ti-trash me-1"></i> Remove
-                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm remove-guardian" ${total <= 1 ? 'disabled' : ''}>Remove</button>
                         </div>
                     </div>
                 </div>
@@ -427,14 +424,23 @@
 
             $('#createStudent').on('click', () => {
                 form[0].reset();
-                // Reset guardian mode to default
-                $('#modeNew').prop('checked', true).trigger('change');
-                setGuardianRows();
                 $('#studentMethod').val('POST');
                 form.attr('action', '{{ route('admin.students.store') }}');
-                $('#studentModalTitle').text('Admit Student');
+                $('#studentOffcanvasTitle').text('Admit Student');
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
+                
+                // Reset select2s
+                form.find('select').trigger('change.select2');
+                
+                guardianRows.empty();
+                let guardianCounter = 0;
+                $('#modeNew').prop('checked', true).trigger('change');
+                
+                // Go to first tab
+                bootstrap.Tab.getOrCreateInstance(document.querySelector('[data-bs-target="#studentBasic"]')).show();
+
+                offcanvas.show();
             });
 
             $('#addGuardian').on('click', () => {
@@ -456,7 +462,7 @@
                     form.find('.invalid-feedback.dynamic').remove();
                     form.attr('action', $(this).data('update-url'));
                     $('#studentMethod').val('PUT');
-                    $('#studentModalTitle').text('Edit Student');
+                    $('#studentOffcanvasTitle').text('Edit Student');
 
                     Object.entries(response.data).forEach(([key, value]) => {
                         if (key === 'guardians') {
@@ -480,9 +486,12 @@
                         $('#modeNew').prop('checked', true).trigger('change');
                         setGuardianRows(response.data.guardians);
                     }
+                    
+                    form.find('select').trigger('change.select2');
 
                     $('#createUserSwitch').prop('checked', false);
-                    modal.show();
+
+                    offcanvas.show();
                 });
             });
 
@@ -494,7 +503,7 @@
             });
 
             form.on('erp:success', () => {
-                modal.hide();
+                offcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });

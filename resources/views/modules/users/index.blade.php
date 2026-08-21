@@ -13,9 +13,7 @@
         <div class="card-header d-flex align-items-center flex-wrap gap-2">
             <h3 class="card-title fw-semibold mb-0"><i class="ti ti-users text-primary me-2"></i>Users</h3>
             @can('users.create')
-                <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#userModal" id="createUser">
-                    <i class="ti ti-plus me-1"></i> Add User
-                </button>
+                <button class="btn btn-primary btn-sm ms-auto" id="createUser">Add User</button>
             @endcan
         </div>
 
@@ -85,146 +83,134 @@
 
 @push('modals')
     {{-- Create/Edit User Modal --}}
-    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content ajax-form" id="userForm" method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="_method" value="POST" id="userMethod">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="userModalTitle">Add User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <x-erp.side-panel
+        id="userOffcanvas"
+        formId="userForm"
+        title="Add User"
+        action="{{ route('admin.users.store') }}"
+        method="POST"
+        width="800px"
+        saveButtonText="Save User"
+        :multipart="true"
+    >
+        <input type="hidden" name="_method" value="POST" id="userMethod">
+        <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size: 0.75rem; letter-spacing: 0.5px;">User Details</h6>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Name</label>
+                <input class="form-control" name="name" required maxlength="255">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required fw-medium text-dark">Email</label>
+                <input class="form-control" type="email" name="email" required maxlength="255">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium text-dark">Phone</label>
+                <input class="form-control" name="phone" maxlength="30">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark" id="passwordLabel">Password</label>
+                <input class="form-control" type="password" name="password" id="userPassword">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark" id="passwordConfirmLabel">Confirm Password</label>
+                <input class="form-control" type="password" name="password_confirmation" id="userPasswordConfirmation">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark">Role</label>
+                <select class="form-select" name="role" required id="userRole">
+                    <option value="">Select Role</option>
+                    @foreach ($roles as $role)
+                        <option value="{{ $role->name }}">{{ $role->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium text-dark">School</label>
+                <select class="form-select" name="school_id" id="userSchool">
+                    <option value="">Select School</option>
+                    @foreach ($schools as $school)
+                        <option value="{{ $school->id }}">{{ $school->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required fw-medium text-dark">Status</label>
+                <select class="form-select" name="status" required id="userStatus">
+                    @foreach ($statuses as $value => $label)
+                        <option value="{{ $value }}" @selected($value === 'active')>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label fw-medium text-dark">Profile Photo</label>
+                <input class="form-control" type="file" name="avatar" accept="image/png,image/jpeg,image/webp" id="userAvatar">
+                <div class="mt-2" id="avatarPreview" style="display:none;">
+                    <img src="" alt="Preview" class="rounded" style="max-height:80px;">
                 </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label required">Name</label>
-                            <input class="form-control" name="name" required maxlength="255">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label required">Email</label>
-                            <input class="form-control" type="email" name="email" required maxlength="255">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Phone</label>
-                            <input class="form-control" name="phone" maxlength="30">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required" id="passwordLabel">Password</label>
-                            <input class="form-control" type="password" name="password" id="userPassword">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required" id="passwordConfirmLabel">Confirm Password</label>
-                            <input class="form-control" type="password" name="password_confirmation" id="userPasswordConfirmation">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Role</label>
-                            <select class="form-select" name="role" required id="userRole">
-                                <option value="">Select Role</option>
-                                @foreach ($roles as $role)
-                                    <option value="{{ $role->name }}">{{ $role->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">School</label>
-                            <select class="form-select" name="school_id" id="userSchool">
-                                <option value="">Select School</option>
-                                @foreach ($schools as $school)
-                                    <option value="{{ $school->id }}">{{ $school->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label required">Status</label>
-                            <select class="form-select" name="status" required id="userStatus">
-                                @foreach ($statuses as $value => $label)
-                                    <option value="{{ $value }}" @selected($value === 'active')>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Profile Photo</label>
-                            <input class="form-control" type="file" name="avatar" accept="image/png,image/jpeg,image/webp" id="userAvatar">
-                            <div class="mt-2" id="avatarPreview" style="display:none;">
-                                <img src="" alt="Preview" class="rounded" style="max-height:80px;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-device-floppy me-1"></i> Save User</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
     {{-- Reset Password Modal --}}
-    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm">
-            <form class="modal-content ajax-form" id="resetPasswordForm" method="POST">
-                @csrf
-                <input type="hidden" name="_method" value="PUT">
-                <div class="modal-header">
-                    <h5 class="modal-title">Reset Password</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted small">Resetting password for: <strong id="resetPasswordUserName">—</strong></p>
-                    <div class="mb-3">
-                        <label class="form-label required">New Password</label>
-                        <input class="form-control" type="password" name="password" required>
-                    </div>
-                    <div class="mb-0">
-                        <label class="form-label required">Confirm Password</label>
-                        <input class="form-control" type="password" name="password_confirmation" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning py-2"><i class="ti ti-key me-1"></i> Reset Password</button>
-                </div>
-            </form>
+    <x-erp.side-panel
+        id="resetPasswordOffcanvas"
+        formId="resetPasswordForm"
+        title="Reset Password"
+        action=""
+        method="POST"
+        width="400px"
+        saveButtonText="Reset Password"
+    >
+        <input type="hidden" name="_method" value="PUT">
+        <p class="text-muted small mb-4">Resetting password for: <strong id="resetPasswordUserName">—</strong></p>
+        
+        <div class="row g-4">
+            <div class="col-md-12">
+                <label class="form-label required fw-medium text-dark">New Password</label>
+                <input class="form-control" type="password" name="password" required>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label required fw-medium text-dark">Confirm Password</label>
+                <input class="form-control" type="password" name="password_confirmation" required>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 
     {{-- Assign Role Modal --}}
-    <div class="modal fade" id="assignRoleModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm">
-            <form class="modal-content ajax-form" id="assignRoleForm" method="POST">
-                @csrf
-                <input type="hidden" name="_method" value="PUT">
-                <div class="modal-header">
-                    <h5 class="modal-title">Assign Role</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted small">Assigning role to: <strong id="assignRoleUserName">—</strong></p>
-                    <div class="mb-0">
-                        <label class="form-label required">Role</label>
-                        <select class="form-select" name="role" required id="assignRoleSelect">
-                            <option value="">Select Role</option>
-                            @foreach ($roles as $role)
-                                <option value="{{ $role->name }}">{{ $role->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary py-2"><i class="ti ti-user-cog me-1"></i> Assign Role</button>
-                </div>
-            </form>
+    <x-erp.side-panel
+        id="assignRoleOffcanvas"
+        formId="assignRoleForm"
+        title="Assign Role"
+        action=""
+        method="POST"
+        width="400px"
+        saveButtonText="Assign Role"
+    >
+        <input type="hidden" name="_method" value="PUT">
+        <p class="text-muted small mb-4">Assigning role to: <strong id="assignRoleUserName">—</strong></p>
+        
+        <div class="row g-4">
+            <div class="col-md-12">
+                <label class="form-label required fw-medium text-dark">Role</label>
+                <select class="form-select" name="role" required id="assignRoleSelect">
+                    <option value="">Select Role</option>
+                    @foreach ($roles as $role)
+                        <option value="{{ $role->name }}">{{ $role->name }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
-    </div>
+    </x-erp.side-panel>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => { (async () => { const DataTable = await window.lazyDT();
-            const userModal = new bootstrap.Modal('#userModal');
-            const resetPasswordModal = new bootstrap.Modal('#resetPasswordModal');
-            const assignRoleModal = new bootstrap.Modal('#assignRoleModal');
+            const userOffcanvas = new bootstrap.Offcanvas(document.getElementById('userOffcanvas'));
+            const resetPasswordOffcanvas = new bootstrap.Offcanvas(document.getElementById('resetPasswordOffcanvas'));
+            const assignRoleOffcanvas = new bootstrap.Offcanvas(document.getElementById('assignRoleOffcanvas'));
             const form = $('#userForm');
             const resetPasswordForm = $('#resetPasswordForm');
             const assignRoleForm = $('#assignRoleForm');
@@ -270,12 +256,14 @@
                 form[0].reset();
                 $('#userMethod').val('POST');
                 form.attr('action', '{{ route('admin.users.store') }}');
-                $('#userModalTitle').text('Add User');
+                $('#userOffcanvasTitle').text('Add User');
                 $('#passwordLabel, #passwordConfirmLabel').addClass('required').siblings('input').prop('required', true);
                 $('#userPassword, #userPasswordConfirmation').closest('.col-md-4').show();
                 form.find('.is-invalid').removeClass('is-invalid');
                 form.find('.invalid-feedback.dynamic').remove();
                 $('#avatarPreview').hide();
+                form.data('is-dirty', false);
+                userOffcanvas.show();
             });
 
             // Edit User
@@ -286,7 +274,7 @@
                     form.find('.invalid-feedback.dynamic').remove();
                     form.attr('action', $(this).data('update-url'));
                     $('#userMethod').val('PUT');
-                    $('#userModalTitle').text('Edit User');
+                    $('#userOffcanvasTitle').text('Edit User');
                     // Hide password fields on edit
                     $('#passwordLabel, #passwordConfirmLabel').removeClass('required');
                     $('#userPassword, #userPasswordConfirmation').removeAttr('required').val('').closest('.col-md-4').hide();
@@ -306,7 +294,9 @@
                         $('#avatarPreview').hide();
                     }
 
-                    userModal.show();
+                    form.find('select').trigger('change.select2');
+                    form.data('is-dirty', false);
+                    userOffcanvas.show();
                 });
             });
 
@@ -342,7 +332,8 @@
                 resetPasswordForm.find('.is-invalid').removeClass('is-invalid');
                 resetPasswordForm.find('.invalid-feedback.dynamic').remove();
                 $('#resetPasswordUserName').text($(this).data('name'));
-                resetPasswordModal.show();
+                resetPasswordForm.data('is-dirty', false);
+                resetPasswordOffcanvas.show();
             });
 
             // Assign Role
@@ -353,7 +344,9 @@
                 assignRoleForm.find('.invalid-feedback.dynamic').remove();
                 $('#assignRoleUserName').text($(this).data('name'));
                 $('#assignRoleSelect').val($(this).data('current-role'));
-                assignRoleModal.show();
+                assignRoleForm.find('select').trigger('change.select2');
+                assignRoleForm.data('is-dirty', false);
+                assignRoleOffcanvas.show();
             });
 
             // Avatar preview
@@ -373,17 +366,17 @@
 
             // Form success handlers
             form.on('erp:success', () => {
-                userModal.hide();
+                userOffcanvas.hide();
                 table.ajax.reload(null, false);
             });
 
             resetPasswordForm.on('erp:success', () => {
-                resetPasswordModal.hide();
+                resetPasswordOffcanvas.hide();
                 table.ajax.reload(null, false);
             });
 
             assignRoleForm.on('erp:success', () => {
-                assignRoleModal.hide();
+                assignRoleOffcanvas.hide();
                 table.ajax.reload(null, false);
             });
         })(); });
